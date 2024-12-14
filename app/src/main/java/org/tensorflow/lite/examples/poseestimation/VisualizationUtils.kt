@@ -91,7 +91,7 @@ object VisualizationUtils {
 
         val paintText = Paint().apply {
             textSize = PERSON_ID_TEXT_SIZE
-            color = Color.BLUE
+            color = Color.CYAN
             textAlign = Paint.Align.LEFT
         }
 
@@ -139,13 +139,29 @@ object VisualizationUtils {
                 person.keyPoints.get(9).coordinate      // LEFT_WRIST
             )
 
+            // TEMP: Print left elbow
+            originalSizeCanvas.drawText(
+                "${left_elbow_angle.toInt()}°",
+                person.keyPoints.get(7).coordinate.x + PERSON_ID_MARGIN,
+                person.keyPoints.get(7).coordinate.y - PERSON_ID_MARGIN,
+                paintText
+            )
+
             val right_elbow_angle = calculateAngle(
                 person.keyPoints.get(6).coordinate,     // RIGHT_SHOULDER
                 person.keyPoints.get(8).coordinate,     // RIGHT_ELBOW
                 person.keyPoints.get(10).coordinate     // RIGHT_WRIST
             )
-            println("LEFT ELBOW: ${left_elbow_angle}°, RIGHT ELBOW: ${right_elbow_angle}°")
 
+            // TEMP: Print right elbow
+            originalSizeCanvas.drawText(
+                "${right_elbow_angle.toInt()}°",
+                person.keyPoints.get(8).coordinate.x + PERSON_ID_MARGIN,
+                person.keyPoints.get(8).coordinate.y - PERSON_ID_MARGIN,
+                paintText
+            )
+
+//            println("LEFT ELBOW: ${left_elbow_angle}°, RIGHT ELBOW: ${right_elbow_angle}°")
         }
         return output
     }
