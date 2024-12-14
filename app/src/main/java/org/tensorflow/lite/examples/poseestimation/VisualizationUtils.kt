@@ -20,9 +20,12 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.PointF
 import org.tensorflow.lite.examples.poseestimation.data.BodyPart
 import org.tensorflow.lite.examples.poseestimation.data.Person
 import kotlin.math.max
+import kotlin.math.sqrt
+import kotlin.math.acos
 
 object VisualizationUtils {
     /** Radius of circle used to draw keypoints.  */
@@ -37,26 +40,36 @@ object VisualizationUtils {
     /** Distance from person id to the nose keypoint.  */
     private const val PERSON_ID_MARGIN = 6f
 
+    /** Keypoints to draw circles on (for neatness in testing) */
+    val keypointsToDraw = setOf(
+        BodyPart.LEFT_SHOULDER,
+        BodyPart.LEFT_ELBOW,
+        BodyPart.LEFT_WRIST,
+        BodyPart.RIGHT_SHOULDER,
+        BodyPart.RIGHT_ELBOW,
+        BodyPart.RIGHT_WRIST
+    )
+
     /** Pair of keypoints to draw lines between.  */
     private val bodyJoints = listOf(
-        Pair(BodyPart.NOSE, BodyPart.LEFT_EYE),
-        Pair(BodyPart.NOSE, BodyPart.RIGHT_EYE),
-        Pair(BodyPart.LEFT_EYE, BodyPart.LEFT_EAR),
-        Pair(BodyPart.RIGHT_EYE, BodyPart.RIGHT_EAR),
-        Pair(BodyPart.NOSE, BodyPart.LEFT_SHOULDER),
-        Pair(BodyPart.NOSE, BodyPart.RIGHT_SHOULDER),
+//        Pair(BodyPart.NOSE, BodyPart.LEFT_EYE),
+//        Pair(BodyPart.NOSE, BodyPart.RIGHT_EYE),
+//        Pair(BodyPart.LEFT_EYE, BodyPart.LEFT_EAR),
+//        Pair(BodyPart.RIGHT_EYE, BodyPart.RIGHT_EAR),
+//        Pair(BodyPart.NOSE, BodyPart.LEFT_SHOULDER),
+//        Pair(BodyPart.NOSE, BodyPart.RIGHT_SHOULDER),
         Pair(BodyPart.LEFT_SHOULDER, BodyPart.LEFT_ELBOW),
         Pair(BodyPart.LEFT_ELBOW, BodyPart.LEFT_WRIST),
         Pair(BodyPart.RIGHT_SHOULDER, BodyPart.RIGHT_ELBOW),
         Pair(BodyPart.RIGHT_ELBOW, BodyPart.RIGHT_WRIST),
-        Pair(BodyPart.LEFT_SHOULDER, BodyPart.RIGHT_SHOULDER),
-        Pair(BodyPart.LEFT_SHOULDER, BodyPart.LEFT_HIP),
-        Pair(BodyPart.RIGHT_SHOULDER, BodyPart.RIGHT_HIP),
-        Pair(BodyPart.LEFT_HIP, BodyPart.RIGHT_HIP),
-        Pair(BodyPart.LEFT_HIP, BodyPart.LEFT_KNEE),
-        Pair(BodyPart.LEFT_KNEE, BodyPart.LEFT_ANKLE),
-        Pair(BodyPart.RIGHT_HIP, BodyPart.RIGHT_KNEE),
-        Pair(BodyPart.RIGHT_KNEE, BodyPart.RIGHT_ANKLE)
+//        Pair(BodyPart.LEFT_SHOULDER, BodyPart.RIGHT_SHOULDER),
+//        Pair(BodyPart.LEFT_SHOULDER, BodyPart.LEFT_HIP),
+//        Pair(BodyPart.RIGHT_SHOULDER, BodyPart.RIGHT_HIP),
+//        Pair(BodyPart.LEFT_HIP, BodyPart.RIGHT_HIP),
+//        Pair(BodyPart.LEFT_HIP, BodyPart.LEFT_KNEE),
+//        Pair(BodyPart.LEFT_KNEE, BodyPart.LEFT_ANKLE),
+//        Pair(BodyPart.RIGHT_HIP, BodyPart.RIGHT_KNEE),
+//        Pair(BodyPart.RIGHT_KNEE, BodyPart.RIGHT_ANKLE)
     )
 
     // Draw line and point indicate body pose
@@ -67,12 +80,12 @@ object VisualizationUtils {
     ): Bitmap {
         val paintCircle = Paint().apply {
             strokeWidth = CIRCLE_RADIUS
-            color = Color.RED
+            color = Color.CYAN
             style = Paint.Style.FILL
         }
         val paintLine = Paint().apply {
             strokeWidth = LINE_WIDTH
-            color = Color.RED
+            color = Color.CYAN
             style = Paint.Style.STROKE
         }
 
@@ -107,14 +120,64 @@ object VisualizationUtils {
             }
 
             person.keyPoints.forEach { point ->
-                originalSizeCanvas.drawCircle(
-                    point.coordinate.x,
-                    point.coordinate.y,
-                    CIRCLE_RADIUS,
-                    paintCircle
-                )
+                // Only draw relevant keypoints for neatness
+                if (point.bodyPart in keypointsToDraw) {
+                    originalSizeCanvas.drawCircle(
+                        point.coordinate.x,
+                        point.coordinate.y,
+                        CIRCLE_RADIUS,
+                        paintCircle
+                    )
+                }
             }
+
+            // Calculate angle of both elbows and print to logs
+            // Check BodyPart.kt for indices of keypoints
+            val left_elbow_angle = calculateAngle(
+                person.keyPoints.get(5).coordinate,     // LEFT_SHOULDER
+                person.keyPoints.get(7).coordinate,     // LEFT_ELBOW
+                person.keyPoints.get(9).coordinate      // LEFT_WRIST
+            )
+
+            val right_elbow_angle = calculateAngle(
+                person.keyPoints.get(6).coordinate,     // RIGHT_SHOULDER
+                person.keyPoints.get(8).coordinate,     // RIGHT_ELBOW
+                person.keyPoints.get(10).coordinate     // RIGHT_WRIST
+            )
+            println("LEFT ELBOW: ${left_elbow_angle}°, RIGHT ELBOW: ${right_elbow_angle}°")
+
         }
         return output
+    }
+
+    // Function to calculate angle between three points
+    fun calculateAngle(pointA: PointF, pointB: PointF, pointC: PointF): Double {
+        // Formula using dot product (B as central point):
+        // cos(theta) = (AB dot BC) / (||AB|| x ||BC||)
+
+        // Lengths of each vector (AB, BC)
+        val ABx = pointB.x - pointA.x
+        val ABy = pointB.y - pointA.y
+
+        val BCx = pointC.x - pointB.x
+        val BCy = pointC.y - pointB.y
+
+        // Dot product and vector magnitudes
+        val dotProduct = ABx * BCx + ABy * BCy
+        val magnitudeAB: Float = sqrt(ABx * ABx + ABy * ABy)
+        val magnitudeBC: Float = sqrt(BCx * BCx + BCy * BCy)
+
+        // Check for division by 0
+        if (magnitudeAB == 0.0f || magnitudeBC == 0.0f) return 0.0
+
+        // Calculate for angle:
+        // - Obtain cos(theta) using dot product and magnitudes
+        // - Ensure cos(theta) is within bounds [-1.0, 1.0]
+        // - Compute for arccos(cos(theta))
+        var angle = acos((dotProduct / (magnitudeAB * magnitudeBC)).coerceIn(-1.0f, 1.0f))
+
+        // Return value in degrees
+        // Not finalized yet, (Math.PI - angle) is just to force straight lines to show 180 degrees---but possibly needs a bit more computation to distinguish direction of angle
+        return (Math.PI - angle) * (180 / Math.PI)
     }
 }
