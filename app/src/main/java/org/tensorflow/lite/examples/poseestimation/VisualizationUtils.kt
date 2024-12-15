@@ -47,7 +47,13 @@ object VisualizationUtils {
         BodyPart.LEFT_WRIST,
         BodyPart.RIGHT_SHOULDER,
         BodyPart.RIGHT_ELBOW,
-        BodyPart.RIGHT_WRIST
+        BodyPart.RIGHT_WRIST,
+        BodyPart.LEFT_HIP,
+        BodyPart.LEFT_KNEE,
+        BodyPart.LEFT_ANKLE,
+        BodyPart.RIGHT_HIP,
+        BodyPart.RIGHT_KNEE,
+        BodyPart.RIGHT_ANKLE,    
     )
 
     /** Pair of keypoints to draw lines between.  */
@@ -66,10 +72,10 @@ object VisualizationUtils {
 //        Pair(BodyPart.LEFT_SHOULDER, BodyPart.LEFT_HIP),
 //        Pair(BodyPart.RIGHT_SHOULDER, BodyPart.RIGHT_HIP),
 //        Pair(BodyPart.LEFT_HIP, BodyPart.RIGHT_HIP),
-//        Pair(BodyPart.LEFT_HIP, BodyPart.LEFT_KNEE),
-//        Pair(BodyPart.LEFT_KNEE, BodyPart.LEFT_ANKLE),
-//        Pair(BodyPart.RIGHT_HIP, BodyPart.RIGHT_KNEE),
-//        Pair(BodyPart.RIGHT_KNEE, BodyPart.RIGHT_ANKLE)
+       Pair(BodyPart.LEFT_HIP, BodyPart.LEFT_KNEE),
+       Pair(BodyPart.LEFT_KNEE, BodyPart.LEFT_ANKLE),
+       Pair(BodyPart.RIGHT_HIP, BodyPart.RIGHT_KNEE),
+       Pair(BodyPart.RIGHT_KNEE, BodyPart.RIGHT_ANKLE)
     )
 
     // Draw line and point indicate body pose
@@ -140,7 +146,7 @@ object VisualizationUtils {
                 person.keyPoints.get(7).coordinate,     // LEFT_ELBOW
                 person.keyPoints.get(9).coordinate      // LEFT_WRIST
             )
-            displayAngleText(left_elbow_angle, person.keyPoints.get(7), originalSizeCanvas, PERSON_ID_MARGIN, paintText)
+            displayAngleText(left_elbow_angle, person.keyPoints.get(7).coordinate, originalSizeCanvas, PERSON_ID_MARGIN, paintText)
 
             // RIGHT ELBOW
             val right_elbow_angle = calculateAngle(
@@ -148,10 +154,26 @@ object VisualizationUtils {
                 person.keyPoints.get(8).coordinate,     // RIGHT_ELBOW
                 person.keyPoints.get(10).coordinate     // RIGHT_WRIST
             )
-            displayAngleText(left_elbow_angle, person.keyPoints.get(8), originalSizeCanvas, PERSON_ID_MARGIN, paintText)
+            displayAngleText(left_elbow_angle, person.keyPoints.get(8).coordinate, originalSizeCanvas, PERSON_ID_MARGIN, paintText)
 
             // println("LEFT ELBOW: ${left_elbow_angle}°, RIGHT ELBOW: ${right_elbow_angle}°")
 
+            // LEFT LEG
+            val left_knee_angle = calculateAngle(
+                person.keyPoints.get(11).coordinate,    // LEFT HIP
+                person.keyPoints.get(13).coordinate,    // LEFT KNEE
+                person.keyPoints.get(15).coordinate,    // LEFT ANKLE
+            )
+            displayAngleText(left_knee_angle, person.keyPoints.get(13).coordinate, originalSizeCanvas, PERSON_ID_MARGIN, paintText)
+
+            
+            // LEFT LEG
+            val right_knee_angle = calculateAngle(
+                person.keyPoints.get(12).coordinate,    // RIGHT HIP
+                person.keyPoints.get(14).coordinate,    // RIGHT KNEE
+                person.keyPoints.get(16).coordinate,    // RIGHT ANKLE
+            )
+            displayAngleText(right_knee_angle, person.keyPoints.get(14).coordinate, originalSizeCanvas, PERSON_ID_MARGIN, paintText)
         }
         return output
     }
