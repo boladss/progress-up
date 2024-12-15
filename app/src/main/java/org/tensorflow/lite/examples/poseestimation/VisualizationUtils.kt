@@ -131,37 +131,27 @@ object VisualizationUtils {
                 }
             }
 
-            // Calculate angle of both elbows and print to logs
+            // Calculate angles and print as annotations on keypoint
             // Check BodyPart.kt for indices of keypoints
+
+            // LEFT ELBOW
             val left_elbow_angle = calculateAngle(
                 person.keyPoints.get(5).coordinate,     // LEFT_SHOULDER
                 person.keyPoints.get(7).coordinate,     // LEFT_ELBOW
                 person.keyPoints.get(9).coordinate      // LEFT_WRIST
             )
+            displayAngleText(left_elbow_angle, person.keyPoints.get(7), originalSizeCanvas, PERSON_ID_MARGIN, paintText)
 
-            // TEMP: Print left elbow
-            originalSizeCanvas.drawText(
-                "${left_elbow_angle.toInt()}°",
-                person.keyPoints.get(7).coordinate.x + PERSON_ID_MARGIN,
-                person.keyPoints.get(7).coordinate.y - PERSON_ID_MARGIN,
-                paintText
-            )
-
+            // RIGHT ELBOW
             val right_elbow_angle = calculateAngle(
                 person.keyPoints.get(6).coordinate,     // RIGHT_SHOULDER
                 person.keyPoints.get(8).coordinate,     // RIGHT_ELBOW
                 person.keyPoints.get(10).coordinate     // RIGHT_WRIST
             )
+            displayAngleText(left_elbow_angle, person.keyPoints.get(8), originalSizeCanvas, PERSON_ID_MARGIN, paintText)
 
-            // TEMP: Print right elbow
-            originalSizeCanvas.drawText(
-                "${right_elbow_angle.toInt()}°",
-                person.keyPoints.get(8).coordinate.x + PERSON_ID_MARGIN,
-                person.keyPoints.get(8).coordinate.y - PERSON_ID_MARGIN,
-                paintText
-            )
+            // println("LEFT ELBOW: ${left_elbow_angle}°, RIGHT ELBOW: ${right_elbow_angle}°")
 
-//            println("LEFT ELBOW: ${left_elbow_angle}°, RIGHT ELBOW: ${right_elbow_angle}°")
         }
         return output
     }
@@ -186,14 +176,32 @@ object VisualizationUtils {
         // Check for division by 0
         if (magnitudeAB == 0.0f || magnitudeBC == 0.0f) return 0.0
 
-        // Calculate for angle:
-        // - Obtain cos(theta) using dot product and magnitudes
-        // - Ensure cos(theta) is within bounds [-1.0, 1.0]
-        // - Compute for arccos(cos(theta))
+        /* Calculate for angle:
+            - Obtain cos(theta) using dot product and magnitudes
+            - Ensure cos(theta) is within bounds [-1.0, 1.0]
+            - Compute for arccos(cos(theta))
+        */
         var angle = acos((dotProduct / (magnitudeAB * magnitudeBC)).coerceIn(-1.0f, 1.0f))
 
         // Return value in degrees
         // Not finalized yet, (Math.PI - angle) is just to force straight lines to show 180 degrees---but possibly needs a bit more computation to distinguish direction of angle
         return (Math.PI - angle) * (180 / Math.PI)
+    }
+
+    fun displayAngleText(
+        angle: Double,
+        keypoint: PointF,
+        canvas: Canvas,
+        margin: Float,
+        paintText: Paint
+        ) {
+        canvas.drawText(
+            "${angle.toInt()}°",
+            keypoint.x + margin,
+            keypoint.y - margin,
+            paintText
+        )
+
+        return
     }
 }
