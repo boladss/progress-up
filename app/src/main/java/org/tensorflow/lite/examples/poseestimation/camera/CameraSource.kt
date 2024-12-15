@@ -111,6 +111,7 @@ class CameraSource(
                 // Create rotated version for portrait display
                 val rotateMatrix = Matrix()
                 rotateMatrix.postRotate(90.0f)
+                rotateMatrix.postScale(1f, -1f)
 
                 val rotatedBitmap = Bitmap.createBitmap(
                     imageBitmap, 0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT,
@@ -163,15 +164,16 @@ class CameraSource(
         }
 
     fun prepareCamera() {
+        // Prioritize front-facing  camera
         for (cameraId in cameraManager.cameraIdList) {
             val characteristics = cameraManager.getCameraCharacteristics(cameraId)
 
-            // We don't use a front facing camera in this sample.
             val cameraDirection = characteristics.get(CameraCharacteristics.LENS_FACING)
             if (cameraDirection != null &&
                 cameraDirection == CameraCharacteristics.LENS_FACING_FRONT
             ) {
-                continue
+                this.cameraId = cameraId
+                return
             }
             this.cameraId = cameraId
         }
