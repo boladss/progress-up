@@ -35,7 +35,7 @@ object VisualizationUtils {
     private const val LINE_WIDTH = 4f
 
     /** The text size of the person id that will be displayed when the tracker is available.  */
-    private const val PERSON_ID_TEXT_SIZE = 30f
+    private const val PERSON_ID_TEXT_SIZE = 24f
 
     /** Distance from person id to the nose keypoint.  */
     private const val PERSON_ID_MARGIN = 6f
@@ -217,12 +217,16 @@ object VisualizationUtils {
         margin: Float,
         paintText: Paint
         ) {
+
+        canvas.save()
+        canvas.rotate(90f, keypoint.x + margin, keypoint.y - margin)
         canvas.drawText(
             "${angle.toInt()}°",
             keypoint.x + margin,
             keypoint.y - margin,
             paintText
         )
+        canvas.restore()
 
         return
     }
