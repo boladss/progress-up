@@ -7,6 +7,8 @@ import kotlin.math.acos
 
 object AngleHeuristicsUtils {
 
+  private const val STANDARD_UPPER_TORSO_ANGLE = 180;
+  private const val STANDARD_UPPER_TORSO_DOF = 180;
   private const val STANDARD_ELBOW_ANGLE = 180;
   private const val STANDARD_ELBOW_DOF = 10; // degrees of freedom --- INCREASED TO 10
   private const val STANDARD_KNEE_ANGLE = 180;
@@ -65,6 +67,34 @@ object AngleHeuristicsUtils {
       person.keyPoints.get(16).coordinate,
     )
     return Pair(angle, isKneeValid(angle));
+  }
+
+
+  // UPPER TORSO (head-shoulder-hip alignment)
+  fun isUpperTorsoValid(angle: Double): Boolean {
+    if (angle > STANDARD_UPPER_TORSO_ANGLE + STANDARD_UPPER_TORSO_DOF) return false;
+    if (angle < STANDARD_UPPER_TORSO_ANGLE - STANDARD_UPPER_TORSO_DOF) return false;
+    return true;
+  }
+
+  // LEFT UPPER TORSO
+  fun checkLeftUpperTorso(person: Person): Pair<Double, Boolean> {
+    val angle = calculateAngle(
+      person.keyPoints.get(3).coordinate,
+      person.keyPoints.get(5).coordinate,
+      person.keyPoints.get(11).coordinate,
+    )
+    return Pair(angle, isUpperTorsoValid(angle));
+  }
+
+  // RIGHT UPPER TORSO
+  fun checkRightUpperTorso(person: Person): Pair<Double, Boolean> {
+    val angle = calculateAngle(
+      person.keyPoints.get(3).coordinate,
+      person.keyPoints.get(5).coordinate,
+      person.keyPoints.get(11).coordinate,
+    )
+    return Pair(angle, isUpperTorsoValid(angle));
   }
 
   // Function to calculate angle between three points
