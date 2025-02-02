@@ -92,29 +92,31 @@ object VisualizationUtils {
 
     // Handles going through all relevant keypoints and joints to draw
     fun processBodyAngles(canvas: Canvas, person: Person) {
-        // LEFT ARM
-        val (leftElbowAngle, leftElbowValid) = AngleHeuristicsUtils.checkLeftElbowAngle(person);
-        drawBodyJoint(canvas, person, Pair(BodyPart.LEFT_SHOULDER, BodyPart.LEFT_ELBOW), leftElbowValid);
-        drawBodyJoint(canvas, person, Pair(BodyPart.LEFT_ELBOW, BodyPart.LEFT_WRIST), leftElbowValid);
-        drawAngleText(canvas, person, BodyPart.LEFT_ELBOW, leftElbowAngle, leftElbowValid);
+        val jointsToCheck = listOf(
+            // Left arm joints and corresponding check function
+            Triple(BodyPart.LEFT_SHOULDER, BodyPart.LEFT_ELBOW, AngleHeuristicsUtils::checkLeftElbowAngle),
+            Triple(BodyPart.LEFT_ELBOW, BodyPart.LEFT_WRIST, AngleHeuristicsUtils::checkLeftElbowAngle),
+            
+            // Right arm joints
+            Triple(BodyPart.RIGHT_SHOULDER, BodyPart.RIGHT_ELBOW, AngleHeuristicsUtils::checkRightElbowAngle),
+            Triple(BodyPart.RIGHT_ELBOW, BodyPart.RIGHT_WRIST, AngleHeuristicsUtils::checkRightElbowAngle),
+            
+            // Left knee joints
+            Triple(BodyPart.LEFT_HIP, BodyPart.LEFT_KNEE, AngleHeuristicsUtils::checkLeftKneeAngle),
+            Triple(BodyPart.LEFT_KNEE, BodyPart.LEFT_ANKLE, AngleHeuristicsUtils::checkLeftKneeAngle),
+            
+            // Right knee joints
+            Triple(BodyPart.RIGHT_HIP, BodyPart.RIGHT_KNEE, AngleHeuristicsUtils::checkRightKneeAngle),
+            Triple(BodyPart.RIGHT_KNEE, BodyPart.RIGHT_ANKLE, AngleHeuristicsUtils::checkRightKneeAngle)
+        )
 
-        // RIGHT ARM
-        val (rightElbowAngle, rightElbowValid) = AngleHeuristicsUtils.checkRightElbowAngle(person);
-        drawBodyJoint(canvas, person, Pair(BodyPart.RIGHT_SHOULDER, BodyPart.RIGHT_ELBOW), rightElbowValid);
-        drawBodyJoint(canvas, person, Pair(BodyPart.RIGHT_ELBOW, BodyPart.RIGHT_WRIST), rightElbowValid);
-        drawAngleText(canvas, person, BodyPart.RIGHT_ELBOW, rightElbowAngle, rightElbowValid);
-
-        // LEFT KNEE
-        val (leftKneeAngle, leftKneeValid) = AngleHeuristicsUtils.checkLeftKneeAngle(person);
-        drawBodyJoint(canvas, person, Pair(BodyPart.LEFT_HIP, BodyPart.LEFT_KNEE), leftKneeValid);
-        drawBodyJoint(canvas, person, Pair(BodyPart.LEFT_KNEE, BodyPart.LEFT_ANKLE), leftKneeValid);
-        drawAngleText(canvas, person, BodyPart.LEFT_KNEE, leftKneeAngle, leftKneeValid);
-        
-        // RIGHT KNEE
-        val (rightKneeAngle, rightKneeValid) = AngleHeuristicsUtils.checkRightKneeAngle(person);
-        drawBodyJoint(canvas, person, Pair(BodyPart.RIGHT_HIP, BodyPart.RIGHT_KNEE), rightKneeValid);
-        drawBodyJoint(canvas, person, Pair(BodyPart.RIGHT_KNEE, BodyPart.RIGHT_ANKLE), rightKneeValid);
-        drawAngleText(canvas, person, BodyPart.RIGHT_KNEE, rightKneeAngle, rightKneeValid);
+        // Process each joint and draw
+        jointsToCheck.forEach { (start, end, checkAngleFunction) ->
+            val (angle, isValid) = checkAngleFunction(person)
+            
+            drawBodyJoint(canvas, person, Pair(start, end), isValid)
+            drawAngleText(canvas, person, start, angle, isValid)
+        }
     }
 
     fun drawBodyJoint(
