@@ -8,7 +8,9 @@ import kotlin.math.acos
 object AngleHeuristicsUtils {
 
   private const val STANDARD_UPPER_TORSO_ANGLE = 180;
-  private const val STANDARD_UPPER_TORSO_DOF = 180;
+  private const val STANDARD_UPPER_TORSO_DOF = 10;
+  private const val STANDARD_LOWER_TORSO_ANGLE = 180;
+  private const val STANDARD_LOWER_TORSO_DOF = 10;
   private const val STANDARD_ELBOW_ANGLE = 180;
   private const val STANDARD_ELBOW_DOF = 10; // degrees of freedom --- INCREASED TO 10
   private const val STANDARD_KNEE_ANGLE = 180;
@@ -21,25 +23,13 @@ object AngleHeuristicsUtils {
     if (angle < STANDARD_ELBOW_ANGLE - STANDARD_ELBOW_DOF) return false;
     return true;
   }
-
   // LEFT ELBOW
   fun checkLeftElbowAngle(person: Person): Pair<Double, Boolean> {
-    val angle = calculateAngle(
-      person.keyPoints.get(5).coordinate,     // LEFT_SHOULDER
-      person.keyPoints.get(7).coordinate,     // LEFT_ELBOW
-      person.keyPoints.get(9).coordinate      // LEFT_WRIST
-    )
-    return Pair(angle, isElbowValid(angle));
+    return checkJointAngle(person, listOf(5, 7, 9), ::isElbowValid)   // indices for LEFT_SHOULDER, LEFT_ELBOW, LEFT_WRIST
   }
-
   // RIGHT ELBOW
   fun checkRightElbowAngle(person: Person): Pair<Double, Boolean> {
-    val angle = calculateAngle(
-      person.keyPoints.get(6).coordinate,     // RIGHT_SHOULDER
-      person.keyPoints.get(8).coordinate,     // RIGHT_ELBOW
-      person.keyPoints.get(10).coordinate     // RIGHT_WRIST
-    )
-    return Pair(angle, isElbowValid(angle));
+    return checkJointAngle(person, listOf(6, 8, 10), ::isElbowValid)  // indices for RIGHT_SHOULDER, RIGHT_ELBOW, RIGHT_WRIST
   }
 
   // LEGS / KNEES
@@ -48,27 +38,14 @@ object AngleHeuristicsUtils {
     if (angle < STANDARD_KNEE_ANGLE - STANDARD_KNEE_DOF) return false;
     return true;
   }
-
   // LEFT KNEE
   fun checkLeftKneeAngle(person: Person): Pair<Double, Boolean> {
-    val angle = calculateAngle(
-      person.keyPoints.get(11).coordinate,
-      person.keyPoints.get(13).coordinate,
-      person.keyPoints.get(15).coordinate,
-    )
-    return Pair(angle, isKneeValid(angle));
+    return checkJointAngle(person, listOf(11, 13, 15), ::isKneeValid)  // indices for LEFT_HIP, LEFT_KNEE, LEFT_ANKLE
   }
-
   // RIGHT KNEE
   fun checkRightKneeAngle(person: Person): Pair<Double, Boolean> {
-    val angle = calculateAngle(
-      person.keyPoints.get(12).coordinate,
-      person.keyPoints.get(14).coordinate,
-      person.keyPoints.get(16).coordinate,
-    )
-    return Pair(angle, isKneeValid(angle));
+    return checkJointAngle(person, listOf(12, 14, 16), ::isKneeValid)  // indices for RIGHT_HIP, RIGHT_KNEE, RIGHT_ANKLE
   }
-
 
   // UPPER TORSO (head-shoulder-hip alignment)
   fun isUpperTorsoValid(angle: Double): Boolean {
@@ -76,25 +53,38 @@ object AngleHeuristicsUtils {
     if (angle < STANDARD_UPPER_TORSO_ANGLE - STANDARD_UPPER_TORSO_DOF) return false;
     return true;
   }
-
   // LEFT UPPER TORSO
-  fun checkLeftUpperTorso(person: Person): Pair<Double, Boolean> {
-    val angle = calculateAngle(
-      person.keyPoints.get(3).coordinate,
-      person.keyPoints.get(5).coordinate,
-      person.keyPoints.get(11).coordinate,
-    )
-    return Pair(angle, isUpperTorsoValid(angle));
+  fun checkLeftUpperTorsoAngle(person: Person): Pair<Double, Boolean> {
+    return checkJointAngle(person, listOf(3, 5, 11), ::isUpperTorsoValid)  // indices for LEFT_EAR, LEFT_SHOULDER, LEFT_HIP
+  }
+  // RIGHT UPPER TORSO
+  fun checkRightUpperTorsoAngle(person: Person): Pair<Double, Boolean> {
+    return checkJointAngle(person, listOf(4, 6, 12), ::isUpperTorsoValid)  // indices for RIGHT_EAR, RIGHT_SHOULDER, RIGHT_HIP
   }
 
-  // RIGHT UPPER TORSO
-  fun checkRightUpperTorso(person: Person): Pair<Double, Boolean> {
+  // LOWER TORSO (shoulder-hip-knee alignment)
+  fun isLowerTorsoValid(angle: Double): Boolean {
+    if (angle > STANDARD_LOWER_TORSO_ANGLE + STANDARD_LOWER_TORSO_DOF) return false;
+    if (angle < STANDARD_LOWER_TORSO_ANGLE - STANDARD_LOWER_TORSO_DOF) return false;
+    return true;
+  }
+  // LEFT LOWER TORSO
+  fun checkLeftLowerTorsoAngle(person: Person): Pair<Double, Boolean> {
+    return checkJointAngle(person, listOf(5, 11, 13), ::isLowerTorsoValid)  // indices for LEFT_SHOULDER, LEFT_HIP, LEFT_KNEE
+  }
+  // RIGHT LOWER TORSO
+  fun checkRightLowerTorsoAngle(person: Person): Pair<Double, Boolean> {
+    return checkJointAngle(person, listOf(6, 12, 14), ::isLowerTorsoValid)  // indices for RIGHT_SHOULDER, RIGHT_HIP, RIGHT_KNEE
+  }
+
+  // Generalized function to handle fetching of keypoints
+  fun checkJointAngle(person: Person, jointIndices: List<Int>, checkFunction: (Double) -> Boolean): Pair<Double, Boolean> {
     val angle = calculateAngle(
-      person.keyPoints.get(3).coordinate,
-      person.keyPoints.get(5).coordinate,
-      person.keyPoints.get(11).coordinate,
+        person.keyPoints[jointIndices[0]].coordinate,
+        person.keyPoints[jointIndices[1]].coordinate,
+        person.keyPoints[jointIndices[2]].coordinate
     )
-    return Pair(angle, isUpperTorsoValid(angle));
+    return Pair(angle, checkFunction(angle))
   }
 
   // Function to calculate angle between three points

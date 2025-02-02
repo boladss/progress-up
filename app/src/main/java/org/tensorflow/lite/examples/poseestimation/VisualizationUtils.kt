@@ -107,7 +107,24 @@ object VisualizationUtils {
             
             // Right knee joints
             Triple(BodyPart.RIGHT_HIP, BodyPart.RIGHT_KNEE, AngleHeuristicsUtils::checkRightKneeAngle),
-            Triple(BodyPart.RIGHT_KNEE, BodyPart.RIGHT_ANKLE, AngleHeuristicsUtils::checkRightKneeAngle)
+            Triple(BodyPart.RIGHT_KNEE, BodyPart.RIGHT_ANKLE, AngleHeuristicsUtils::checkRightKneeAngle),
+
+            // DISABLED FOR NOW, NOT SURE IF CORRECT WAY OF TRACKING
+            // // Left upper torso
+            // Triple(BodyPart.LEFT_EAR, BodyPart.LEFT_SHOULDER, AngleHeuristicsUtils::checkLeftUpperTorsoAngle),
+            // Triple(BodyPart.LEFT_SHOULDER, BodyPart.LEFT_HIP, AngleHeuristicsUtils::checkLeftUpperTorsoAngle),
+            
+            // // Right upper torso
+            // Triple(BodyPart.RIGHT_EAR, BodyPart.RIGHT_SHOULDER, AngleHeuristicsUtils::checkRightUpperTorsoAngle),
+            // Triple(BodyPart.RIGHT_SHOULDER, BodyPart.RIGHT_HIP, AngleHeuristicsUtils::checkRightUpperTorsoAngle),
+
+            // Left lower torso
+            Triple(BodyPart.LEFT_SHOULDER, BodyPart.LEFT_HIP, AngleHeuristicsUtils::checkLeftLowerTorsoAngle),
+            Triple(BodyPart.LEFT_HIP, BodyPart.LEFT_KNEE, AngleHeuristicsUtils::checkLeftLowerTorsoAngle),
+            
+            // Right lower torso
+            Triple(BodyPart.RIGHT_SHOULDER, BodyPart.RIGHT_HIP, AngleHeuristicsUtils::checkRightLowerTorsoAngle),
+            Triple(BodyPart.RIGHT_HIP, BodyPart.RIGHT_KNEE, AngleHeuristicsUtils::checkRightLowerTorsoAngle),
         )
 
         // Process each joint and draw
@@ -117,6 +134,10 @@ object VisualizationUtils {
             drawBodyJoint(canvas, person, Pair(start, end), isValid)
             drawAngleText(canvas, person, start, angle, isValid)
         }
+
+        // Draw other lines for visual appeal, not for form checking
+        drawBodyJoint(canvas, person, Pair(BodyPart.LEFT_SHOULDER, BodyPart.RIGHT_SHOULDER), true)
+        drawBodyJoint(canvas, person, Pair(BodyPart.LEFT_HIP, BodyPart.RIGHT_HIP), true)
     }
 
     fun drawBodyJoint(
