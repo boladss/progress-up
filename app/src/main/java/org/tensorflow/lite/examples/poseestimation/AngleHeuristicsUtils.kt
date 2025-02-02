@@ -8,23 +8,63 @@ import kotlin.math.acos
 object AngleHeuristicsUtils {
 
   private const val STANDARD_ELBOW_ANGLE = 180;
-  private const val STANDARD_ELBOW_DOF = 10; // degrees of freedom
+  private const val STANDARD_ELBOW_DOF = 10; // degrees of freedom --- INCREASED TO 10
+  private const val STANDARD_KNEE_ANGLE = 180;
+  private const val STANDARD_KNEE_DOF = 10;
 
+  // ARMS / ELBOWS
+  // Checks if within valid range of motion
+  fun isElbowValid(angle: Double): Boolean {
+    if (angle > STANDARD_ELBOW_ANGLE + STANDARD_ELBOW_DOF) return false;
+    if (angle < STANDARD_ELBOW_ANGLE - STANDARD_ELBOW_DOF) return false;
+    return true;
+  }
 
+  // LEFT ELBOW
   fun checkLeftElbowAngle(person: Person): Pair<Double, Boolean> {
-    // Calculate for angle given keypoints
     val angle = calculateAngle(
       person.keyPoints.get(5).coordinate,     // LEFT_SHOULDER
       person.keyPoints.get(7).coordinate,     // LEFT_ELBOW
       person.keyPoints.get(9).coordinate      // LEFT_WRIST
     )
+    return Pair(angle, isElbowValid(angle));
+  }
 
-    // Check if angle is valid
-    var isValid = true;
-    if (angle > STANDARD_ELBOW_ANGLE + STANDARD_ELBOW_DOF) isValid = false;
-    if (angle < STANDARD_ELBOW_ANGLE - STANDARD_ELBOW_DOF) isValid = false;
-    
-    return Pair(angle, isValid);
+  // RIGHT ELBOW
+  fun checkRightElbowAngle(person: Person): Pair<Double, Boolean> {
+    val angle = calculateAngle(
+      person.keyPoints.get(6).coordinate,     // RIGHT_SHOULDER
+      person.keyPoints.get(8).coordinate,     // RIGHT_ELBOW
+      person.keyPoints.get(10).coordinate     // RIGHT_WRIST
+    )
+    return Pair(angle, isElbowValid(angle));
+  }
+
+  // LEGS / KNEES
+  fun isKneeValid(angle: Double): Boolean {
+    if (angle > STANDARD_KNEE_ANGLE + STANDARD_KNEE_DOF) return false;
+    if (angle < STANDARD_KNEE_ANGLE - STANDARD_KNEE_DOF) return false;
+    return true;
+  }
+
+  // LEFT KNEE
+  fun checkLeftKneeAngle(person: Person): Pair<Double, Boolean> {
+    val angle = calculateAngle(
+      person.keyPoints.get(11).coordinate,
+      person.keyPoints.get(13).coordinate,
+      person.keyPoints.get(15).coordinate,
+    )
+    return Pair(angle, isKneeValid(angle));
+  }
+
+  // RIGHT KNEE
+  fun checkRightKneeAngle(person: Person): Pair<Double, Boolean> {
+    val angle = calculateAngle(
+      person.keyPoints.get(12).coordinate,
+      person.keyPoints.get(14).coordinate,
+      person.keyPoints.get(16).coordinate,
+    )
+    return Pair(angle, isKneeValid(angle));
   }
 
   // Function to calculate angle between three points
