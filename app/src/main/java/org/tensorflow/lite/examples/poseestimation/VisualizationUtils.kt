@@ -161,20 +161,28 @@ object VisualizationUtils {
     }
 
     fun checkSideDrawPriority(person: Person): Boolean {
-        // NOTE: x/y is dependent on the orientation of the camera --- current implementation doesn't adjust that yet, and so y is used
-        // This may change.
+        // Determine orientation of phone (and thus, which side to draw) based on head, arms, and legs
+        val head = person.keyPoints[0].coordinate; // NOSE
 
-        // Check the orientation of the user based on the placement of their head
-        val head = person.keyPoints[0].coordinate.y; // NOSE
+        // Use average of wrists for better demonstration purposes
+        val xLeftWrist = person.keyPoints[9].coordinate.x;
+        val xRightWrist = person.keyPoints[10].coordinate.x; 
+        val xAvgWrists = (xLeftWrist + xRightWrist) / 2;
 
-        // Use average of hips for better demonstration purposes
-        val leftHip = person.keyPoints[11].coordinate.y;
-        val rightHip = person.keyPoints[12].coordinate.y; 
-        val avgHips = (leftHip + rightHip) / 2;
+        // Average of hips
+        val yLeftHip = person.keyPoints[11].coordinate.y;
+        val yRightHip = person.keyPoints[12].coordinate.y; 
+        val yAvgHips = (yLeftHip + yRightHip) / 2;
 
-        // True = right side is closer to camera
-        // False = left side is closer to camera
-        return (head < avgHips);
+        // Head towards top of phone
+        //  LEFT:   head.y > leg.y & head.x > hand.x -> standard orientation
+        // RIGHT:   head.y > leg.y & head.x < hand.x
+
+        // Head towards bottom of phone --- WARNING: MODEL SEEMS LESS ACCURATE
+        // RIGHT:   head.y < leg.y & head.x > hand.x
+        //  LEFT:   head.y < leg.y & head.x < hand.x
+        
+        return (head.y > yAvgHips) xor (head.x > xAvgWrists);
     }
 
     fun drawBodyJoint(
