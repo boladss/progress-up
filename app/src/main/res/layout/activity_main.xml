@@ -44,6 +44,14 @@
             android:text="A real-time form checker for push-up progressions"
             android:textColor="#FFFFFF"
             android:textSize="14sp" />
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="reps: "
+            android:id="@+id/tvRepCount"
+            android:textColor="@color/white"
+            />
 
     </LinearLayout>
+
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
