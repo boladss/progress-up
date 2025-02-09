@@ -55,7 +55,7 @@ class MainActivity : AppCompatActivity() {
     private var modelPos = 0
 
     /** Default device is CPU */
-    private var device = Device.CPU
+    private var device = Device.GPU
 
     private lateinit var tvScore: TextView
     private lateinit var tvFPS: TextView
