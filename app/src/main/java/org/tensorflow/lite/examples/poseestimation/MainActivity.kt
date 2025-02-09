@@ -249,20 +249,20 @@ class MainActivity : AppCompatActivity() {
         ArrayAdapter.createFromResource(
             this,
             R.array.tfe_pe_device_name, android.R.layout.simple_spinner_item
-        ).also { adaper ->
-            adaper.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
-            spnDevice.adapter = adaper
+            spnDevice.adapter = adapter
             spnDevice.onItemSelectedListener = changeDeviceListener
         }
 
         ArrayAdapter.createFromResource(
             this,
             R.array.tfe_pe_tracker_array, android.R.layout.simple_spinner_item
-        ).also { adaper ->
-            adaper.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        ).also { adapter ->
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
 
-            spnTracker.adapter = adaper
+            spnTracker.adapter = adapter
             spnTracker.onItemSelectedListener = changeTrackerListener
         }
     }
