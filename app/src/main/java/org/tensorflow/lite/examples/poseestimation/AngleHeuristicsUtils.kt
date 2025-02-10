@@ -20,11 +20,11 @@ object AngleHeuristicsUtils {
   private const val STANDARD_UPPER_TORSO_ANGLE = 180;
   private const val STANDARD_UPPER_TORSO_DOF = 10;
   private const val STANDARD_LOWER_TORSO_ANGLE = 180;
-  private const val STANDARD_LOWER_TORSO_DOF = 10;
+  private const val STANDARD_LOWER_TORSO_DOF = 15;
   private const val STANDARD_ELBOW_ANGLE = 180;
-  private const val STANDARD_ELBOW_DOF = 10; // degrees of freedom --- INCREASED TO 10
+  private const val STANDARD_ELBOW_DOF = 20; // degrees of freedom --- INCREASED TO 10
   private const val STANDARD_KNEE_ANGLE = 180;
-  private const val STANDARD_KNEE_DOF = 10;
+  private const val STANDARD_KNEE_DOF = 25;
   private val indexToPartMapping = mapOf<String, Triple<Int, Int, Int>>(
     "LElbow" to Triple(5,7,9),
     "RElbow" to Triple(6, 8, 10),

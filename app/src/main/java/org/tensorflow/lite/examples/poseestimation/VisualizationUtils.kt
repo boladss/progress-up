@@ -92,7 +92,10 @@ object VisualizationUtils {
 
     // Handles going through all relevant keypoints and joints to draw
     fun processBodyAngles(canvas: Canvas, person: Person) {
-        val jointsToCheck = listOf(
+        // Check which side to render first
+        val drawRightSide = checkSideDrawPriority(person);
+        
+        val allJoints = listOf(
             // Left arm joints and corresponding check function
             Triple(BodyPart.LEFT_SHOULDER, BodyPart.LEFT_ELBOW, AngleHeuristicsUtils::checkLeftElbowAngle),
             Triple(BodyPart.LEFT_ELBOW, BodyPart.LEFT_WRIST, AngleHeuristicsUtils::checkLeftElbowAngle),
@@ -127,6 +130,23 @@ object VisualizationUtils {
             Triple(BodyPart.RIGHT_HIP, BodyPart.RIGHT_KNEE, AngleHeuristicsUtils::checkRightLowerTorsoAngle),
         )
 
+        // Filter which side to draw
+        val jointsToCheck = allJoints.filter { (start, _, _) -> 
+            if (drawRightSide) {
+                start in setOf(
+                    BodyPart.LEFT_EYE, BodyPart.LEFT_EAR,
+                    BodyPart.LEFT_SHOULDER, BodyPart.LEFT_ELBOW, BodyPart.LEFT_WRIST,
+                    BodyPart.LEFT_HIP, BodyPart.LEFT_KNEE, BodyPart.LEFT_ANKLE
+                )
+            } else {
+                start in setOf(
+                    BodyPart.RIGHT_EYE, BodyPart.RIGHT_EAR,
+                    BodyPart.RIGHT_SHOULDER, BodyPart.RIGHT_ELBOW, BodyPart.RIGHT_WRIST,
+                    BodyPart.RIGHT_HIP, BodyPart.RIGHT_KNEE, BodyPart.RIGHT_ANKLE
+                )
+            }
+        }
+
         // Process each joint and draw
         jointsToCheck.forEach { (start, end, checkAngleFunction) ->
             val (angle, isValid) = checkAngleFunction(person)
@@ -136,8 +156,33 @@ object VisualizationUtils {
         }
 
         // Draw other lines for visual appeal, not for form checking
-        drawBodyJoint(canvas, person, Pair(BodyPart.LEFT_SHOULDER, BodyPart.RIGHT_SHOULDER), true)
-        drawBodyJoint(canvas, person, Pair(BodyPart.LEFT_HIP, BodyPart.RIGHT_HIP), true)
+        // drawBodyJoint(canvas, person, Pair(BodyPart.LEFT_SHOULDER, BodyPart.RIGHT_SHOULDER), true)
+        // drawBodyJoint(canvas, person, Pair(BodyPart.LEFT_HIP, BodyPart.RIGHT_HIP), true)
+    }
+
+    fun checkSideDrawPriority(person: Person): Boolean {
+        // Determine orientation of phone (and thus, which side to draw) based on head, arms, and legs
+        val head = person.keyPoints[0].coordinate; // NOSE
+
+        // Use average of wrists for better demonstration purposes
+        val xLeftWrist = person.keyPoints[9].coordinate.x;
+        val xRightWrist = person.keyPoints[10].coordinate.x; 
+        val xAvgWrists = (xLeftWrist + xRightWrist) / 2;
+
+        // Average of hips
+        val yLeftHip = person.keyPoints[11].coordinate.y;
+        val yRightHip = person.keyPoints[12].coordinate.y; 
+        val yAvgHips = (yLeftHip + yRightHip) / 2;
+
+        // Head towards top of phone
+        //  LEFT:   head.y > leg.y & head.x > hand.x -> standard orientation
+        // RIGHT:   head.y > leg.y & head.x < hand.x
+
+        // Head towards bottom of phone --- WARNING: MODEL SEEMS LESS ACCURATE
+        // RIGHT:   head.y < leg.y & head.x > hand.x
+        //  LEFT:   head.y < leg.y & head.x < hand.x
+        
+        return (head.y > yAvgHips) xor (head.x > xAvgWrists);
     }
 
     fun drawBodyJoint(
