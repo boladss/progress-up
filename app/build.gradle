@@ -14,6 +14,14 @@ android {
         versionName "1.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        ndk {
+            abiFilters 'armeabi-v7a', 'arm64-v8a'
+        }
+
+        aaptOptions {
+            noCompress "tflite"
+        }
     }
 
     namespace "org.tensorflow.lite.examples.poseestimation"
@@ -34,7 +42,14 @@ android {
 }
 
 // Download tflite model
-apply from:"download.gradle"
+//apply from:"download.gradle"
+
+/* Note: Ideally, the models should be downloaded upon building the app via download.gradle,
+   but haven't figured out the updated links for those yet (currently downloads as compressed .tar.gz instead of .tflite).
+
+   For now, LiteRT models within /src/main/assets/ were downloaded manually via
+   https://www.kaggle.com/models/google/movenet/tfLite
+*/ 
 
 dependencies {
 
@@ -45,10 +60,12 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
     implementation 'androidx.activity:activity-ktx:1.9.3'
     implementation 'androidx.fragment:fragment-ktx:1.8.4'
-    implementation 'org.tensorflow:tensorflow-lite:2.16.1'
-    implementation 'org.tensorflow:tensorflow-lite-gpu:2.16.1'
-    implementation 'org.tensorflow:tensorflow-lite-support:0.4.4'
-    implementation 'androidx.fragment:fragment-ktx:1.2.0-rc02'
+
+    // Import tflite dependencies
+    implementation 'org.tensorflow:tensorflow-lite:+'
+    // The GPU delegate library is optional. Depend on it as needed.
+    implementation 'com.google.ai.edge.litert:litert-gpu:+'
+    implementation 'com.google.ai.edge.litert:litert-support:+'
 
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
