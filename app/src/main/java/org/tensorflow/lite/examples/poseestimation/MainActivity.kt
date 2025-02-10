@@ -37,7 +37,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
-import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils.angleValidity
+import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils.angleValid
 import org.tensorflow.lite.examples.poseestimation.camera.CameraSource
 import org.tensorflow.lite.examples.poseestimation.data.Device
 import org.tensorflow.lite.examples.poseestimation.ml.*
@@ -168,19 +168,19 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.Default) {
             //wait until the body is in a correct state
             while(true) {
-                while (!angleValidity.values.all { it }) {
+                while (!angleValid){ //angleValidity.values.all { it }) {
                     //do nothing
                 }
                 repCount.text = "Reps: ${currReps}; Rep start"
 
                 //track when the body goes down
-                while (angleValidity.values.all { it }) {
+                while (angleValid){ //angleValidity.values.all { it }) {
                     //do nothing
                 }
                 repCount.text = "Reps: ${currReps}; Rep mid"
 
                 //increment rep when back to start
-                while (!angleValidity.values.all { it }) {
+                while (!angleValid){ //angleValidity.values.all { it }) {
                     //do nothing
                 }
                 currReps++

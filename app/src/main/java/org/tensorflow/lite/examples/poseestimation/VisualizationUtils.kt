@@ -28,6 +28,7 @@ import kotlin.math.sqrt
 import kotlin.math.acos
 
 import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils
+import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils.checkSideDrawPriority
 
 object VisualizationUtils {
     /** Radius of circle used to draw keypoints.  */
@@ -132,7 +133,7 @@ object VisualizationUtils {
 
         // Filter which side to draw
         val jointsToCheck = allJoints.filter { (start, _, _) -> 
-            if (drawRightSide) {
+            if (!drawRightSide) {
                 start in setOf(
                     BodyPart.LEFT_EYE, BodyPart.LEFT_EAR,
                     BodyPart.LEFT_SHOULDER, BodyPart.LEFT_ELBOW, BodyPart.LEFT_WRIST,
@@ -158,31 +159,6 @@ object VisualizationUtils {
         // Draw other lines for visual appeal, not for form checking
         // drawBodyJoint(canvas, person, Pair(BodyPart.LEFT_SHOULDER, BodyPart.RIGHT_SHOULDER), true)
         // drawBodyJoint(canvas, person, Pair(BodyPart.LEFT_HIP, BodyPart.RIGHT_HIP), true)
-    }
-
-    fun checkSideDrawPriority(person: Person): Boolean {
-        // Determine orientation of phone (and thus, which side to draw) based on head, arms, and legs
-        val head = person.keyPoints[0].coordinate; // NOSE
-
-        // Use average of wrists for better demonstration purposes
-        val xLeftWrist = person.keyPoints[9].coordinate.x;
-        val xRightWrist = person.keyPoints[10].coordinate.x; 
-        val xAvgWrists = (xLeftWrist + xRightWrist) / 2;
-
-        // Average of hips
-        val yLeftHip = person.keyPoints[11].coordinate.y;
-        val yRightHip = person.keyPoints[12].coordinate.y; 
-        val yAvgHips = (yLeftHip + yRightHip) / 2;
-
-        // Head towards top of phone
-        //  LEFT:   head.y > leg.y & head.x > hand.x -> standard orientation
-        // RIGHT:   head.y > leg.y & head.x < hand.x
-
-        // Head towards bottom of phone --- WARNING: MODEL SEEMS LESS ACCURATE
-        // RIGHT:   head.y < leg.y & head.x > hand.x
-        //  LEFT:   head.y < leg.y & head.x < hand.x
-        
-        return (head.y > yAvgHips) xor (head.x > xAvgWrists);
     }
 
     fun drawBodyJoint(

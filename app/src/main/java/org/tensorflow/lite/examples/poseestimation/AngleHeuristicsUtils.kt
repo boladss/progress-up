@@ -8,14 +8,16 @@ import kotlin.math.acos
 object AngleHeuristicsUtils {
 
   //not good btw, should be setters/getters
-  public var angleValidity = mutableMapOf(
-    "LElbow" to false,
-//    "RElbow" to false,
-//    "LKnee" to false,
-//    "RKnee" to false,
-//    "LLTorso" to false,
-//    "RLTorso" to false,
-  )
+  public var angleValid : Boolean = false
+  public var preferredSide : Boolean = true //true means right
+//  public var angleValidity = mutableMapOf(
+//    "LElbow" to false,
+////    "RElbow" to false,
+////    "LKnee" to false,
+////    "RKnee" to false,
+////    "LLTorso" to false,
+////    "RLTorso" to false,
+//  )
 
   private const val STANDARD_UPPER_TORSO_ANGLE = 180;
   private const val STANDARD_UPPER_TORSO_DOF = 10;
@@ -106,40 +108,68 @@ object AngleHeuristicsUtils {
         person.keyPoints[jointIndices.third].coordinate
     )
     val isValid = checkFunction(angle)
-    if (bodyAngle === "LElbow")
-      angleValidity[bodyAngle] = isValid
+    if ((preferredSide && bodyAngle === "RElbow") ||
+        (!preferredSide && bodyAngle === "LElbow"))
+      angleValid = isValid //angleValidity[bodyAngle] = isValid
     return Pair(angle, isValid)
   }
 
   // Function to calculate angle between three points
-    fun calculateAngle(pointA: PointF, pointB: PointF, pointC: PointF): Double {
-        // Formula using dot product (B as central point):
-        // cos(theta) = (AB dot BC) / (||AB|| x ||BC||)
+  fun calculateAngle(pointA: PointF, pointB: PointF, pointC: PointF): Double {
+    // Formula using dot product (B as central point):
+    // cos(theta) = (AB dot BC) / (||AB|| x ||BC||)
 
-        // Lengths of each vector (AB, BC)
-        val ABx = pointB.x - pointA.x
-        val ABy = pointB.y - pointA.y
+    // Lengths of each vector (AB, BC)
+    val ABx = pointB.x - pointA.x
+    val ABy = pointB.y - pointA.y
 
-        val BCx = pointC.x - pointB.x
-        val BCy = pointC.y - pointB.y
+    val BCx = pointC.x - pointB.x
+    val BCy = pointC.y - pointB.y
 
-        // Dot product and vector magnitudes
-        val dotProduct = ABx * BCx + ABy * BCy
-        val magnitudeAB: Float = sqrt(ABx * ABx + ABy * ABy)
-        val magnitudeBC: Float = sqrt(BCx * BCx + BCy * BCy)
+    // Dot product and vector magnitudes
+    val dotProduct = ABx * BCx + ABy * BCy
+    val magnitudeAB: Float = sqrt(ABx * ABx + ABy * ABy)
+    val magnitudeBC: Float = sqrt(BCx * BCx + BCy * BCy)
 
-        // Check for division by 0
-        if (magnitudeAB == 0.0f || magnitudeBC == 0.0f) return 0.0
+    // Check for division by 0
+    if (magnitudeAB == 0.0f || magnitudeBC == 0.0f) return 0.0
 
-        /* Calculate for angle:
-            - Obtain cos(theta) using dot product and magnitudes
-            - Ensure cos(theta) is within bounds [-1.0, 1.0]
-            - Compute for arccos(cos(theta))
-        */
-        var angle = acos((dotProduct / (magnitudeAB * magnitudeBC)).coerceIn(-1.0f, 1.0f))
+    /* Calculate for angle:
+        - Obtain cos(theta) using dot product and magnitudes
+        - Ensure cos(theta) is within bounds [-1.0, 1.0]
+        - Compute for arccos(cos(theta))
+    */
+    var angle = acos((dotProduct / (magnitudeAB * magnitudeBC)).coerceIn(-1.0f, 1.0f))
 
-        // Return value in degrees
-        // Not finalized yet, (Math.PI - angle) is just to force straight lines to show 180 degrees---but possibly needs a bit more computation to distinguish direction of angle
-        return (Math.PI - angle) * (180 / Math.PI)
+    // Return value in degrees
+    // Not finalized yet, (Math.PI - angle) is just to force straight lines to show 180 degrees---but possibly needs a bit more computation to distinguish direction of angle
+    return (Math.PI - angle) * (180 / Math.PI)
     }
+
+  fun checkSideDrawPriority(person: Person): Boolean {
+    // Determine orientation of phone (and thus, which side to draw) based on head, arms, and legs
+    val head = person.keyPoints[0].coordinate; // NOSE
+
+    // Use average of wrists for better demonstration purposes
+    val xLeftWrist = person.keyPoints[9].coordinate.x;
+    val xRightWrist = person.keyPoints[10].coordinate.x;
+    val xAvgWrists = (xLeftWrist + xRightWrist) / 2;
+
+    // Average of hips
+    val yLeftHip = person.keyPoints[11].coordinate.y;
+    val yRightHip = person.keyPoints[12].coordinate.y;
+    val yAvgHips = (yLeftHip + yRightHip) / 2;
+
+    // Head towards top of phone
+    //  LEFT:   head.y > leg.y & head.x > hand.x -> standard orientation
+    // RIGHT:   head.y > leg.y & head.x < hand.x
+
+    // Head towards bottom of phone --- WARNING: MODEL SEEMS LESS ACCURATE
+    // RIGHT:   head.y < leg.y & head.x > hand.x
+    //  LEFT:   head.y < leg.y & head.x < hand.x
+
+    val isRight = (head.y > yAvgHips) xor (head.x > xAvgWrists)
+    preferredSide = isRight
+    return isRight;
+  }
 }
