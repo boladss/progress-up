@@ -33,7 +33,11 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.yield
+import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils.angleValid
 import org.tensorflow.lite.examples.poseestimation.camera.CameraSource
 import org.tensorflow.lite.examples.poseestimation.data.Device
 import org.tensorflow.lite.examples.poseestimation.ml.*
@@ -57,6 +61,8 @@ class MainActivity : AppCompatActivity() {
     /** Default device is CPU */
     private var device = Device.CPU
 
+    private var currReps = 0
+
     private lateinit var tvScore: TextView
     private lateinit var tvFPS: TextView
     private lateinit var spnDevice: Spinner
@@ -68,6 +74,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvClassificationValue3: TextView
     private lateinit var swClassification: SwitchCompat
     private lateinit var vClassificationOption: View
+    private lateinit var repCount: TextView
     private var cameraSource: CameraSource? = null
     private var isClassifyPose = false
     private val requestPermissionLauncher =
@@ -147,6 +154,7 @@ class MainActivity : AppCompatActivity() {
         tvClassificationValue3 = findViewById(R.id.tvClassificationValue3)
         swClassification = findViewById(R.id.swPoseClassification)
         vClassificationOption = findViewById(R.id.vClassificationOption)
+        repCount = findViewById(R.id.tvRepCount)
         initSpinner()
         spnModel.setSelection(modelPos)
         swClassification.setOnCheckedChangeListener(setClassificationListener)
@@ -157,6 +165,27 @@ class MainActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
+        lifecycleScope.launch(Dispatchers.Default) {
+            //wait until the body is in a correct state
+            while(true) {
+                while (!angleValid){ //angleValidity.values.all { it }) {
+                    //do nothing
+                }
+                repCount.text = "Reps: ${currReps}; Rep start"
+
+                //track when the body goes down
+                while (angleValid){ //angleValidity.values.all { it }) {
+                    //do nothing
+                }
+                repCount.text = "Reps: ${currReps}; Rep mid"
+
+                //increment rep when back to start
+                while (!angleValid){ //angleValidity.values.all { it }) {
+                    //do nothing
+                }
+                currReps++
+            }
+        }
         openCamera()
     }
 
