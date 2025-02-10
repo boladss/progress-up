@@ -168,7 +168,7 @@ object AngleHeuristicsUtils {
     // RIGHT:   head.y < leg.y & head.x > hand.x
     //  LEFT:   head.y < leg.y & head.x < hand.x
 
-    val isRight = (head.y > yAvgHips) xor (head.x > xAvgWrists)
+    val isRight = !((head.y > yAvgHips) xor (head.x > xAvgWrists))
     preferredSide = isRight
     return isRight;
   }
