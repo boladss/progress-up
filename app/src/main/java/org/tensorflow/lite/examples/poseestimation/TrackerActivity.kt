@@ -39,7 +39,7 @@ class TrackerActivity : AppCompatActivity() {
      **/
     private var modelPos = 0
 
-    /** Default device is CPU */
+    /** Default device is GPU */
     private var device = Device.GPU
 
     private var currReps = 0
