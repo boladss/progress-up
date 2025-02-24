@@ -8,16 +8,20 @@ import kotlin.math.acos
 object AngleHeuristicsUtils {
 
   //not good btw, should be setters/getters
-  public var angleValid : Boolean = false
   public var preferredSide : Boolean = true //true means right
-//  public var angleValidity = mutableMapOf(
-//    "LElbow" to false,
-////    "RElbow" to false,
-////    "LKnee" to false,
-////    "RKnee" to false,
-////    "LLTorso" to false,
-////    "RLTorso" to false,
-//  )
+  public var angleValidity = mutableMapOf<String, Boolean>(
+    "LElbow" to false,
+    "RElbow" to false,
+    "LKnee" to false,
+    "RKnee" to false,
+    "LLTorso" to false,
+    "RLTorso" to false,
+    "LUTorso" to false,
+    "RUTorso" to false,
+  ).withDefault { false }
+  public var pixels = MutableList<PointF>(16) {
+    PointF(0.0f,0.0f)
+  }
 
   private const val STANDARD_UPPER_TORSO_ANGLE = 180;
   private const val STANDARD_UPPER_TORSO_DOF = 10;
@@ -34,6 +38,8 @@ object AngleHeuristicsUtils {
     "RKnee" to Triple(12, 14, 16),
     "LLTorso" to Triple(5, 11, 13),
     "RLTorso" to Triple(6, 12, 14),
+    "LUTorso" to Triple(3, 5, 11),
+    "RUTorso" to Triple(4, 6, 12)
   )
 
   // ARMS / ELBOWS
@@ -102,20 +108,22 @@ object AngleHeuristicsUtils {
     val jointIndices = indexToPartMapping[bodyAngle]
     if (jointIndices === null)
       return Pair(0.0, false)
+
     val angle = calculateAngle(
         person.keyPoints[jointIndices.first].coordinate,
         person.keyPoints[jointIndices.second].coordinate,
         person.keyPoints[jointIndices.third].coordinate
     )
+    pixels[jointIndices.first] = person.keyPoints[jointIndices.first].coordinate
+    pixels[jointIndices.second] = person.keyPoints[jointIndices.second].coordinate
+    pixels[jointIndices.third] = person.keyPoints[jointIndices.third].coordinate
     val isValid = checkFunction(angle)
-    if ((preferredSide && bodyAngle === "RElbow") ||
-        (!preferredSide && bodyAngle === "LElbow"))
-      angleValid = isValid //angleValidity[bodyAngle] = isValid
+    angleValidity[bodyAngle] = isValid
     return Pair(angle, isValid)
   }
 
   // Function to calculate angle between three points
-  fun calculateAngle(pointA: PointF, pointB: PointF, pointC: PointF): Double {
+  private fun calculateAngle(pointA: PointF, pointB: PointF, pointC: PointF): Double {
     // Formula using dot product (B as central point):
     // cos(theta) = (AB dot BC) / (||AB|| x ||BC||)
 

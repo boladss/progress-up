@@ -37,10 +37,12 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.yield
-import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils.angleValid
+import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils.angleValidity
+import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils.pixels
 import org.tensorflow.lite.examples.poseestimation.camera.CameraSource
 import org.tensorflow.lite.examples.poseestimation.data.Device
 import org.tensorflow.lite.examples.poseestimation.ml.*
+import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
     companion object {
@@ -62,6 +64,9 @@ class MainActivity : AppCompatActivity() {
     private var device = Device.CPU
 
     private var currReps = 0
+    private var badReps = 0
+    private var goodReps = 0
+    private var Problems = mutableListOf<Pair<Int, String>>()
 
     private lateinit var tvScore: TextView
     private lateinit var tvFPS: TextView
@@ -168,22 +173,40 @@ class MainActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.Default) {
             //wait until the body is in a correct state
             while(true) {
-                while (!angleValid){ //angleValidity.values.all { it }) {
+                while (angleValidity.containsValue(false)) {
                     //do nothing
                 }
-                repCount.text = "Reps: ${currReps}; Rep start"
+                repCount.text = "Good: ${goodReps} | Bad: ${badReps} | Total: ${currReps} | Rep good"
 
                 //track when the body goes down
-                while (angleValid){ //angleValidity.values.all { it }) {
-                    //do nothing
+                var goodForm = true
+                while (!angleValidity.containsValue(false)) {
+//                    if (!angleValidity["RLTorso"]!! || !angleValidity["LLTorso"]!! || //check if the torso buckles
+//                        !angleValidity["RKnee"]!! || !angleValidity["LKnee"]!!){ // or the knees buckle
+//                        goodForm = false
+//                        repCount.text = "Good: ${goodReps} | Bad: ${badReps} | Total: ${currReps} | Rep bad"
+//                        break
+//                    }
+//
+//                    //check if hands are under shoulders
+//                    if (abs(pixels[5].y - pixels[9].y) > 100){
+//                        goodForm = false
+//                        repCount.text = "Good: ${goodReps} | Bad: ${badReps} | Total: ${currReps} | Rep bad"
+//                        break
+//                    }
+
+                    //check if feet are level with hands
                 }
-                repCount.text = "Reps: ${currReps}; Rep mid"
+                repCount.text = "Good: ${goodReps} | Bad: ${badReps} | Total: ${currReps} | Rep start"
+
+                //check range of motion here, make rep bad if not enough
 
                 //increment rep when back to start
-                while (!angleValid){ //angleValidity.values.all { it }) {
+                while (angleValidity.containsValue(false)) {
                     //do nothing
                 }
                 currReps++
+                if (goodForm) goodReps++ else badReps++
             }
         }
         openCamera()
