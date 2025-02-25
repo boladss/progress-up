@@ -23,16 +23,17 @@ import androidx.appcompat.app.AppCompatActivity
 import org.tensorflow.lite.examples.poseestimation.ml.*
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var btnStartTracker: Button
+    private lateinit var layoutStartTracker: LinearLayout
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        btnStartTracker = findViewById<Button>(R.id.btnStartTracker)
-        btnStartTracker.setOnClickListener {
+        layoutStartTracker = findViewById(R.id.layoutStartTracker)
+        layoutStartTracker.setOnClickListener {
             val intent = Intent(this, TrackerActivity::class.java)
             startActivity(intent)
         }
     }
 }
+
