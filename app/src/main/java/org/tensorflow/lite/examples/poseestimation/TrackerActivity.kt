@@ -17,21 +17,26 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils.angleValid
+import kotlinx.coroutines.yield
+import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils.angleValidity
+import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils.pixels
 import org.tensorflow.lite.examples.poseestimation.camera.CameraSource
 import org.tensorflow.lite.examples.poseestimation.data.Device
 import org.tensorflow.lite.examples.poseestimation.ml.*
+import kotlin.math.abs
 
 class TrackerActivity : AppCompatActivity() {
-    companion object {
+        companion object {
         private const val FRAGMENT_DIALOG = "dialog"
     }
 
     /** A [SurfaceView] for camera preview.   */
     private lateinit var surfaceView: SurfaceView
 
-    /** Default pose estimation model is 1 (MoveNet Thunder)
+    /** Default pose estimation model is 0 (MoveNet Lightning)
      * 0 == MoveNet Lightning model
      * 1 == MoveNet Thunder model
      * 2 == MoveNet MultiPose model
@@ -43,6 +48,9 @@ class TrackerActivity : AppCompatActivity() {
     private var device = Device.GPU
 
     private var currReps = 0
+    private var badReps = 0
+    private var goodReps = 0
+    private var Problems = mutableListOf<Pair<Int, String>>()
 
     private lateinit var tvScore: TextView
     private lateinit var tvFPS: TextView
@@ -121,6 +129,7 @@ class TrackerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tracker)
+
         // keep screen on while app is running
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         tvScore = findViewById(R.id.tvScore)
@@ -149,22 +158,40 @@ class TrackerActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.Default) {
             //wait until the body is in a correct state
             while(true) {
-                while (!angleValid){ //angleValidity.values.all { it }) {
+                while (angleValidity.containsValue(false)) {
                     //do nothing
                 }
-                repCount.text = "Reps: ${currReps}; Rep start"
+                repCount.text = "Good: ${goodReps} | Bad: ${badReps} | Total: ${currReps} | Rep good"
 
                 //track when the body goes down
-                while (angleValid){ //angleValidity.values.all { it }) {
-                    //do nothing
+                var goodForm = true
+                while (!angleValidity.containsValue(false)) {
+//                    if (!angleValidity["RLTorso"]!! || !angleValidity["LLTorso"]!! || //check if the torso buckles
+//                        !angleValidity["RKnee"]!! || !angleValidity["LKnee"]!!){ // or the knees buckle
+//                        goodForm = false
+//                        repCount.text = "Good: ${goodReps} | Bad: ${badReps} | Total: ${currReps} | Rep bad"
+//                        break
+//                    }
+//
+//                    //check if hands are under shoulders
+//                    if (abs(pixels[5].y - pixels[9].y) > 100){
+//                        goodForm = false
+//                        repCount.text = "Good: ${goodReps} | Bad: ${badReps} | Total: ${currReps} | Rep bad"
+//                        break
+//                    }
+
+                    //check if feet are level with hands
                 }
-                repCount.text = "Reps: ${currReps}; Rep mid"
+                repCount.text = "Good: ${goodReps} | Bad: ${badReps} | Total: ${currReps} | Rep start"
+
+                //check range of motion here, make rep bad if not enough
 
                 //increment rep when back to start
-                while (!angleValid){ //angleValidity.values.all { it }) {
+                while (angleValidity.containsValue(false)) {
                     //do nothing
                 }
                 currReps++
+                if (goodForm) goodReps++ else badReps++
             }
         }
         openCamera()
