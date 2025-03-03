@@ -23,6 +23,9 @@ object AngleHeuristicsUtils {
     PointF(0.0f,0.0f)
   }
 
+  val rightSide = listOf("RElbow", "RKnee", "RLTorso", "RUTorso");
+  val leftSide = listOf("LElbow", "LKnee", "LLTorso", "LUTorso");
+
   private const val STANDARD_UPPER_TORSO_ANGLE = 180;
   private const val STANDARD_UPPER_TORSO_DOF = 10;
   private const val STANDARD_LOWER_TORSO_ANGLE = 180;
@@ -117,8 +120,17 @@ object AngleHeuristicsUtils {
     pixels[jointIndices.first] = person.keyPoints[jointIndices.first].coordinate
     pixels[jointIndices.second] = person.keyPoints[jointIndices.second].coordinate
     pixels[jointIndices.third] = person.keyPoints[jointIndices.third].coordinate
+
     val isValid = checkFunction(angle)
-    angleValidity[bodyAngle] = isValid
+
+    if (((preferredSide) && (bodyAngle in leftSide)) || ((!preferredSide) && (bodyAngle in rightSide))) {
+      // Treat further side as valid
+      angleValidity[bodyAngle] = true
+    } else {
+      // Treat closer side as is, evaluate angle
+      angleValidity[bodyAngle] = isValid
+    }
+
     return Pair(angle, isValid)
   }
 
