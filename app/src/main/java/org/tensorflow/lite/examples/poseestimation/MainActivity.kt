@@ -21,6 +21,7 @@ import android.os.Bundle
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import org.tensorflow.lite.examples.poseestimation.ml.*
+import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
     private lateinit var layoutStartTracker: LinearLayout
