@@ -19,7 +19,7 @@ object AngleHeuristicsUtils {
     "LUTorso" to false,
     "RUTorso" to false,
   ).withDefault { false }
-  public var pixels = MutableList<PointF>(16) {
+  public var pixels = MutableList<PointF>(17) {
     PointF(0.0f,0.0f)
   }
 
@@ -117,7 +117,7 @@ object AngleHeuristicsUtils {
         person.keyPoints[jointIndices.second].coordinate,
         person.keyPoints[jointIndices.third].coordinate
     )
-    // Note: This section is what causes the crash when using the rear-facing camera (or when removing the mirroring rotateMatrix).
+    
     pixels[jointIndices.first] = person.keyPoints[jointIndices.first].coordinate
     pixels[jointIndices.second] = person.keyPoints[jointIndices.second].coordinate
     pixels[jointIndices.third] = person.keyPoints[jointIndices.third].coordinate
