@@ -8,7 +8,7 @@ import kotlin.math.acos
 object AngleHeuristicsUtils {
 
   //not good btw, should be setters/getters
-  public var preferredSide : Boolean = true //true means right
+  public var preferRightSide : Boolean = true
   public var angleValidity = mutableMapOf<String, Boolean>(
     "LElbow" to false,
     "RElbow" to false,
@@ -117,19 +117,13 @@ object AngleHeuristicsUtils {
         person.keyPoints[jointIndices.second].coordinate,
         person.keyPoints[jointIndices.third].coordinate
     )
+    // Note: This section is what causes the crash when using the rear-facing camera (or when removing the mirroring rotateMatrix).
     pixels[jointIndices.first] = person.keyPoints[jointIndices.first].coordinate
     pixels[jointIndices.second] = person.keyPoints[jointIndices.second].coordinate
     pixels[jointIndices.third] = person.keyPoints[jointIndices.third].coordinate
 
     val isValid = checkFunction(angle)
-
-    if (((preferredSide) && (bodyAngle in leftSide)) || ((!preferredSide) && (bodyAngle in rightSide))) {
-      // Treat further side as valid
-      angleValidity[bodyAngle] = true
-    } else {
-      // Treat closer side as is, evaluate angle
-      angleValidity[bodyAngle] = isValid
-    }
+    angleValidity[bodyAngle] = isValid
 
     return Pair(angle, isValid)
   }
@@ -189,7 +183,20 @@ object AngleHeuristicsUtils {
     //  LEFT:   head.y < leg.y & head.x < hand.x
 
     val isRight = !((head.y > yAvgHips) xor (head.x > xAvgWrists))
-    preferredSide = isRight
+    preferRightSide = isRight
+
+    // Keep in mind that upon selecting a preferred side, we are effectively IGNORING the opposite side.
+    // So, we need a way to set these as "valid" (angleValidity) --- i.e., disregarding them for checking form.
+    if (preferRightSide) {
+      leftSide.forEach { joint ->
+        angleValidity[joint] = true
+      }
+    } else {
+      rightSide.forEach { joint -> 
+        angleValidity[joint] = true
+      }
+    }
+
     return isRight;
   }
 }
