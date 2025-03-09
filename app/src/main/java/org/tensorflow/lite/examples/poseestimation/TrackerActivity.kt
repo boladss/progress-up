@@ -166,19 +166,19 @@ class TrackerActivity : AppCompatActivity() {
                 //track when the body goes down
                 var goodForm = true
                 while (!angleValidity.containsValue(false)) {
-//                    if (!angleValidity["RLTorso"]!! || !angleValidity["LLTorso"]!! || //check if the torso buckles
-//                        !angleValidity["RKnee"]!! || !angleValidity["LKnee"]!!){ // or the knees buckle
-//                        goodForm = false
-//                        repCount.text = "Good: ${goodReps} | Bad: ${badReps} | Total: ${currReps} | Rep bad"
-//                        break
-//                    }
-//
-//                    //check if hands are under shoulders
-//                    if (abs(pixels[5].y - pixels[9].y) > 100){
-//                        goodForm = false
-//                        repCount.text = "Good: ${goodReps} | Bad: ${badReps} | Total: ${currReps} | Rep bad"
-//                        break
-//                    }
+                   if (!angleValidity["RLTorso"]!! || !angleValidity["LLTorso"]!! || //check if the torso buckles
+                       !angleValidity["RKnee"]!! || !angleValidity["LKnee"]!!){ // or the knees buckle
+                       goodForm = false
+                       repCount.text = "Good: ${goodReps} | Bad: ${badReps} | Total: ${currReps} | Rep bad"
+                       break
+                   }
+
+                   //check if hands are under shoulders
+                   if (abs(pixels[5].y - pixels[9].y) > 100){
+                       goodForm = false
+                       repCount.text = "Good: ${goodReps} | Bad: ${badReps} | Total: ${currReps} | Rep bad"
+                       break
+                   }
 
                     //check if feet are level with hands
                 }
