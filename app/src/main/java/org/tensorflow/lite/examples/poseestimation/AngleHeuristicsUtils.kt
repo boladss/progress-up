@@ -16,10 +16,10 @@ object AngleHeuristicsUtils {
     "RKnee" to false,
     "LLTorso" to false,
     "RLTorso" to false,
-    "LUTorso" to false,
-    "RUTorso" to false,
+    "LUTorso" to true,
+    "RUTorso" to true,
   ).withDefault { false }
-  public var pixels = MutableList<PointF>(16) {
+  public var pixels = MutableList<PointF>(17) {
     PointF(0.0f,0.0f)
   }
 
