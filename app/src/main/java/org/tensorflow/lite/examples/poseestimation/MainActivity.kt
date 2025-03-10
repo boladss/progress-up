@@ -16,6 +16,7 @@ limitations under the License.
 
 package org.tensorflow.lite.examples.poseestimation
 
+import org.tensorflow.lite.examples.poseestimation.components.SelectPushUpView
 import android.content.Intent
 import android.os.Bundle
 import android.widget.*
@@ -24,14 +25,18 @@ import org.tensorflow.lite.examples.poseestimation.ml.*
 import kotlin.math.abs
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var layoutStartTracker: LinearLayout
+    private lateinit var standardPushUpButton: SelectPushUpView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        layoutStartTracker = findViewById(R.id.layoutStartTracker)
-        layoutStartTracker.setOnClickListener {
+        standardPushUpButton = findViewById<SelectPushUpView>(R.id.standardPushUpButton)
+        standardPushUpButton.setImageSrc(R.drawable.standard_push_up)
+        standardPushUpButton.setTitle("STANDARD PUSH-UP")
+        standardPushUpButton.setDescription("A regular push-up.")
+
+        standardPushUpButton.setOnClickListener {
             val intent = Intent(this, TrackerActivity::class.java)
             startActivity(intent)
         }
