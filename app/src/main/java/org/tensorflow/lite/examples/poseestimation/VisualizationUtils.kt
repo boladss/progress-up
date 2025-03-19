@@ -115,11 +115,11 @@ object VisualizationUtils {
 
             // DISABLED FOR NOW, NOT SURE IF CORRECT WAY OF TRACKING
             // // Left upper torso
-            // Triple(BodyPart.LEFT_EAR, BodyPart.LEFT_SHOULDER, AngleHeuristicsUtils::checkLeftUpperTorsoAngle),
+            Triple(BodyPart.LEFT_EAR, BodyPart.LEFT_SHOULDER, AngleHeuristicsUtils::checkLeftUpperTorsoAngle),
             // Triple(BodyPart.LEFT_SHOULDER, BodyPart.LEFT_HIP, AngleHeuristicsUtils::checkLeftUpperTorsoAngle),
             
             // // Right upper torso
-            // Triple(BodyPart.RIGHT_EAR, BodyPart.RIGHT_SHOULDER, AngleHeuristicsUtils::checkRightUpperTorsoAngle),
+            Triple(BodyPart.RIGHT_EAR, BodyPart.RIGHT_SHOULDER, AngleHeuristicsUtils::checkRightUpperTorsoAngle),
             // Triple(BodyPart.RIGHT_SHOULDER, BodyPart.RIGHT_HIP, AngleHeuristicsUtils::checkRightUpperTorsoAngle),
 
             // Left lower torso

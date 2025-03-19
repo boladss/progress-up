@@ -66,6 +66,7 @@ dependencies {
     // The GPU delegate library is optional. Depend on it as needed.
     implementation 'com.google.ai.edge.litert:litert-gpu:+'
     implementation 'com.google.ai.edge.litert:litert-support:+'
+    implementation 'androidx.activity:activity:1.10.0'
 
     androidTestImplementation 'androidx.test.ext:junit:1.2.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.6.1'
