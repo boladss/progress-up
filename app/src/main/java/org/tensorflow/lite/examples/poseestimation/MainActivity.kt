@@ -39,65 +39,79 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        // Possibly refactor to clean up HAHAHA
+        /** PROGRESSION INDEX GUIDE --- For sending data through Intent (progressionType)
+         * 0 == Wall push-up
+         * 1 == Incline push-up
+         * 2 == Knee push-up
+         * 3 == Standard push-up
+         * 4 == Decline push-up
+         * 5 == Pseudo-planche push-up
+         **/
+        
 
-        // 1 - WALL PUSH-UPS
+        // 0 - WALL PUSH-UPS
         wallPushUpButton = findViewById<SelectPushUpView>(R.id.wallPushUpButton)
         wallPushUpButton.setImageSrc(R.drawable.wall_push_up)
         wallPushUpButton.setTitle("WALL PUSH-UP")
         wallPushUpButton.setDescription("Leaning against the wall.")
         wallPushUpButton.setOnClickListener {
             val intent = Intent(this, TrackerActivity::class.java)
+            intent.putExtra("progressionType", 0)
             startActivity(intent)
         }
 
-        // 2 - INCLINE PUSH-UPS
+        // 1 - INCLINE PUSH-UPS
         inclinePushUpButton = findViewById<SelectPushUpView>(R.id.inclinePushUpButton)
         inclinePushUpButton.setImageSrc(R.drawable.incline_push_up)
         inclinePushUpButton.setTitle("INCLINE PUSH-UP")
         inclinePushUpButton.setDescription("With hands elevated.")
         inclinePushUpButton.setOnClickListener {
             val intent = Intent(this, TrackerActivity::class.java)
+            intent.putExtra("progressionType", 1)
             startActivity(intent)
         }
 
-        // 3 - KNEE PUSH-UPS
+        // 2 - KNEE PUSH-UPS
         kneePushUpButton = findViewById<SelectPushUpView>(R.id.kneePushUpButton)
         kneePushUpButton.setImageSrc(R.drawable.knee_push_up)
         kneePushUpButton.setTitle("KNEE PUSH-UP")
         kneePushUpButton.setDescription("With knees as the fulcrum.")
         kneePushUpButton.setOnClickListener {
             val intent = Intent(this, TrackerActivity::class.java)
+            intent.putExtra("progressionType", 2)
             startActivity(intent)
         }
 
-        // 4 - STANDARD PUSH-UPS
+        // 3 - STANDARD PUSH-UPS
         standardPushUpButton = findViewById<SelectPushUpView>(R.id.standardPushUpButton)
         standardPushUpButton.setImageSrc(R.drawable.standard_push_up)
         standardPushUpButton.setTitle("STANDARD PUSH-UP")
         standardPushUpButton.setDescription("A regular push-up.")
         standardPushUpButton.setOnClickListener {
             val intent = Intent(this, TrackerActivity::class.java)
+            intent.putExtra("progressionType", 3)
             startActivity(intent)
         }
 
-        // 5 - DECLINE PUSH-UPS
+        // 4 - DECLINE PUSH-UPS
         declinePushUpButton = findViewById<SelectPushUpView>(R.id.declinePushUpButton)
         declinePushUpButton.setImageSrc(R.drawable.decline_push_up)
         declinePushUpButton.setTitle("DECLINE PUSH-UP")
         declinePushUpButton.setDescription("With feet elevated.")
         declinePushUpButton.setOnClickListener {
             val intent = Intent(this, TrackerActivity::class.java)
+            intent.putExtra("progressionType", 4)
             startActivity(intent)
         }
 
-        // 6 - PSEUDO-PLANCHE PUSH-UPS
+        // 5 - PSEUDO-PLANCHE PUSH-UPS
         pseudoPlanchePushUpButton = findViewById<SelectPushUpView>(R.id.pseudoPlanchePushUpButton)
         pseudoPlanchePushUpButton.setImageSrc(R.drawable.pseudo_planche_push_up)
         pseudoPlanchePushUpButton.setTitle("PSEUDO-PLANCHE PUSH-UP")
         pseudoPlanchePushUpButton.setDescription("Mimicking the planche hold.")
         pseudoPlanchePushUpButton.setOnClickListener {
             val intent = Intent(this, TrackerActivity::class.java)
+            intent.putExtra("progressionType", 5)
             startActivity(intent)
         }
     }

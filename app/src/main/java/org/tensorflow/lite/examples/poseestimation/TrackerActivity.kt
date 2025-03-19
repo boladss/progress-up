@@ -65,6 +65,7 @@ class TrackerActivity : AppCompatActivity() {
     private lateinit var swClassification: SwitchCompat
     private lateinit var vClassificationOption: View
     private lateinit var repCount: TextView
+    private lateinit var displayProgressionType: TextView
     private var cameraSource: CameraSource? = null
     private var isClassifyPose = false
     private val requestPermissionLauncher =
@@ -130,6 +131,17 @@ class TrackerActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tracker)
+
+        val progressionType = intent.extras?.getInt("progressionType")
+
+        val progressionTypeText = if (progressionType != null) {
+            "Progression Type: $progressionType"
+        } else {
+            "No progression type passed in Intent."
+        }
+
+        displayProgressionType = findViewById(R.id.tvProgressionType)
+        displayProgressionType.text = progressionTypeText
 
         // keep screen on while app is running
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
