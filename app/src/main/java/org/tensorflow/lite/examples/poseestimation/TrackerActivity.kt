@@ -226,7 +226,7 @@ class TrackerActivity : AppCompatActivity() {
                     }
 
                     //if has gone down, and arm straightens again, assume that they're done
-                    if (down && angleValidity["LElbow"]!!)
+                    if (down && angleValidity["LElbow"]!! && lowestArmDist < 0.8 * startingArmDist)
                         break
                 }
 
