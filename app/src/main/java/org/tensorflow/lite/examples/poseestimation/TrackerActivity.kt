@@ -51,9 +51,6 @@ class TrackerActivity : AppCompatActivity() {
     /** Default device is GPU */
     private var device = Device.GPU
 
-    private var currReps = 0
-    private var badReps = 0
-    private var goodReps = 0
     private var Problems = mutableListOf<Pair<Int, String>>()
 
     private lateinit var tvScore: TextView
