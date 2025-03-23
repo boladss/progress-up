@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         // Button to open session menu
         sessionMenuButton = findViewById<Button>(R.id.sessionMenuButton)
         sessionMenuButton.setOnClickListener {
-            val intent = Intent(this, SessionsActivity::class.java)
+            val intent = Intent(this, SessionMenuActivity::class.java)
             startActivity(intent)
         }
 
