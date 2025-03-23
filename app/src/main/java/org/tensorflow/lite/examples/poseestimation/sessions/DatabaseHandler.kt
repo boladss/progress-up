@@ -118,7 +118,16 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
 
     fun deleteSessionData(id: Int): Int {
         val db = writableDatabase
-        return db.delete(SESSIONS_TABLE_NAME, "$SESSIONS_COL_ID=?", arrayOf(id.toString()))
+        val deletedId = db.delete(SESSIONS_TABLE_NAME, "$SESSIONS_COL_ID=?", arrayOf(id.toString()))
+
+        // Notify user of updates
+        if (deletedId > 0) {
+            Toast.makeText(context, "Session deleted successfully (ID $id)", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(context, "Session failed to delete", Toast.LENGTH_SHORT).show()
+        }
+
+        return deletedId
     }
 
     // REPETITION TABLE FUNCTIONS
