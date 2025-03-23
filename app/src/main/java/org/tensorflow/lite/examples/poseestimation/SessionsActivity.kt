@@ -1,7 +1,9 @@
 package org.tensorflow.lite.examples.poseestimation
 
 import android.os.Bundle
+import android.text.InputType
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ListView
 import android.widget.SimpleCursorAdapter
 import android.widget.Toast
@@ -18,6 +20,8 @@ class SessionsActivity : AppCompatActivity() {
 
     private lateinit var dbHandler: DatabaseHandler
     private lateinit var addSessionButton: Button
+    private lateinit var deleteSessionButton: Button
+    private lateinit var deleteIdText: EditText
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,8 +35,14 @@ class SessionsActivity : AppCompatActivity() {
         }
 
         dbHandler = DatabaseHandler(this)
+
         addSessionButton = findViewById(R.id.addSessionButton)
         addSessionButton.setOnClickListener { createNewSession() }
+        deleteSessionButton = findViewById(R.id.deleteSessionButton)
+        deleteSessionButton.setOnClickListener { deleteSession() }
+
+        deleteIdText = findViewById(R.id.deleteIdText)
+        deleteIdText.inputType = InputType.TYPE_CLASS_NUMBER // Restrict to numeric inputs
 
         displaySessionData()
     }
@@ -72,5 +82,20 @@ class SessionsActivity : AppCompatActivity() {
         }
 
         displaySessionData()
+    }
+
+    private fun deleteSession() {
+        val id = deleteIdText.text.toString()
+
+        // Check if id was inputted
+        if (id.isNotBlank()) {
+            val deleteRow = dbHandler.deleteSessionData(id.toInt())
+
+            // Reset edit text value and update display
+            if (deleteRow > 0) {
+                deleteIdText.text.clear()
+                displaySessionData()
+            }
+        }
     }
 }

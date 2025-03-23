@@ -37,11 +37,38 @@
                 android:textSize="14sp" /> -->
         </LinearLayout>
 
-        <Button
-            android:id="@+id/addSessionButton"
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Add session" />
+            android:gravity="center">
+
+            <Button
+                android:id="@+id/addSessionButton"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="5dp"
+                android:text="Add session" />
+
+            <Button
+                android:id="@+id/deleteSessionButton"
+                android:layout_width="150dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="5dp"
+                android:text="Delete session" />
+
+            <EditText
+                android:id="@+id/deleteIdText"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:hint="ID"
+                android:gravity="center"
+                android:textColorHint="@color/white"
+                android:textColor="@color/white"
+                >
+
+            </EditText>
+
+        </LinearLayout>
 
         <ListView
             android:id="@+id/sessionListView"
