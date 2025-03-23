@@ -12,6 +12,7 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import org.tensorflow.lite.examples.poseestimation.sessions.DatabaseHandler
 import org.tensorflow.lite.examples.poseestimation.data.ProgressionType
+import org.tensorflow.lite.examples.poseestimation.sessions.SessionCursorAdapter
 import java.time.Duration
 import java.time.Instant
 
@@ -48,36 +49,10 @@ class SessionMenuActivity : AppCompatActivity() {
 
     private fun displaySessionData() {
         val cursor = dbHandler.readSessionData()
-        val columns = arrayOf(
-            DatabaseHandler.SESSIONS_COL_ID,
-            DatabaseHandler.SESSIONS_COL_START_TIME,
-            DatabaseHandler.SESSIONS_COL_END_TIME,
-            DatabaseHandler.SESSIONS_COL_PROG_TYPE
-        )
-
-        val toViews = intArrayOf(
-            R.id.textId, R.id.textStartTime,
-            R.id.textEndTime, R.id.textProgressionType
-        )
-
-        val adapter = SimpleCursorAdapter(
-            this, R.layout.session_list_item, cursor, columns, toViews, 0
-        )
-
+        val adapter = SessionCursorAdapter(this, cursor)
         val sessionListView = findViewById<ListView>(R.id.sessionListView)
         sessionListView.adapter = adapter
-
-        // Listener for each session
-        sessionListView.setOnItemClickListener { _, _, position, _ ->
-            cursor.moveToPosition(position)
-            val sessionId = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseHandler.SESSIONS_COL_ID))
-
-            // Open new activity to retrieve session repetitions
-//            val intent = Intent(this, )
-        }
     }
-
-
 
     private fun createNewSession() {
         // Temporary values
