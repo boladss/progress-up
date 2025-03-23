@@ -34,10 +34,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var standardPushUpButton: SelectPushUpView
     private lateinit var declinePushUpButton: SelectPushUpView
     private lateinit var pseudoPlanchePushUpButton: SelectPushUpView
+    private lateinit var sessionMenuButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Button to open session menu
+        sessionMenuButton = findViewById<Button>(R.id.sessionMenuButton)
+        sessionMenuButton.setOnClickListener {
+            val intent = Intent(this, SessionsActivity::class.java)
+            startActivity(intent)
+        }
 
         /** PROGRESSION INDEX GUIDE --- For sending data through Intent (progressionType)
          * 0 == Wall push-up
