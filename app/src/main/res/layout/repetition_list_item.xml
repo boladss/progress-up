@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/repetitionItem"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:background="#131430"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/textRepCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Repetition #"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:textSize="18sp"
+        />
+
+    <TextView
+        android:id="@+id/textRepId"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="ID"
+        android:textColor="@color/white"
+        android:textSize="14sp"
+        />
+
+    <TextView
+        android:id="@+id/textRepQuality"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:gravity="end"
+        android:text="Good/Bad"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        />
+
+</LinearLayout>
