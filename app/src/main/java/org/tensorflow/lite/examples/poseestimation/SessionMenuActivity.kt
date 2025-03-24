@@ -118,11 +118,11 @@ class SessionMenuActivity : AppCompatActivity() {
     }
 
     private fun deleteSession() {
-        val id = deleteIdText.text.toString()
+        val idToDelete = deleteIdText.text.toString()
 
-        // Check if id was inputted
-        if (id.isNotBlank()) {
-            val deleteRow = dbHandler.deleteSessionData(id.toInt())
+        // Check if id was inputted --- don't work otherwise
+        if (idToDelete.isNotBlank()) {
+            val deleteRow = dbHandler.deleteSessionData(idToDelete.toLong())
 
             // Reset edit text value and update display
             if (deleteRow > 0) {
