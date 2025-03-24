@@ -85,6 +85,8 @@ object VisualizationUtils {
                 }
             }
 
+            //todo: replace processbodyangles
+
             person.angles.values.forEach{
                 val (first, second, third) = it.indices
                 //draw body joints
@@ -93,6 +95,10 @@ object VisualizationUtils {
                 //draw angle text
                 drawAngleText(originalSizeCanvas, person, BodyPart.fromInt(first), it.value, it.valid)
             }
+
+            //additional QoL lines
+            drawBodyJoint(originalSizeCanvas, person, Pair(BodyPart.LEFT_SHOULDER, BodyPart.RIGHT_SHOULDER), true)
+            drawBodyJoint(originalSizeCanvas, person, Pair(BodyPart.LEFT_HIP, BodyPart.RIGHT_HIP), true)
         }
         return output
     }
