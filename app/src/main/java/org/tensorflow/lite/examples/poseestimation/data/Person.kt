@@ -18,9 +18,12 @@ package org.tensorflow.lite.examples.poseestimation.data
 
 import android.graphics.RectF
 
+class Angle(val value: Double, val valid: Boolean, val indices: Triple<Int, Int, Int>)
+
 data class Person(
     var id: Int = -1, // default id is -1
     val keyPoints: List<KeyPoint>,
     val boundingBox: RectF? = null, // Only MoveNet MultiPose return bounding box.
-    val score: Float
+    val score: Float,
+    var angles: MutableMap<String, Angle> = mutableMapOf<String, Angle>()
 )

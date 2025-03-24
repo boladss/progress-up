@@ -20,15 +20,13 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.PointF
 import org.tensorflow.lite.examples.poseestimation.data.BodyPart
 import org.tensorflow.lite.examples.poseestimation.data.Person
 import kotlin.math.max
-import kotlin.math.sqrt
-import kotlin.math.acos
 
 import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils
 import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils.checkSideDrawPriority
+import org.tensorflow.lite.examples.poseestimation.data.Angle
 
 object VisualizationUtils {
     /** Radius of circle used to draw keypoints.  */
@@ -86,7 +84,15 @@ object VisualizationUtils {
                     originalSizeCanvas.drawRect(it, paintLine)
                 }
             }
-            processBodyAngles(originalSizeCanvas, person);
+
+            person.angles.values.forEach{
+                val (first, second, third) = it.indices
+                //draw body joints
+                drawBodyJoint(originalSizeCanvas, person, Pair(BodyPart.fromInt(first), BodyPart.fromInt(second)), it.valid)
+                drawBodyJoint(originalSizeCanvas, person, Pair(BodyPart.fromInt(second), BodyPart.fromInt(third)), it.valid)
+                //draw angle text
+                drawAngleText(originalSizeCanvas, person, BodyPart.fromInt(first), it.value, it.valid)
+            }
         }
         return output
     }
@@ -94,7 +100,7 @@ object VisualizationUtils {
     // Handles going through all relevant keypoints and joints to draw
     fun processBodyAngles(canvas: Canvas, person: Person) {
         // Check which side to render first
-        val drawRightSide = checkSideDrawPriority(person);
+        val drawRightSide = checkSideDrawPriority(person)
         
         val allJoints = listOf(
             // Left arm joints and corresponding check function
@@ -167,8 +173,8 @@ object VisualizationUtils {
         bodyJoint: Pair<BodyPart, BodyPart>,
         isValid: Boolean,
         ) {
-        val pointA = person.keyPoints[bodyJoint.first.position].coordinate;
-        val pointB = person.keyPoints[bodyJoint.second.position].coordinate;
+        val pointA = person.keyPoints[bodyJoint.first.position].coordinate
+        val pointB = person.keyPoints[bodyJoint.second.position].coordinate
 
         // Paint circles on keypoints
         val paintCircle = Paint().apply {
@@ -176,16 +182,16 @@ object VisualizationUtils {
             style = Paint.Style.FILL
             color = if (isValid) Color.CYAN else Color.RED
         }
-        canvas.drawCircle(pointA.x, pointA.y, CIRCLE_RADIUS, paintCircle);
-        canvas.drawCircle(pointB.x, pointB.y, CIRCLE_RADIUS, paintCircle);
+        canvas.drawCircle(pointA.x, pointA.y, CIRCLE_RADIUS, paintCircle)
+        canvas.drawCircle(pointB.x, pointB.y, CIRCLE_RADIUS, paintCircle)
 
         // Paint lines for joints
         val paintLine = Paint().apply {
             strokeWidth = LINE_WIDTH
             style = Paint.Style.STROKE 
             color = if (isValid) Color.CYAN else Color.RED
-        };
-        canvas.drawLine(pointA.x, pointA.y, pointB.x, pointB.y, paintLine);
+        }
+        canvas.drawLine(pointA.x, pointA.y, pointB.x, pointB.y, paintLine)
     }
 
     fun drawAngleText(
@@ -202,7 +208,7 @@ object VisualizationUtils {
             textAlign = Paint.Align.LEFT
         }
 
-        val keypoint = person.keyPoints[bodyPart.position].coordinate;
+        val keypoint = person.keyPoints[bodyPart.position].coordinate
 
         canvas.save()
         canvas.rotate(90f, keypoint.x + ANGLE_TEXT_MARGIN, keypoint.y - ANGLE_TEXT_MARGIN)

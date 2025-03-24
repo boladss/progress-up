@@ -1,6 +1,7 @@
 package org.tensorflow.lite.examples.poseestimation
 
 import android.graphics.PointF
+import org.tensorflow.lite.examples.poseestimation.data.BodyPart
 import org.tensorflow.lite.examples.poseestimation.data.Person
 import kotlin.math.sqrt
 import kotlin.math.acos
@@ -8,8 +9,8 @@ import kotlin.math.acos
 object AngleHeuristicsUtils {
 
   //not good btw, should be setters/getters
-  public var preferRightSide : Boolean = true
-  public var angleValidity = mutableMapOf<String, Boolean>(
+  var preferRightSide : Boolean = true
+  var angleValidity = mutableMapOf<String, Boolean>(
     "LElbow" to false,
     "RElbow" to false,
     "LKnee" to false,
@@ -19,38 +20,71 @@ object AngleHeuristicsUtils {
     "LUTorso" to true,
     "RUTorso" to true,
   ).withDefault { false }
-  public var pixels = MutableList<PointF>(17) {
+  var pixels = MutableList<PointF>(17) {
     PointF(0.0f,0.0f)
   }
 
-  val rightSide = listOf("RElbow", "RKnee", "RLTorso", "RUTorso");
-  val leftSide = listOf("LElbow", "LKnee", "LLTorso", "LUTorso");
+  val rightSide = listOf("RElbow", "RKnee", "RLTorso", "RUTorso")
+  val leftSide = listOf("LElbow", "LKnee", "LLTorso", "LUTorso")
 
-  private const val STANDARD_UPPER_TORSO_ANGLE = 180;
-  private const val STANDARD_UPPER_TORSO_DOF = 10;
-  private const val STANDARD_LOWER_TORSO_ANGLE = 180;
-  private const val STANDARD_LOWER_TORSO_DOF = 15;
-  private const val STANDARD_ELBOW_ANGLE = 180;
-  private const val STANDARD_ELBOW_DOF = 20; // degrees of freedom --- INCREASED TO 10
-  private const val STANDARD_KNEE_ANGLE = 180;
-  private const val STANDARD_KNEE_DOF = 25;
+  private const val STANDARD_UPPER_TORSO_ANGLE = 180
+  private const val STANDARD_UPPER_TORSO_DOF = 10
+  private const val STANDARD_LOWER_TORSO_ANGLE = 180
+  private const val STANDARD_LOWER_TORSO_DOF = 15
+  private const val STANDARD_ELBOW_ANGLE = 180
+  private const val STANDARD_ELBOW_DOF = 20 // degrees of freedom --- INCREASED TO 10
+  private const val STANDARD_KNEE_ANGLE = 180
+  private const val STANDARD_KNEE_DOF = 25
+
   private val indexToPartMapping = mapOf<String, Triple<Int, Int, Int>>(
-    "LElbow" to Triple(5,7,9),
-    "RElbow" to Triple(6, 8, 10),
-    "LKnee" to Triple(11, 13, 15),
-    "RKnee" to Triple(12, 14, 16),
-    "LLTorso" to Triple(5, 11, 13),
-    "RLTorso" to Triple(6, 12, 14),
-    "LUTorso" to Triple(3, 5, 11),
-    "RUTorso" to Triple(4, 6, 12)
+    "LElbow" to Triple(
+      BodyPart.LEFT_SHOULDER.position,
+      BodyPart.LEFT_ELBOW.position,
+      BodyPart.LEFT_WRIST.position
+    ),
+    "RElbow" to Triple(
+      BodyPart.RIGHT_ELBOW.position,
+      BodyPart.RIGHT_WRIST.position,
+      BodyPart.RIGHT_SHOULDER.position
+    ),
+    "LKnee" to Triple(
+      BodyPart.LEFT_HIP.position,
+      BodyPart.LEFT_KNEE.position,
+      BodyPart.LEFT_ANKLE.position
+    ),
+    "RKnee" to Triple(
+      BodyPart.RIGHT_HIP.position,
+      BodyPart.RIGHT_KNEE.position,
+      BodyPart.RIGHT_ANKLE.position
+    ),
+    "LLTorso" to Triple(
+      BodyPart.LEFT_SHOULDER.position,
+      BodyPart.LEFT_HIP.position,
+      BodyPart.LEFT_KNEE.position
+    ),
+    "RLTorso" to Triple(
+      BodyPart.RIGHT_SHOULDER.position,
+      BodyPart.RIGHT_HIP.position,
+      BodyPart.RIGHT_KNEE.position
+    ),
+    "LUTorso" to Triple(
+      BodyPart.LEFT_EAR.position,
+      BodyPart.LEFT_SHOULDER.position,
+      BodyPart.LEFT_HIP.position
+    ),
+    "RUTorso" to Triple(
+      BodyPart.RIGHT_EAR.position,
+      BodyPart.RIGHT_SHOULDER.position,
+      BodyPart.RIGHT_HIP.position
+    )
   )
 
   // ARMS / ELBOWS
   // Checks if within valid range of motion
   fun isElbowValid(angle: Double): Boolean {
-    if (angle > STANDARD_ELBOW_ANGLE + STANDARD_ELBOW_DOF) return false;
-    if (angle < STANDARD_ELBOW_ANGLE - STANDARD_ELBOW_DOF) return false;
-    return true;
+    if (angle > STANDARD_ELBOW_ANGLE + STANDARD_ELBOW_DOF) return false
+    if (angle < STANDARD_ELBOW_ANGLE - STANDARD_ELBOW_DOF) return false
+    return true
   }
   // LEFT ELBOW
   fun checkLeftElbowAngle(person: Person): Pair<Double, Boolean> {
@@ -63,9 +97,9 @@ object AngleHeuristicsUtils {
 
   // LEGS / KNEES
   fun isKneeValid(angle: Double): Boolean {
-    if (angle > STANDARD_KNEE_ANGLE + STANDARD_KNEE_DOF) return false;
-    if (angle < STANDARD_KNEE_ANGLE - STANDARD_KNEE_DOF) return false;
-    return true;
+    if (angle > STANDARD_KNEE_ANGLE + STANDARD_KNEE_DOF) return false
+    if (angle < STANDARD_KNEE_ANGLE - STANDARD_KNEE_DOF) return false
+    return true
   }
   // LEFT KNEE
   fun checkLeftKneeAngle(person: Person): Pair<Double, Boolean> {
@@ -78,9 +112,9 @@ object AngleHeuristicsUtils {
 
   // UPPER TORSO (head-shoulder-hip alignment)
   fun isUpperTorsoValid(angle: Double): Boolean {
-    if (angle > STANDARD_UPPER_TORSO_ANGLE + STANDARD_UPPER_TORSO_DOF) return false;
-    if (angle < STANDARD_UPPER_TORSO_ANGLE - STANDARD_UPPER_TORSO_DOF) return false;
-    return true;
+    if (angle > STANDARD_UPPER_TORSO_ANGLE + STANDARD_UPPER_TORSO_DOF) return false
+    if (angle < STANDARD_UPPER_TORSO_ANGLE - STANDARD_UPPER_TORSO_DOF) return false
+    return true
   }
   // LEFT UPPER TORSO
   fun checkLeftUpperTorsoAngle(person: Person): Pair<Double, Boolean> {
@@ -93,9 +127,9 @@ object AngleHeuristicsUtils {
 
   // LOWER TORSO (shoulder-hip-knee alignment)
   fun isLowerTorsoValid(angle: Double): Boolean {
-    if (angle > STANDARD_LOWER_TORSO_ANGLE + STANDARD_LOWER_TORSO_DOF) return false;
-    if (angle < STANDARD_LOWER_TORSO_ANGLE - STANDARD_LOWER_TORSO_DOF) return false;
-    return true;
+    if (angle > STANDARD_LOWER_TORSO_ANGLE + STANDARD_LOWER_TORSO_DOF) return false
+    if (angle < STANDARD_LOWER_TORSO_ANGLE - STANDARD_LOWER_TORSO_DOF) return false
+    return true
   }
   // LEFT LOWER TORSO
   fun checkLeftLowerTorsoAngle(person: Person): Pair<Double, Boolean> {
@@ -199,4 +233,6 @@ object AngleHeuristicsUtils {
 
     return isRight;
   }
+
+  //fun
 }

@@ -92,7 +92,7 @@ class CameraSource(
     private var imageReaderHandler: Handler? = null
     private var cameraId: String = ""
 
-    suspend fun initCamera() {
+    suspend fun initCamera(progressionType: Int? = null) {
         camera = openCamera(cameraManager, cameraId)
         imageReader =
             ImageReader.newInstance(PREVIEW_WIDTH, PREVIEW_HEIGHT, ImageFormat.YUV_420_888, 3)
@@ -119,7 +119,7 @@ class CameraSource(
                     imageBitmap, 0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT,
                     rotateMatrix, false
                 )
-                processImage(rotatedBitmap)
+                processImage(rotatedBitmap, progressionType)
                 image.close()
             }
         }, imageReaderHandler)
@@ -248,7 +248,7 @@ class CameraSource(
     }
 
     // process image
-    private fun processImage(bitmap: Bitmap) {
+    private fun processImage(bitmap: Bitmap, progressionType: Int?) {
         val persons = mutableListOf<Person>()
         var classificationResult: List<Pair<String, Float>>? = null
 
@@ -274,6 +274,8 @@ class CameraSource(
         if (persons.isNotEmpty()) {
             listener?.onDetectedInfo(persons[0].score, classificationResult)
         }
+        //if (progressionType != null)
+
         visualize(persons, bitmap)
     }
 

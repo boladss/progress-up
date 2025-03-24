@@ -1,8 +1,6 @@
 package org.tensorflow.lite.examples.poseestimation
 
 import android.Manifest
-import android.R.attr.text
-import android.R.attr.value
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.pm.PackageManager
@@ -19,10 +17,7 @@ import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.yield
 import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils.angleValidity
 import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils.pixels
 import org.tensorflow.lite.examples.poseestimation.camera.CameraSource
@@ -75,7 +70,7 @@ class TrackerActivity : AppCompatActivity() {
             if (isGranted) {
                 // Permission is granted. Continue the action or workflow in your
                 // app.
-                openCamera()
+                openCamera(intent.extras?.getInt("progressionType"))
             } else {
                 // Explain to the user that the feature is unavailable because the
                 // features requires a permission that the user has denied. At the
@@ -197,8 +192,8 @@ class TrackerActivity : AppCompatActivity() {
                 }
 
                 var goodForm = true
-                var lowestArmDist: Float = 9999999f
-                var down : Boolean = false
+                var lowestArmDist = 9999999f
+                var down = false
                 val errors = mutableSetOf<String>()
 
                 //track rep
@@ -268,7 +263,7 @@ class TrackerActivity : AppCompatActivity() {
                 if (goodForm) goodReps++ else badReps++
             }
         }
-        openCamera()
+        openCamera(intent.extras?.getInt("progressionType"))
     }
 
     override fun onResume() {
@@ -292,7 +287,7 @@ class TrackerActivity : AppCompatActivity() {
     }
 
     // open camera
-    private fun openCamera() {
+    private fun openCamera(progressionType: Int? = null) {
         if (isCameraPermissionGranted()) {
             if (cameraSource == null) {
                 cameraSource =
@@ -301,6 +296,7 @@ class TrackerActivity : AppCompatActivity() {
                             tvFPS.text = getString(R.string.tfe_pe_tv_fps, fps)
                         }
 
+                        //TODO: Find a way to get rid of pose classifier.
                         override fun onDetectedInfo(
                             personScore: Float?,
                             poseLabels: List<Pair<String, Float>>?
@@ -327,7 +323,7 @@ class TrackerActivity : AppCompatActivity() {
                     }
                 isPoseClassifier()
                 lifecycleScope.launch(Dispatchers.Main) {
-                    cameraSource?.initCamera()
+                    cameraSource?.initCamera(progressionType ?: null)
                 }
             }
             createPoseEstimator()
@@ -498,7 +494,7 @@ class TrackerActivity : AppCompatActivity() {
                 Manifest.permission.CAMERA
             ) -> {
                 // You can use the API that requires the permission.
-                openCamera()
+                openCamera(intent.extras?.getInt("progressionType"))
             }
             else -> {
                 // You can directly ask for the permission.

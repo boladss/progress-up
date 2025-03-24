@@ -19,12 +19,8 @@ package org.tensorflow.lite.examples.poseestimation
 import org.tensorflow.lite.examples.poseestimation.components.SelectPushUpView
 import android.content.Intent
 import android.os.Bundle
-import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
-import org.tensorflow.lite.examples.poseestimation.ml.*
-import kotlin.math.abs
-import kotlin.math.pow
-import kotlin.math.sqrt
+import org.tensorflow.lite.examples.poseestimation.data.ProgressionTypes
 
 
 class MainActivity : AppCompatActivity() {
@@ -40,15 +36,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main)
 
         /** PROGRESSION INDEX GUIDE --- For sending data through Intent (progressionType)
-         * 0 == Wall push-up
-         * 1 == Incline push-up
-         * 2 == Knee push-up
-         * 3 == Standard push-up
-         * 4 == Decline push-up
-         * 5 == Pseudo-planche push-up
+         *  See ProgressionTypes.kt, using .ordinal
          **/
-        
-
         // 0 - WALL PUSH-UPS
         wallPushUpButton = findViewById<SelectPushUpView>(R.id.wallPushUpButton)
         wallPushUpButton.setImageSrc(R.drawable.wall_push_up)
@@ -56,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         wallPushUpButton.setDescription("Leaning against the wall.")
         wallPushUpButton.setOnClickListener {
             val intent = Intent(this, TrackerActivity::class.java)
-            intent.putExtra("progressionType", 0)
+            intent.putExtra("progressionType", ProgressionTypes.WALL.ordinal)
             startActivity(intent)
         }
 
@@ -67,7 +56,7 @@ class MainActivity : AppCompatActivity() {
         inclinePushUpButton.setDescription("With hands elevated.")
         inclinePushUpButton.setOnClickListener {
             val intent = Intent(this, TrackerActivity::class.java)
-            intent.putExtra("progressionType", 1)
+            intent.putExtra("progressionType", ProgressionTypes.INCLINE.ordinal)
             startActivity(intent)
         }
 
@@ -78,7 +67,7 @@ class MainActivity : AppCompatActivity() {
         kneePushUpButton.setDescription("With knees as the fulcrum.")
         kneePushUpButton.setOnClickListener {
             val intent = Intent(this, TrackerActivity::class.java)
-            intent.putExtra("progressionType", 2)
+            intent.putExtra("progressionType", ProgressionTypes.KNEE.ordinal)
             startActivity(intent)
         }
 
@@ -89,7 +78,7 @@ class MainActivity : AppCompatActivity() {
         standardPushUpButton.setDescription("A regular push-up.")
         standardPushUpButton.setOnClickListener {
             val intent = Intent(this, TrackerActivity::class.java)
-            intent.putExtra("progressionType", 3)
+            intent.putExtra("progressionType", ProgressionTypes.STANDARD.ordinal)
             startActivity(intent)
         }
 
@@ -100,7 +89,7 @@ class MainActivity : AppCompatActivity() {
         declinePushUpButton.setDescription("With feet elevated.")
         declinePushUpButton.setOnClickListener {
             val intent = Intent(this, TrackerActivity::class.java)
-            intent.putExtra("progressionType", 4)
+            intent.putExtra("progressionType", ProgressionTypes.DECLINE.ordinal)
             startActivity(intent)
         }
 
@@ -111,7 +100,7 @@ class MainActivity : AppCompatActivity() {
         pseudoPlanchePushUpButton.setDescription("Mimicking the planche hold.")
         pseudoPlanchePushUpButton.setOnClickListener {
             val intent = Intent(this, TrackerActivity::class.java)
-            intent.putExtra("progressionType", 5)
+            intent.putExtra("progressionType", ProgressionTypes.PPPU.ordinal)
             startActivity(intent)
         }
     }
