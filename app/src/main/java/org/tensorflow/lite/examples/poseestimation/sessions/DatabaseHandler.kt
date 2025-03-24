@@ -92,11 +92,11 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
         val id = db.insert(SESSIONS_TABLE_NAME, null, values)
 
         // Notify user of updates
-        if (id > 0) {
-            Toast.makeText(context, "Session saved successfully (ID $id)", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(context, "Session failed to save", Toast.LENGTH_SHORT).show()
-        }
+//        if (id > 0) {
+//            Toast.makeText(context, "Session saved successfully (ID $id)", Toast.LENGTH_SHORT).show()
+//        } else {
+//            Toast.makeText(context, "Session failed to save", Toast.LENGTH_SHORT).show()
+//        }
 
         // Upon creating the session entry and obtaining ID, need to store the individual repetitions associated and their mistakes
 
@@ -144,12 +144,12 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
         values.put(REPS_COL_GOOD_QUAL, goodQuality)
         val id = db.insert(REPS_TABLE_NAME, null, values)
 
-        // Notify user of updates in table again
-        if (id > 0) {
-            Toast.makeText(context, "Repetition saved successfully (ID $id)", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(context, "Repetition failed to save", Toast.LENGTH_SHORT).show()
-        }
+//        // Notify user of updates in table again
+//        if (id > 0) {
+//            Toast.makeText(context, "Repetition saved successfully (ID $id)", Toast.LENGTH_SHORT).show()
+//        } else {
+//            Toast.makeText(context, "Repetition failed to save", Toast.LENGTH_SHORT).show()
+//        }
 
         return id
     }

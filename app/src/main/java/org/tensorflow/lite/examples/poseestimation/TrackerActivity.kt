@@ -29,6 +29,9 @@ import org.tensorflow.lite.examples.poseestimation.camera.CameraSource
 import org.tensorflow.lite.examples.poseestimation.data.Device
 import org.tensorflow.lite.examples.poseestimation.data.ProgressionType
 import org.tensorflow.lite.examples.poseestimation.ml.*
+import org.tensorflow.lite.examples.poseestimation.sessions.DatabaseHandler
+import org.tensorflow.lite.examples.poseestimation.sessions.RepetitionItem
+import java.time.Instant
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -53,6 +56,9 @@ class TrackerActivity : AppCompatActivity() {
     private var device = Device.GPU
 
     private var Problems = mutableListOf<Pair<Int, String>>()
+    private var progressionType: ProgressionType = ProgressionType.STANDARD
+
+    private lateinit var dbHandler: DatabaseHandler
 
     private lateinit var tvScore: TextView
     private lateinit var tvFPS: TextView
@@ -133,14 +139,12 @@ class TrackerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tracker)
 
-        val progressionTypeIndex = intent.extras?.getInt("progressionType")
-        val progressionType = progressionTypeIndex?.let { ProgressionType.fromIndex(it) }
+        // Prepare DatabaseHandler
+        dbHandler = DatabaseHandler(this)
 
-        val progressionTypeText = if (progressionType != null) {
-            "Progression Type: $progressionType"
-        } else {
-            "No progression type passed in Intent."
-        }
+        val progressionTypeIndex = intent.extras?.getInt("progressionType")
+        progressionType = progressionTypeIndex?.let { ProgressionType.fromIndex(it) }!!
+        val progressionTypeText = "Progression Type: $progressionType"
 
         displayProgressionType = findViewById(R.id.tvProgressionType)
         displayProgressionType.text = progressionTypeText
@@ -175,11 +179,15 @@ class TrackerActivity : AppCompatActivity() {
             var badReps = 0
             var goodReps = 0
 
+            var repetitions: MutableList<RepetitionItem> = ArrayList()
+
             while(!angleValidity["LElbow"]!! ||//|| angleValidity["LElbow"]!!) &&
                     !angleValidity["LLTorso"]!! ||//|| angleValidity["LLTorso"]!!) &&
                     !angleValidity["LKnee"]!!) {//angleValidity.containsValue(false)) {
                 //wait until the body is in a correct state
             }
+
+            val sessionId = dbHandler.insertSessionData(Instant.now(), Instant.now(), progressionType)
 
             repCount.text = "Good: ${goodReps} | Bad: ${badReps} | Total: ${currReps} | Reading start"
             var startingArmDist = sqrt(abs(pixels[5].x - pixels[9].x).pow(2)+abs(pixels[5].y - pixels[9].y).pow(2)) //distance between shoulder and hand
@@ -267,7 +275,13 @@ class TrackerActivity : AppCompatActivity() {
                 startingArmDist = sqrt(abs(pixels[5].x - pixels[9].x).pow(2)+abs(pixels[5].y - pixels[9].y).pow(2))
                 //increment rep when back to start
                 currReps++
-                if (goodForm) goodReps++ else badReps++
+                if (goodForm) {
+                    dbHandler.insertRepetitionData(sessionId, currReps, true)
+                    goodReps++
+                } else {
+                    dbHandler.insertRepetitionData(sessionId, currReps, false)
+                    badReps++
+                }
             }
         }
         openCamera()
@@ -282,6 +296,11 @@ class TrackerActivity : AppCompatActivity() {
         cameraSource?.close()
         cameraSource = null
         super.onPause()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        dbHandler.close()
     }
 
     // check if permission is granted or not.
