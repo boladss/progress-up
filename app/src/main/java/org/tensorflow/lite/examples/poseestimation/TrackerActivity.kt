@@ -27,6 +27,7 @@ import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils.angleVal
 import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils.pixels
 import org.tensorflow.lite.examples.poseestimation.camera.CameraSource
 import org.tensorflow.lite.examples.poseestimation.data.Device
+import org.tensorflow.lite.examples.poseestimation.data.ProgressionType
 import org.tensorflow.lite.examples.poseestimation.ml.*
 import kotlin.math.abs
 import kotlin.math.pow
@@ -132,7 +133,8 @@ class TrackerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tracker)
 
-        val progressionType = intent.extras?.getInt("progressionType")
+        val progressionTypeIndex = intent.extras?.getInt("progressionType")
+        val progressionType = progressionTypeIndex?.let { ProgressionType.fromIndex(it) }
 
         val progressionTypeText = if (progressionType != null) {
             "Progression Type: $progressionType"
