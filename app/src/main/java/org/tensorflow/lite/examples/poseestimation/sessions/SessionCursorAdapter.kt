@@ -26,36 +26,6 @@ class SessionCursorAdapter(
 
     private val inflater: LayoutInflater = LayoutInflater.from(context)
 
-//    override fun newView(context: Context, cursor: Cursor, parent: ViewGroup): View {
-//        return inflater.inflate(R.layout.session_list_item, parent, false)
-//    }
-//
-//    override fun bindView(view: View, context: Context, cursor: Cursor) {
-//        // Views
-//        val textId = view.findViewById<TextView>(R.id.textId)
-//        val textStartTime = view.findViewById<TextView>(R.id.textStartTime)
-//        val textEndTime = view.findViewById<TextView>(R.id.textEndTime)
-//        val textProgressionType = view.findViewById<TextView>(R.id.textProgressionType)
-//
-//        // Get values from entry
-//        val id = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseHandler.SESSIONS_COL_ID))
-//        val startTimeISO = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHandler.SESSIONS_COL_START_TIME))
-//        val endTimeISO = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHandler.SESSIONS_COL_END_TIME))
-//        val progType = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHandler.SESSIONS_COL_PROG_TYPE))
-//
-//        // Format timestamps
-//        val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-//        val startTime = "Started: ${iso8601ToFormat(startTimeISO)}"
-//        val endTime = "Ended: ${iso8601ToFormat(endTimeISO)}"
-//        val idNumber = "ID: $id"
-//
-//        textProgressionType.text = progType
-//        textId.text = idNumber
-//        textStartTime.text = startTime
-//        textEndTime.text = endTime
-//
-//    }
-
     // Necessary methods for ExpandableAdapter
     override fun getGroupCount(): Int {
         return header.size
