@@ -109,14 +109,14 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
         return db.rawQuery(readDataQuery, null)
     }
 
-    fun updateSessionData(id: Int, progressionType: ProgressionType): Int {
+    fun updateSessionData(id: Long, progressionType: ProgressionType): Int {
         val db = writableDatabase
         val values = ContentValues()
         values.put(SESSIONS_COL_PROG_TYPE, progressionType.name) // Input progressionType as string
         return db.update(SESSIONS_TABLE_NAME, values, "$SESSIONS_COL_ID=?", arrayOf(id.toString()))
     }
 
-    fun deleteSessionData(id: Int): Int {
+    fun deleteSessionData(id: Long): Int {
         val db = writableDatabase
         val deletedId = db.delete(SESSIONS_TABLE_NAME, "$SESSIONS_COL_ID=?", arrayOf(id.toString()))
 
@@ -131,7 +131,7 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
     }
 
     // REPETITION TABLE FUNCTIONS
-    fun insertRepetitionData(sessionId: Int, repNumber: Int, goodQuality: Boolean): Long {
+    fun insertRepetitionData(sessionId: Long, repNumber: Int, goodQuality: Boolean): Long {
         val db = writableDatabase
         val values = ContentValues()
         values.put(REPS_COL_SESSION_ID, sessionId)
@@ -149,7 +149,7 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
         return id
     }
 
-    fun readRepetitionData(sessionId: Int): Cursor {
+    fun readRepetitionData(sessionId: Long): Cursor {
         val db = readableDatabase
         val readDataQuery = "SELECT * FROM $REPS_TABLE_NAME WHERE $REPS_COL_SESSION_ID = $sessionId"
         return db.rawQuery(readDataQuery, null)
