@@ -27,7 +27,7 @@ import java.time.format.DateTimeFormatter
 class SessionMenuActivity : AppCompatActivity() {
 
     private lateinit var dbHandler: DatabaseHandler
-    private lateinit var addSessionButton: Button
+//    private lateinit var addSessionButton: Button
     private lateinit var deleteSessionButton: Button
     private lateinit var deleteIdText: EditText
 
@@ -44,8 +44,8 @@ class SessionMenuActivity : AppCompatActivity() {
 
         dbHandler = DatabaseHandler(this)
 
-        addSessionButton = findViewById(R.id.addSessionButton)
-        addSessionButton.setOnClickListener { createNewSession() }
+//        addSessionButton = findViewById(R.id.0addSessionButton)
+//        addSessionButton.setOnClickListener { createNewSession() }
         deleteSessionButton = findViewById(R.id.deleteSessionButton)
         deleteSessionButton.setOnClickListener { deleteSession() }
 
