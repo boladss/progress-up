@@ -75,7 +75,7 @@ class SessionCursorAdapter(
             val sessionId = sessionData.id
             val startTimeISO = sessionData.startTime
             val endTimeISO = sessionData.endTime
-            val progType = sessionData.progressionType
+            val progType = "${sessionData.progressionType} PUSH-UPS"
             val repCount = dbHandler.countTotalReps(sessionId)
 
             // Handle deleting of session
