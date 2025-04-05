@@ -6,55 +6,65 @@
     android:background="#15163e"
     android:padding="16dp">
 
-    <TextView
-        android:id="@+id/textProgressionType"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Prog Type"
-        android:textStyle="bold"
-        android:textColor="#32f4d1"
-        android:textSize="24sp"
-        />
-
-    <TextView
-        android:id="@+id/textId"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="end"
-        android:text="ID"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        />
-
-    <TextView
-        android:id="@+id/textStartTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Start Time"
-        android:textColor="@color/white"
-        android:textSize="18sp"
-        />
-
-    <TextView
-        android:id="@+id/textEndTime"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="End Time"
-        android:textColor="@color/white"
-        android:textSize="18sp"
-        />
-
-
-<!--    <Button-->
-<!--        android:id="@+id/deleteSessionButton"-->
+<!--    <LinearLayout-->
 <!--        android:layout_height="wrap_content"-->
-<!--        android:layout_width="150dp"-->
-<!--        android:layout_gravity="end"-->
-<!--        android:text="Delete"-->
-<!--        />-->
+<!--        android:layout_width="0dp"-->
+<!--        android:layout_weight="1"-->
+<!--        android:orientation="vertical">-->
+
+        <TextView
+            android:id="@+id/textProgressionType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Prog Type"
+            android:textStyle="bold"
+            android:textColor="#32f4d1"
+            android:textSize="24sp"
+            />
+
+        <TextView
+            android:id="@+id/textId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:text="ID"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            />
+
+        <TextView
+            android:id="@+id/textStartTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Start Time"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            />
+
+        <TextView
+            android:id="@+id/textEndTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="End Time"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            />
+
+<!--    </LinearLayout>-->
+
+    <Button
+        android:id="@+id/deleteSessionButton"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_gravity="end"
+        android:textSize="12sp"
+        android:text="Delete"
+        android:focusable="false"
+        android:clickable="false"
+        />
 
 </LinearLayout>

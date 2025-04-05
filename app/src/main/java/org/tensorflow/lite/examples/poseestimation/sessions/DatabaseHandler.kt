@@ -135,6 +135,19 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
         return deletedSession
     }
 
+    // Count total repetitions per session
+    fun countTotalReps(sessionId: Long): Int {
+        val db = readableDatabase
+        val countTotalRepsQuery = "SELECT * FROM $REPS_TABLE_NAME WHERE $REPS_COL_SESSION_ID = $sessionId"
+        var count = 0
+
+        db.rawQuery(countTotalRepsQuery, null).use { cursor ->
+            count = cursor.count
+        }
+
+        return count
+    }
+
     // REPETITION TABLE FUNCTIONS
     fun insertRepetitionData(sessionId: Long, repNumber: Int, goodQuality: Boolean): Long {
         val db = writableDatabase

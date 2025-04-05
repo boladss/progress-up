@@ -37,45 +37,6 @@
                 android:textSize="14sp" /> -->
         </LinearLayout>
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center">
-
-<!--            <Button-->
-<!--                android:id="@+id/addSessionButton"-->
-<!--                android:layout_width="150dp"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_marginHorizontal="5dp"-->
-<!--                android:text="Add session" />-->
-
-            <EditText
-                android:id="@+id/deleteIdText"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:hint="Input ID to delete..."
-                android:gravity="center"
-                android:background="#15163e"
-                android:padding="5dp"
-                android:textSize="14dp"
-                android:textColorHint="@color/white"
-                android:textColor="@color/white"
-            />
-
-
-            <Button
-                android:id="@+id/deleteSessionButton"
-                android:layout_width="100dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="5dp"
-                android:textSize="14dp"
-                android:text="Delete session" />
-
-
-
-
-        </LinearLayout>
-
         <ExpandableListView
             android:id="@+id/sessionListView"
             android:layout_width="match_parent"

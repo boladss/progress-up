@@ -43,19 +43,10 @@ class SessionMenuActivity : AppCompatActivity() {
         }
 
         dbHandler = DatabaseHandler(this)
-
-//        addSessionButton = findViewById(R.id.0addSessionButton)
-//        addSessionButton.setOnClickListener { createNewSession() }
-        deleteSessionButton = findViewById(R.id.deleteSessionButton)
-        deleteSessionButton.setOnClickListener { deleteSession() }
-
-        deleteIdText = findViewById(R.id.deleteIdText)
-        deleteIdText.inputType = InputType.TYPE_CLASS_NUMBER // Restrict to numeric inputs
-
         displaySessionData()
     }
 
-    private fun displaySessionData() {
+    fun displaySessionData() {
         val cursor = dbHandler.readSessionData()
 //        dbHandler.insertRepetitionData(2, 1, true)
 //        dbHandler.insertRepetitionData(2, 2, true)
@@ -101,7 +92,7 @@ class SessionMenuActivity : AppCompatActivity() {
         }
         cursor.close()
 
-        sessionListView.setAdapter(SessionCursorAdapter(this, header, childItem))
+        sessionListView.setAdapter(SessionCursorAdapter(this, header, childItem, this, dbHandler))
      }
 
     private fun createNewSession() {
@@ -115,20 +106,5 @@ class SessionMenuActivity : AppCompatActivity() {
         }
 
         displaySessionData()
-    }
-
-    private fun deleteSession() {
-        val idToDelete = deleteIdText.text.toString()
-
-        // Check if id was inputted --- don't work otherwise
-        if (idToDelete.isNotBlank()) {
-            val deleteRow = dbHandler.deleteSessionData(idToDelete.toLong())
-
-            // Reset edit text value and update display
-            if (deleteRow > 0) {
-                deleteIdText.text.clear()
-                displaySessionData()
-            }
-        }
     }
 }

@@ -1,27 +1,26 @@
 package org.tensorflow.lite.examples.poseestimation.sessions
 
 import android.content.Context
-import android.database.Cursor
 import android.text.Layout
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseExpandableListAdapter
+import android.widget.Button
 import android.widget.TextView
-import androidx.cursoradapter.widget.CursorAdapter
 import org.tensorflow.lite.examples.poseestimation.R
-import java.text.SimpleDateFormat
+import org.tensorflow.lite.examples.poseestimation.SessionMenuActivity
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
-import java.util.Date
-import java.util.Locale
 
 class SessionCursorAdapter(
     var context: Context,
     private var header: MutableList<SessionHeader>,
-    private var childItem: MutableList<MutableList<RepetitionItem>>
+    private var childItem: MutableList<MutableList<RepetitionItem>>,
+    private val activity: SessionMenuActivity,  // Used to update entries
+    private var dbHandler: DatabaseHandler
 ): BaseExpandableListAdapter() {
 
     private val inflater: LayoutInflater = LayoutInflater.from(context)
@@ -77,12 +76,20 @@ class SessionCursorAdapter(
             val startTimeISO = sessionData.startTime
             val endTimeISO = sessionData.endTime
             val progType = sessionData.progressionType
+            val repCount = dbHandler.countTotalReps(sessionId)
+
+            // Handle deleting of session
+            val deleteSessionButton = convertView.findViewById<Button>(R.id.deleteSessionButton)
+            deleteSessionButton.setOnClickListener {
+                dbHandler.deleteSessionData(sessionId)
+                activity.displaySessionData()
+            }
 
             // Format timestamps and text
 //            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
             val startTime = "Started: ${iso8601ToFormat(startTimeISO)}"
             val endTime = "Ended: ${iso8601ToFormat(endTimeISO)}"
-            val idNumber = "ID: $sessionId"
+            val idNumber = "ID: $sessionId ($repCount reps)"
 
             textProgressionType.text = progType
             textId.text = idNumber
