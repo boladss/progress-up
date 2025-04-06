@@ -24,10 +24,6 @@ import org.tensorflow.lite.examples.poseestimation.data.BodyPart
 import org.tensorflow.lite.examples.poseestimation.data.Person
 import kotlin.math.max
 
-import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils
-import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils.checkSideDrawPriority
-import org.tensorflow.lite.examples.poseestimation.data.Angle
-
 object VisualizationUtils {
     /** Radius of circle used to draw keypoints.  */
     private const val CIRCLE_RADIUS = 6f
@@ -85,7 +81,7 @@ object VisualizationUtils {
                 }
             }
 
-            //todo: replace processbodyangles
+            //todo: create a replacement for processbodyangles
 
             person.angles.values.forEach{
                 val (first, second, third) = it.indices
@@ -102,7 +98,7 @@ object VisualizationUtils {
         }
         return output
     }
-
+/*
     // Handles going through all relevant keypoints and joints to draw
     fun processBodyAngles(canvas: Canvas, person: Person) {
         // Check which side to render first
@@ -167,12 +163,8 @@ object VisualizationUtils {
             drawBodyJoint(canvas, person, Pair(start, end), isValid)
             drawAngleText(canvas, person, start, angle, isValid)
         }
-
-        // Draw other lines for visual appeal, not for form checking
-        // drawBodyJoint(canvas, person, Pair(BodyPart.LEFT_SHOULDER, BodyPart.RIGHT_SHOULDER), true)
-        // drawBodyJoint(canvas, person, Pair(BodyPart.LEFT_HIP, BodyPart.RIGHT_HIP), true)
     }
-
+*/
     fun drawBodyJoint(
         canvas: Canvas,
         person: Person,

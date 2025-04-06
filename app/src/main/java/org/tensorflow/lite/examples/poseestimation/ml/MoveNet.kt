@@ -21,7 +21,6 @@ import android.graphics.*
 import android.os.SystemClock
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
-import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils
 import org.tensorflow.lite.examples.poseestimation.data.*
 import org.tensorflow.lite.gpu.GpuDelegate
 import org.tensorflow.lite.support.common.FileUtil
@@ -320,6 +319,7 @@ class MoveNet(private val interpreter: Interpreter, private var gpuDelegate: Gpu
         lastInferenceTimeNanos =
             SystemClock.elapsedRealtimeNanos() - inferenceStartTimeNanos
 
+        //calculate angle values here
         val angles : MutableMap<String, Angle> = Angles.entries.associateBy(
             { it.toString()},
             {checkJointAngle(keyPoints, it)}

@@ -119,7 +119,7 @@ class CameraSource(
                     imageBitmap, 0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT,
                     rotateMatrix, false
                 )
-                processImage(rotatedBitmap, progressionType)
+                processImage(rotatedBitmap, progressionType) //pass progression type to processImage in preparation
                 image.close()
             }
         }, imageReaderHandler)
@@ -274,7 +274,9 @@ class CameraSource(
         if (persons.isNotEmpty()) {
             listener?.onDetectedInfo(persons[0].score, classificationResult)
         }
-        //if (progressionType != null)
+
+        //todo: insert progression code here
+
 
         visualize(persons, bitmap)
     }

@@ -18,7 +18,7 @@ package org.tensorflow.lite.examples.poseestimation.data
 
 import android.graphics.RectF
 
-class Angle(val value: Double, val valid: Boolean, val indices: Triple<Int, Int, Int>)
+data class Angle(val value: Double, val valid: Boolean, val indices: Triple<Int, Int, Int>)
 
 data class Person(
     var id: Int = -1, // default id is -1
