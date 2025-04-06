@@ -116,18 +116,19 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
         return db.update(SESSIONS_TABLE_NAME, values, "$SESSIONS_COL_ID=?", arrayOf(id.toString()))
     }
 
-    fun deleteSessionData(id: Long): Int {
+    fun deleteSessionData(sessionId: Long): Int {
         val db = writableDatabase
 
-        // Before deleting a session, must delete all corresponding repetitions with the same sessionId
-        val deletedRepetitions = db.delete(REPS_TABLE_NAME, "$REPS_COL_ID=?", arrayOf(id.toString()))
+        // Before deleting a session, must delete all corresponding repetitions (and mistakes) with the same sessionId
+        val deletedMistakes = db.delete(MISTAKES_TABLE_NAME, "$MISTAKES_COL_SESSION_ID=?", arrayOf(sessionId.toString()))
+        val deletedRepetitions = db.delete(REPS_TABLE_NAME, "$REPS_COL_SESSION_ID=?", arrayOf(sessionId.toString()))
 
         // Delete session
-        val deletedSession = db.delete(SESSIONS_TABLE_NAME, "$SESSIONS_COL_ID=?", arrayOf(id.toString()))
+        val deletedSession = db.delete(SESSIONS_TABLE_NAME, "$SESSIONS_COL_ID=?", arrayOf(sessionId.toString()))
 
         // Notify user of updates
         if (deletedSession > 0) {
-            Toast.makeText(context, "Session deleted successfully (ID $id)", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Session deleted successfully (ID $sessionId)", Toast.LENGTH_SHORT).show()
         } else {
             Toast.makeText(context, "Session failed to delete", Toast.LENGTH_SHORT).show()
         }
