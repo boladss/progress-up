@@ -33,6 +33,7 @@ import android.util.Log
 import android.view.Surface
 import android.view.SurfaceView
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils
 import org.tensorflow.lite.examples.poseestimation.VisualizationUtils
 import org.tensorflow.lite.examples.poseestimation.YuvToRgbConverter
 import org.tensorflow.lite.examples.poseestimation.data.Person
@@ -92,7 +93,7 @@ class CameraSource(
     private var imageReaderHandler: Handler? = null
     private var cameraId: String = ""
 
-    suspend fun initCamera(progressionType: Int? = null) {
+    suspend fun initCamera(replacePersons: (List<Person>) -> Unit, progressionType: Int? = null) {
         camera = openCamera(cameraManager, cameraId)
         imageReader =
             ImageReader.newInstance(PREVIEW_WIDTH, PREVIEW_HEIGHT, ImageFormat.YUV_420_888, 3)
@@ -119,7 +120,7 @@ class CameraSource(
                     imageBitmap, 0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT,
                     rotateMatrix, false
                 )
-                processImage(rotatedBitmap, progressionType) //pass progression type to processImage in preparation
+                processImage(replacePersons, rotatedBitmap, progressionType) //pass progression type to processImage in preparation
                 image.close()
             }
         }, imageReaderHandler)
@@ -248,35 +249,21 @@ class CameraSource(
     }
 
     // process image
-    private fun processImage(bitmap: Bitmap, progressionType: Int?) {
+    private fun processImage(replacePersons: (List<Person>) -> kotlin.Unit, bitmap: Bitmap, progressionType: Int?) {
         val persons = mutableListOf<Person>()
         var classificationResult: List<Pair<String, Float>>? = null
 
         synchronized(lock) {
             detector?.estimatePoses(bitmap)?.let {
                 persons.addAll(it)
-
-                // if the model only returns one item, allow running the Pose classifier.
-                if (persons.isNotEmpty()) {
-                    classifier?.run {
-                        classificationResult = classify(persons[0])
-                    }
-                }
             }
+            replacePersons(persons)
         }
         frameProcessedInOneSecondInterval++
         if (frameProcessedInOneSecondInterval == 1) {
             // send fps to view
             listener?.onFPSListener(framesPerSecond)
         }
-
-        // if the model returns only one item, show that item's score.
-        if (persons.isNotEmpty()) {
-            listener?.onDetectedInfo(persons[0].score, classificationResult)
-        }
-
-        //todo: insert progression code here
-
 
         visualize(persons, bitmap)
     }

@@ -20,7 +20,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.tensorflow.lite.examples.poseestimation.camera.CameraSource
 import org.tensorflow.lite.examples.poseestimation.data.Device
+import org.tensorflow.lite.examples.poseestimation.data.Person
 import org.tensorflow.lite.examples.poseestimation.ml.*
+import org.tensorflow.lite.examples.poseestimation.progressions.ProgressionTypes
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -44,8 +46,7 @@ class TrackerActivity : AppCompatActivity() {
     /** Default device is GPU */
     private var device = Device.GPU
 
-    private var Problems = mutableListOf<Pair<Int, String>>()
-
+    var persons = listOf<Person>()
     private lateinit var tvScore: TextView
     private lateinit var tvFPS: TextView
     private lateinit var spnDevice: Spinner
@@ -68,7 +69,7 @@ class TrackerActivity : AppCompatActivity() {
             if (isGranted) {
                 // Permission is granted. Continue the action or workflow in your
                 // app.
-                openCamera(intent.extras?.getInt("progressionType"))
+                openCamera()
             } else {
                 // Explain to the user that the feature is unavailable because the
                 // features requires a permission that the user has denied. At the
@@ -161,11 +162,10 @@ class TrackerActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-//        lifecycleScope.launch(Dispatchers.Default) {
-//            var currReps = 0
-//            var badReps = 0
-//            var goodReps = 0
-//
+        lifecycleScope.launch(Dispatchers.Default) {
+//            val heuristicsUtils = AngleHeuristicsUtils()
+//            val progression = ProgressionTypes.fromInt(intent.extras?.getInt("progressionType")!!)
+//            heuristicsUtils.processHeuristics(persons[0], progression)
 //            while(!angleValidity["LElbow"]!! ||//|| angleValidity["LElbow"]!!) &&
 //                    !angleValidity["LLTorso"]!! ||//|| angleValidity["LLTorso"]!!) &&
 //                    !angleValidity["LKnee"]!!) {//angleValidity.containsValue(false)) {
@@ -260,8 +260,8 @@ class TrackerActivity : AppCompatActivity() {
 //                currReps++
 //                if (goodForm) goodReps++ else badReps++
 //            }
-//        }
-        openCamera(intent.extras?.getInt("progressionType"))
+        }
+        openCamera()
     }
 
     override fun onResume() {
@@ -284,8 +284,18 @@ class TrackerActivity : AppCompatActivity() {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
+    private fun replacePersons(newPersons : List<Person>) {
+        persons = newPersons
+//        runOnUiThread {
+//            repCount.text = ""
+//            persons[0].angles.entries.forEach {
+//                repCount.append("${it.key}: ${it.value.value}\n")
+//            }
+//        }
+    }
+
     // open camera
-    private fun openCamera(progressionType: Int? = null) {
+    private fun openCamera() {
         if (isCameraPermissionGranted()) {
             if (cameraSource == null) {
                 cameraSource =
@@ -321,7 +331,7 @@ class TrackerActivity : AppCompatActivity() {
                     }
                 isPoseClassifier()
                 lifecycleScope.launch(Dispatchers.Main) {
-                    cameraSource?.initCamera(progressionType ?: null) //progression checking starts with this function call
+                    cameraSource?.initCamera(::replacePersons) //progression checking starts with this function call
                 }
             }
             createPoseEstimator()
@@ -492,7 +502,7 @@ class TrackerActivity : AppCompatActivity() {
                 Manifest.permission.CAMERA
             ) -> {
                 // You can use the API that requires the permission.
-                openCamera(intent.extras?.getInt("progressionType"))
+                openCamera()
             }
             else -> {
                 // You can directly ask for the permission.

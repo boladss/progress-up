@@ -20,7 +20,7 @@ import org.tensorflow.lite.examples.poseestimation.components.SelectPushUpView
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import org.tensorflow.lite.examples.poseestimation.data.ProgressionTypes
+import org.tensorflow.lite.examples.poseestimation.progressions.ProgressionTypes
 
 
 class MainActivity : AppCompatActivity() {
