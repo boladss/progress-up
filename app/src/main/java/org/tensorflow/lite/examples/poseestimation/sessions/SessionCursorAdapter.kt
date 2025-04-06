@@ -66,15 +66,15 @@ class SessionCursorAdapter(
 
         if (sessionData != null) {
             // Views
-            val textId = convertView!!.findViewById<TextView>(R.id.textId)
+            val textRepCount = convertView!!.findViewById<TextView>(R.id.textRepCount)
             val textStartTime = convertView.findViewById<TextView>(R.id.textStartTime)
-            val textEndTime = convertView.findViewById<TextView>(R.id.textEndTime)
+//            val textEndTime = convertView.findViewById<TextView>(R.id.textEndTime)
             val textProgressionType = convertView.findViewById<TextView>(R.id.textProgressionType)
 
             // Get values from entry
             val sessionId = sessionData.id
             val startTimeISO = sessionData.startTime
-            val endTimeISO = sessionData.endTime
+//            val endTimeISO = sessionData.endTime
             val progType = "${sessionData.progressionType} PUSH-UPS"
             val repCount = dbHandler.countTotalReps(sessionId)
 
@@ -86,20 +86,19 @@ class SessionCursorAdapter(
             }
 
             // Format timestamps and text
-//            val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault())
-            val startTime = "Started: ${iso8601ToFormat(startTimeISO)}"
-            val endTime = "Ended: ${iso8601ToFormat(endTimeISO)}"
-            val idNumber = "ID: $sessionId ($repCount reps)"
+            val startTime = "${iso8601ToFormat(startTimeISO)} (ID: $sessionId)"
+//            val endTime = "Ended: ${iso8601ToFormat(endTimeISO)}"
+            val repCountText = "$repCount REPS"
 
             textProgressionType.text = progType
-            textId.text = idNumber
+            textRepCount.text = repCountText
             textStartTime.text = startTime
-            textEndTime.text = endTime
+//            textEndTime.text = endTime
 
         } else {
-            val textId = convertView!!.findViewById<TextView>(R.id.textId)
+            val textRepCount = convertView!!.findViewById<TextView>(R.id.textRepCount)
             val errorText = "Error: Session data is null"
-            textId.text = errorText
+            textRepCount.text = errorText
         }
 
         return convertView
@@ -172,7 +171,8 @@ class SessionCursorAdapter(
         return try {
             val instant = Instant.parse(iso8601String)
             val localDateTime = LocalDateTime.ofInstant(instant, zoneId)
-            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+//            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            val formatter = DateTimeFormatter.ofPattern("d MMM yyyy HH:mm")
             localDateTime.format(formatter)
         } catch (e: Exception) {
             null
