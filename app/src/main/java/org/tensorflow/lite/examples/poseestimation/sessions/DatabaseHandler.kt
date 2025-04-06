@@ -173,6 +173,7 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
         return db.rawQuery(readDataQuery, null)
     }
 
+    // Add entry for a mistake done in a repetition
     fun insertMistakeData(sessionId: Long, repNumber: Int, mistake: String): Long {
         val db = writableDatabase
         val values = ContentValues()
@@ -183,6 +184,27 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
         return id
     }
 
+    // Fetch list of mistakes done for a repetition
+    fun readMistakeData(sessionId: Long, repNumber: Int): List<String> {
+        val db = readableDatabase
+        val mistakesQuery =
+            "SELECT * FROM $MISTAKES_TABLE_NAME WHERE $MISTAKES_COL_SESSION_ID = $sessionId AND $MISTAKES_COL_REP_NUM = $repNumber"
+
+        val mistakes = mutableListOf<String>()
+        val cursor = db.rawQuery(mistakesQuery, null)
+
+        // Append all mistakes to a list
+        cursor.use {
+            if (it.moveToFirst()) {
+                do {
+                    val mistake = it.getString(it.getColumnIndexOrThrow(MISTAKES_COL_TYPE))
+                    mistakes.add(mistake)
+                } while (it.moveToNext())
+            }
+        }
+
+        return mistakes
+    }
 
     // HELPER FUNCTIONS
     fun instantToISO8601(instant: Instant): String {

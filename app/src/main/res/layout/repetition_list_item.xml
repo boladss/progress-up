@@ -3,40 +3,57 @@
     android:id="@+id/repetitionItem"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
+    android:orientation="vertical"
     android:background="#131430"
     android:padding="8dp">
 
-    <TextView
-        android:id="@+id/textRepCount"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="Repetition #"
-        android:textStyle="bold"
-        android:textColor="@color/white"
-        android:textSize="18sp"
-        />
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/textRepCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Repetition #"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            />
+
+        <TextView
+            android:id="@+id/textRepId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="ID"
+            android:textColor="@color/white"
+            android:textSize="14sp"
+            />
+
+        <TextView
+            android:id="@+id/textRepQuality"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="end"
+            android:text="Good/Bad"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            />
+
+    </LinearLayout>
 
     <TextView
-        android:id="@+id/textRepId"
+        android:id="@+id/textRepMistakes"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:text="ID"
+        android:text="Mistakes were made..."
         android:textColor="@color/white"
         android:textSize="14sp"
         />
 
-    <TextView
-        android:id="@+id/textRepQuality"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:gravity="end"
-        android:text="Good/Bad"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        />
 
 </LinearLayout>

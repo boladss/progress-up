@@ -120,20 +120,36 @@ class SessionCursorAdapter(
             val textRepId = convertView!!.findViewById<TextView>(R.id.textRepId)
             val textRepCount = convertView.findViewById<TextView>(R.id.textRepCount)
             val textRepQuality = convertView.findViewById<TextView>(R.id.textRepQuality)
+            val textRepMistakes = convertView.findViewById<TextView>(R.id.textRepMistakes)
 
             // Get values from entry
             val repId = repetitionData.id
+            val sessionId = repetitionData.sessionId
             val repCount = repetitionData.repCount
             val repQuality = repetitionData.goodQuality
-
+            
             // Format text
             val idNumber = "(ID: $repId)"
             val repCountText = "Rep #$repCount"
             val repQualityText = if (repQuality) "Good" else "Bad"
+            var repMistakesText = ""
+
+            // List mistakes if bad quality
+            if (!repQuality) {
+                val mistakesArray = dbHandler.readMistakeData(sessionId, repCount)
+                if (mistakesArray.isNotEmpty()) {
+                    repMistakesText = mistakesArray.joinToString("\n")
+                    textRepMistakes.visibility = View.VISIBLE
+                }
+            } else {
+                // Remove the TextView when good
+                textRepMistakes.visibility = View.GONE
+            }
 
             textRepId.text = idNumber
             textRepCount.text = repCountText
             textRepQuality.text = repQualityText
+            textRepMistakes.text = repMistakesText
 
         } else {
             val textRepId = convertView!!.findViewById<TextView>(R.id.textRepId)

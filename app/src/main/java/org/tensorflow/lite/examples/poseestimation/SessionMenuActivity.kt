@@ -48,12 +48,7 @@ class SessionMenuActivity : AppCompatActivity() {
 
     fun displaySessionData() {
         val cursor = dbHandler.readSessionData()
-//        dbHandler.insertRepetitionData(2, 1, true)
-//        dbHandler.insertRepetitionData(2, 2, true)
-//        dbHandler.insertRepetitionData(2, 3, false)
-//        val adapter = SessionCursorAdapter(this, cursor)
         val sessionListView = findViewById<ExpandableListView>(R.id.sessionListView)
-//        sessionListView.adapter = adapter
 
         val header: MutableList<SessionHeader> = ArrayList() // Sessions
         val childItem: MutableList<MutableList<RepetitionItem>> = ArrayList() // Repetitions
@@ -80,7 +75,7 @@ class SessionMenuActivity : AppCompatActivity() {
                         val repCount = repetitionCursor.getInt(repetitionCursor.getColumnIndexOrThrow(DatabaseHandler.REPS_COL_REP_NUM))
                         val goodQual = repetitionCursor.getInt(repetitionCursor.getColumnIndexOrThrow(DatabaseHandler.REPS_COL_GOOD_QUAL)) == 1 // Acts as boolean
 
-                        val repetitionItem = RepetitionItem(repId, repCount, goodQual)
+                        val repetitionItem = RepetitionItem(repId, sessionId, repCount, goodQual)
                         repetitions.add(repetitionItem)
 
                     } while (repetitionCursor.moveToNext())
