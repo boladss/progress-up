@@ -41,6 +41,7 @@ import org.tensorflow.lite.examples.poseestimation.ml.MoveNetMultiPose
 import org.tensorflow.lite.examples.poseestimation.ml.PoseClassifier
 import org.tensorflow.lite.examples.poseestimation.ml.PoseDetector
 import org.tensorflow.lite.examples.poseestimation.ml.TrackerType
+import org.tensorflow.lite.examples.poseestimation.progressions.ProgressionTypes
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -93,7 +94,7 @@ class CameraSource(
     private var imageReaderHandler: Handler? = null
     private var cameraId: String = ""
 
-    suspend fun initCamera(replacePersons: (List<Person>) -> Unit, progressionType: Int? = null) {
+    suspend fun initCamera(replacePersons: (List<Person>) -> Unit, progressionType: Int) {
         camera = openCamera(cameraManager, cameraId)
         imageReader =
             ImageReader.newInstance(PREVIEW_WIDTH, PREVIEW_HEIGHT, ImageFormat.YUV_420_888, 3)
@@ -120,7 +121,7 @@ class CameraSource(
                     imageBitmap, 0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT,
                     rotateMatrix, false
                 )
-                processImage(replacePersons, rotatedBitmap, progressionType) //pass progression type to processImage in preparation
+                processImage(replacePersons, rotatedBitmap, progressionType!!) //pass progression type to processImage in preparation
                 image.close()
             }
         }, imageReaderHandler)
@@ -249,7 +250,7 @@ class CameraSource(
     }
 
     // process image
-    private fun processImage(replacePersons: (List<Person>) -> kotlin.Unit, bitmap: Bitmap, progressionType: Int?) {
+    private fun processImage(replacePersons: (List<Person>) -> kotlin.Unit, bitmap: Bitmap, progressionType: Int) {
         val persons = mutableListOf<Person>()
         var classificationResult: List<Pair<String, Float>>? = null
 
@@ -257,7 +258,6 @@ class CameraSource(
             detector?.estimatePoses(bitmap)?.let {
                 persons.addAll(it)
             }
-            replacePersons(persons)
         }
         frameProcessedInOneSecondInterval++
         if (frameProcessedInOneSecondInterval == 1) {
@@ -265,6 +265,10 @@ class CameraSource(
             listener?.onFPSListener(framesPerSecond)
         }
 
+        //compute angle validity here
+        persons[0] = ProgressionTypes.fromInt(progressionType).getValidity(persons[0])
+        //then copy
+        replacePersons(persons)
         visualize(persons, bitmap)
     }
 

@@ -27,5 +27,5 @@ data class Person(
     /**
      * The angles are defined in
      */
-    var angles: MutableMap<String, Angle> = mutableMapOf()
+    val angles: MutableMap<String, Angle> = mutableMapOf()
 )

@@ -331,7 +331,7 @@ class TrackerActivity : AppCompatActivity() {
                     }
                 isPoseClassifier()
                 lifecycleScope.launch(Dispatchers.Main) {
-                    cameraSource?.initCamera(::replacePersons) //progression checking starts with this function call
+                    cameraSource?.initCamera(::replacePersons, intent.extras?.getInt("progressionType")!!) //progression checking starts with this function call
                 }
             }
             createPoseEstimator()

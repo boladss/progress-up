@@ -1,16 +1,34 @@
 package org.tensorflow.lite.examples.poseestimation.progressions
 
+import org.tensorflow.lite.examples.poseestimation.data.Angles
 import org.tensorflow.lite.examples.poseestimation.data.Person
-import org.tensorflow.lite.examples.poseestimation.ml.Angles
+
+val Standards = mapOf(
+    Pair("STANDARD_LOWER_TORSO_ANGLE", 180),
+    Pair("STANDARD_UPPER_TORSO_ANGLE", 180),
+    Pair("STANDARD_ELBOW_ANGLE", 180),
+    Pair("STANDARD_LOWER_TORSO_DOF", 15),
+    Pair("STANDARD_UPPER_TORSO_DOF", 10),
+    Pair("STANDARD_ELBOW_DOF", 20), // degrees of freedom --- INCREASED TO 10
+    Pair("STANDARD_KNEE_ANGLE", 180),
+    Pair("STANDARD_KNEE_DOF", 25)
+)
+
+fun checkValidityStandard(person: Person) : Person {
+    Angles.entries.forEach {
+        person.angles[it.name]!!.valid = it.check(person.angles[it.name]!!.value, Standards)
+    }
+    return person
+}
 
 fun getFeedbackStandard(person:Person) : Pair<Boolean, List<String>> {
     val angles = person.angles
 
-    while(!angles[Angles.LElbow.name]!!.valid || //|| angleValidity["LElbow"]!!) &&
-            !angles[Angles.LLTorso.name]!!.valid || //|| angleValidity["LLTorso"]!!) &&
-            !angles[Angles.LKnee.name]!!.valid) { //angleValidity.containsValue(false)) {
-        //wait until the body is in a correct state
-    }
+//    while(!angles[Angles.LElbow.name]!!.valid || //|| angleValidity["LElbow"]!!) &&
+//            !angles[Angles.LLTorso.name]!!.valid || //|| angleValidity["LLTorso"]!!) &&
+//            !angles[Angles.LKnee.name]!!.valid) { //angleValidity.containsValue(false)) {
+//        //wait until the body is in a correct state
+//    }
 
 //    repCount.text = "Good: ${goodReps} | Bad: ${badReps} | Total: ${currReps} | Reading start"
 //    var startingArmDist = sqrt(abs(pixels[5].x - pixels[9].x).pow(2)+abs(pixels[5].y - pixels[9].y).pow(2)) //distance between shoulder and hand

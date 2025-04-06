@@ -40,110 +40,6 @@ enum class ModelType {
     Thunder
 }
 
-enum class Standards(val value: Int) {
-    STANDARD_UPPER_TORSO_ANGLE (180),
-    STANDARD_LOWER_TORSO_ANGLE (180),
-    STANDARD_ELBOW_ANGLE (180),
-    STANDARD_LOWER_TORSO_DOF (15),
-    STANDARD_UPPER_TORSO_DOF (10),
-    STANDARD_ELBOW_DOF (20), // degrees of freedom --- INCREASED TO 10
-    STANDARD_KNEE_ANGLE (180),
-    STANDARD_KNEE_DOF (25),
-}
-
-/**
- * This defines checks for certain types of angles.
- */
-enum class AngleCheckFunction(val check: (Double) -> Boolean) {
-    //todo: redundancy removal
-    Elbow(fun(angle:Double): Boolean{
-        if (angle > Standards.STANDARD_ELBOW_ANGLE.value + Standards.STANDARD_ELBOW_DOF.value)
-            return false
-        if (angle < Standards.STANDARD_ELBOW_ANGLE.value - Standards.STANDARD_ELBOW_DOF.value)
-            return false
-        return true
-    }),
-    Knee(fun(angle:Double): Boolean{
-        if (angle > Standards.STANDARD_KNEE_ANGLE.value + Standards.STANDARD_KNEE_DOF.value) return false
-        if (angle < Standards.STANDARD_KNEE_ANGLE.value - Standards.STANDARD_KNEE_DOF.value) return false
-        return true
-    }),
-    UpperTorso(fun(angle: Double): Boolean {
-        if (angle > Standards.STANDARD_UPPER_TORSO_ANGLE.value + Standards.STANDARD_UPPER_TORSO_DOF.value) return false
-        if (angle < Standards.STANDARD_UPPER_TORSO_ANGLE.value - Standards.STANDARD_UPPER_TORSO_DOF.value) return false
-        return true
-    }),
-    LowerTorso(fun(angle:Double) : Boolean{
-        if (angle > Standards.STANDARD_LOWER_TORSO_ANGLE.value + Standards.STANDARD_LOWER_TORSO_DOF.value) return false
-        if (angle < Standards.STANDARD_LOWER_TORSO_ANGLE.value - Standards.STANDARD_LOWER_TORSO_DOF.value) return false
-        return true
-    })
-}
-
-/**
- * This defines all angles to be checked.
- */
-enum class Angles(val indices: Triple<Int, Int, Int>, val check: (Double) -> Boolean) {
-    LElbow(
-        Triple(
-            BodyPart.LEFT_SHOULDER.position,
-            BodyPart.LEFT_ELBOW.position,
-            BodyPart.LEFT_WRIST.position
-        ),
-        AngleCheckFunction.Elbow.check
-    ),
-    RElbow(
-        Triple(
-            BodyPart.RIGHT_SHOULDER.position,
-            BodyPart.RIGHT_ELBOW.position,
-            BodyPart.RIGHT_WRIST.position
-        ),
-        AngleCheckFunction.Elbow.check),
-    LKnee(
-        Triple(
-            BodyPart.LEFT_HIP.position,
-            BodyPart.LEFT_KNEE.position,
-            BodyPart.LEFT_ANKLE.position
-        ),
-        AngleCheckFunction.Knee.check),
-    RKnee(
-        Triple(
-            BodyPart.RIGHT_HIP.position,
-            BodyPart.RIGHT_KNEE.position,
-            BodyPart.RIGHT_ANKLE.position
-        ),
-        AngleCheckFunction.Knee.check
-    ),
-    LLTorso(
-        Triple(
-            BodyPart.LEFT_SHOULDER.position,
-            BodyPart.LEFT_HIP.position,
-            BodyPart.LEFT_KNEE.position
-        ),
-        AngleCheckFunction.LowerTorso.check),
-    RLTorso(
-        Triple(
-            BodyPart.RIGHT_SHOULDER.position,
-            BodyPart.RIGHT_HIP.position,
-            BodyPart.RIGHT_KNEE.position
-        ),
-        AngleCheckFunction.LowerTorso.check),
-    LUTorso(
-        Triple(
-            BodyPart.LEFT_EAR.position,
-            BodyPart.LEFT_SHOULDER.position,
-            BodyPart.LEFT_HIP.position
-        ),
-        AngleCheckFunction.UpperTorso.check),
-    RUTorso(
-        Triple(
-            BodyPart.RIGHT_EAR.position,
-            BodyPart.RIGHT_SHOULDER.position,
-            BodyPart.RIGHT_HIP.position
-        ),
-        AngleCheckFunction.UpperTorso.check)
-}
-
 class MoveNet(private val interpreter: Interpreter, private var gpuDelegate: GpuDelegate?) :
     PoseDetector {
 
@@ -226,7 +122,7 @@ class MoveNet(private val interpreter: Interpreter, private var gpuDelegate: Gpu
             - Ensure cos(theta) is within bounds [-1.0, 1.0]
             - Compute for arccos(cos(theta))
         */
-        var angle = acos((dotProduct / (magnitudeAB * magnitudeBC)).coerceIn(-1.0f, 1.0f))
+        val angle = acos((dotProduct / (magnitudeAB * magnitudeBC)).coerceIn(-1.0f, 1.0f))
 
         // Return value in degrees
         // Not finalized yet, (Math.PI - angle) is just to force straight lines to show 180 degrees---but possibly needs a bit more computation to distinguish direction of angle
@@ -240,7 +136,7 @@ class MoveNet(private val interpreter: Interpreter, private var gpuDelegate: Gpu
             keypoints[second].coordinate,
             keypoints[third].coordinate
         )
-        return Angle(angle, angles.check(angle), angles.indices)
+        return Angle(angle, false, angles.indices)
     }
 
     override fun estimatePoses(bitmap: Bitmap): List<Person> {
