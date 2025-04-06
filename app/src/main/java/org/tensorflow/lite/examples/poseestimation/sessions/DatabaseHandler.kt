@@ -33,7 +33,7 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
         const val MISTAKES_TABLE_NAME = "Mistakes"
         const val MISTAKES_COL_ID = "_id"
         const val MISTAKES_COL_SESSION_ID = "sessionId"
-        const val MISTAKES_COL_REPS_ID = "repId"
+        const val MISTAKES_COL_REP_NUM = "repetitionNumber"
         const val MISTAKES_COL_TYPE = "mistakeType" // The specific error in form cue
     }
 
@@ -67,10 +67,10 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
             CREATE TABLE $MISTAKES_TABLE_NAME (
                 $MISTAKES_COL_ID INTEGER PRIMARY KEY AUTOINCREMENT,
                 $MISTAKES_COL_SESSION_ID INTEGER,
-                $MISTAKES_COL_REPS_ID INTEGER,
+                $MISTAKES_COL_REP_NUM INTEGER,
                 $MISTAKES_COL_TYPE TEXT,
                 FOREIGN KEY($MISTAKES_COL_SESSION_ID) REFERENCES $SESSIONS_TABLE_NAME($SESSIONS_COL_ID),
-                FOREIGN KEY($MISTAKES_COL_REPS_ID) REFERENCES $REPS_TABLE_NAME($REPS_COL_ID)
+                FOREIGN KEY($MISTAKES_COL_REP_NUM) REFERENCES $REPS_TABLE_NAME($REPS_COL_REP_NUM)
             );
         """.trimIndent()
         db?.execSQL(createMistakesTable)
@@ -172,6 +172,17 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
         val readDataQuery = "SELECT * FROM $REPS_TABLE_NAME WHERE $REPS_COL_SESSION_ID = $sessionId"
         return db.rawQuery(readDataQuery, null)
     }
+
+    fun insertMistakeData(sessionId: Long, repNumber: Int, mistake: String): Long {
+        val db = writableDatabase
+        val values = ContentValues()
+        values.put(MISTAKES_COL_SESSION_ID, sessionId)
+        values.put(MISTAKES_COL_REP_NUM, repNumber)
+        values.put(MISTAKES_COL_TYPE, mistake)
+        val id = db.insert(MISTAKES_TABLE_NAME, null, values)
+        return id
+    }
+
 
     // HELPER FUNCTIONS
     fun instantToISO8601(instant: Instant): String {
