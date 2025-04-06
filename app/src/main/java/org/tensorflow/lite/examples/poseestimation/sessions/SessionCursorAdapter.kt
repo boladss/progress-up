@@ -140,6 +140,9 @@ class SessionCursorAdapter(
                 if (mistakesArray.isNotEmpty()) {
                     repMistakesText = mistakesArray.joinToString("\n")
                     textRepMistakes.visibility = View.VISIBLE
+                } else {
+                    // This shouldn't happen (but in case it does, makes it look better)
+                    textRepMistakes.visibility = View.GONE
                 }
             } else {
                 // Remove the TextView when good
