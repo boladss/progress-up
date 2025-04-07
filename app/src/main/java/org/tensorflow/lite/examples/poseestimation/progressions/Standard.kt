@@ -141,7 +141,7 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
             }
 
             if (computeDistOfTwoParts(keypoints, BodyPart.LEFT_SHOULDER, BodyPart.LEFT_WRIST) < startingArmDist - 10 &&
-                person.angles[Angles.LKnee.name]!!.valid) {
+                !person.angles[Angles.LElbow.name]!!.valid) {
                 //wait until close to start
                 return currentState
             }
