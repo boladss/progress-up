@@ -26,11 +26,6 @@ fun checkValidityStandard(person: Person) : Person {
     return person
 }
 
-private fun computeDistOfTwoParts(keypoints : List<KeyPoint>, part1: BodyPart, part2: BodyPart): Float {
-    return sqrt(abs(keypoints[part1.ordinal].coordinate.x - keypoints[part2.ordinal].coordinate.x).pow(2) +
-                abs(keypoints[part1.ordinal].coordinate.y - keypoints[part2.ordinal].coordinate.y).pow(2))
-}
-
 fun getFeedbackStandard(currentState: ProgressionState, person:Person, debug:(String) -> Unit) : ProgressionState {
     val angles = person.angles
     val keypoints = person.keyPoints
