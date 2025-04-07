@@ -127,6 +127,7 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
                 dbHandler.insertRepetitionData(currentState.sessionId, totalReps, false)
                 badReps++
             }
+            currentState.reps = Triple(totalReps, badReps, goodReps)
 
             if (currentState.goodForm)  {
                 currentState.feedback = listOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps} | Rep good")

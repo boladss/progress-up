@@ -25,6 +25,9 @@ enum class ProgressionStates {
 
 data class ProgressionState(
     var sessionId: Long,
+    /**
+     * Total, Bad, Good
+     */
     var reps : Triple<Int, Int, Int>,
     var state: ProgressionStates,
     var startingArmDist: Float,
