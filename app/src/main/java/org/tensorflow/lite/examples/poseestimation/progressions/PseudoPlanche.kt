@@ -1,5 +1,6 @@
 package org.tensorflow.lite.examples.poseestimation.progressions
 
+import android.media.MediaPlayer
 import org.tensorflow.lite.examples.poseestimation.data.Angles
 import org.tensorflow.lite.examples.poseestimation.data.BodyPart
 import org.tensorflow.lite.examples.poseestimation.data.Person
@@ -28,7 +29,7 @@ fun checkValidityPseudoPlanche(person: Person) : Person {
     return person
 }
 
-fun getFeedbackPseudoPlanche(currentState: ProgressionState, person:Person, dbHandler: DatabaseHandler) : ProgressionState {
+fun getFeedbackPseudoPlanche(currentState: ProgressionState, person:Person, dbHandler: DatabaseHandler, mediaPlayer: MediaPlayer) : ProgressionState {
     val angles = person.angles
     val keypoints = person.keyPoints
     val startingArmDist = currentState.startingArmDist

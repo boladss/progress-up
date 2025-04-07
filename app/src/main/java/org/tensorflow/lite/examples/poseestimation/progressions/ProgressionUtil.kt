@@ -1,5 +1,6 @@
 package org.tensorflow.lite.examples.poseestimation.progressions
 
+import android.media.MediaPlayer
 import org.tensorflow.lite.examples.poseestimation.data.BodyPart
 import org.tensorflow.lite.examples.poseestimation.data.KeyPoint
 import kotlin.math.abs
@@ -29,3 +30,11 @@ fun computeTriangleHeight(keypoints : List<KeyPoint>, part1: BodyPart, part2: Bo
     //use area to compute height, A = bh/2, h = 2A/b
     return 2 * area / length23
 }
+
+//fun playAudio(mediaPlayer: MediaPlayer, file: Int) {
+//    if (mediaPlayer.isPlaying) {
+//        mediaPlayer.pause()
+//        mediaPlayer.seekTo(0)
+//    }
+//    mediaPlayer.setDataSource()
+//}

@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.pm.PackageManager
+import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Process
 import android.view.SurfaceView
@@ -13,6 +14,7 @@ import android.widget.*
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SwitchCompat
+import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
@@ -66,6 +68,7 @@ class TrackerActivity : AppCompatActivity() {
     private lateinit var vClassificationOption: View
     private lateinit var repCount: TextView
     private lateinit var displayProgressionType: TextView
+    private lateinit var mediaPlayer: MediaPlayer
     private var cameraSource: CameraSource? = null
     private var isClassifyPose = false
     private val requestPermissionLauncher =
@@ -161,6 +164,9 @@ class TrackerActivity : AppCompatActivity() {
         if (!isCameraPermissionGranted()) {
             requestPermission()
         }
+        if (!this::mediaPlayer.isInitialized) {
+            mediaPlayer = MediaPlayer.create(this, R.raw.badform)
+        }
     }
 
     override fun onStart() {
@@ -208,7 +214,7 @@ class TrackerActivity : AppCompatActivity() {
     private fun replacePersons(newPersons : List<Person>) {
         persons = newPersons
         val progression = ProgressionTypes.fromInt(intent.extras?.getInt("progressionType")!!)
-        val nextState = progression.processHeuristics(currentState, persons[0], dbHandler)
+        val nextState = progression.processHeuristics(currentState, persons[0], dbHandler, mediaPlayer)
         runOnUiThread {
             repCount.text = ""
             nextState.feedback.forEach{
@@ -216,6 +222,16 @@ class TrackerActivity : AppCompatActivity() {
             }
         }
         currentState = nextState
+        if (currentState.state == ProgressionStates.GOINGUP &&
+            !mediaPlayer.isPlaying) {
+            mediaPlayer.reset()
+            if (currentState.goodForm)
+                mediaPlayer.setDataSource(resources.openRawResourceFd(R.raw.goodform))
+            else
+                mediaPlayer.setDataSource(resources.openRawResourceFd(R.raw.badform))
+            mediaPlayer.prepare()
+            mediaPlayer.start()
+        }
 //        runOnUiThread {
 //            repCount.text = ""
 //            persons[0].angles.entries.forEach {
