@@ -9,8 +9,8 @@ enum class ProgressionTypes(val processHeuristics: (ProgressionState, Person, Da
     KNEE(::getFeedbackStandard, ::checkValidityStandard),
     STANDARD(::getFeedbackStandard, ::checkValidityStandard),
     DECLINE(::getFeedbackStandard, ::checkValidityStandard),
-    PSEUDOPLANCHE(::getFeedbackStandard, ::checkValidityStandard);
-    companion object{
+    PSEUDOPLANCHE(::getFeedbackPseudoPlanche, ::checkValidityPseudoPlanche);
+    companion object {
         private val map = ProgressionTypes.entries.associateBy{it.ordinal}
         fun fromInt(position: Int): ProgressionTypes = map.getValue(position)
     }

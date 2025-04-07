@@ -46,7 +46,7 @@ class TrackerActivity : AppCompatActivity() {
      * 2 == MoveNet MultiPose model
      * 3 == PoseNet model
      **/
-    private var modelPos = 0
+    private var modelPos = 1
 
     /** Default device is GPU */
     private var device = Device.GPU

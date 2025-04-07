@@ -83,7 +83,9 @@ object VisualizationUtils {
 
             //todo: create a replacement for processbodyangles
 
-            person.angles.values.forEach{
+            person.angles.filter {
+                it.key in listOf("LKnee", "LLTorso", "LUTorso", "LElbow")
+            }.values.forEach{
                 val (first, second, third) = it.indices
                 //draw body joints
                 drawBodyJoint(originalSizeCanvas, person, Pair(BodyPart.fromInt(first), BodyPart.fromInt(second)), it.valid)
