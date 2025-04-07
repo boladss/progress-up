@@ -17,15 +17,15 @@ class AngleHeuristicsUtils {
     return mapOf(Pair("Total", totalReps), Pair("Bad", badReps), Pair("Good", goodReps))
   }
 
-  fun processHeuristics(person:Person, progression: ProgressionTypes) : List<String> {
-    val (isGoodForm, feedback) = progression.getFeedback(person)
-
-    if (isGoodForm)
-      goodReps++
-    else
-      badReps++
-    totalReps++
-
-    return feedback
-  }
+//  fun processHeuristics(person:Person, progression: ProgressionTypes, debug: (String) -> Unit) : List<String> {
+//    //val (isGoodForm, feedback) = progression.getFeedback(person)
+//
+//    if (isGoodForm)
+//      goodReps++
+//    else
+//      badReps++
+//    totalReps++
+//
+//    return feedback
+//  }
 }

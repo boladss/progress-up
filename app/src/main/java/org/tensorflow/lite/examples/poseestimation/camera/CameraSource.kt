@@ -177,7 +177,7 @@ class CameraSource(
                 cameraDirection == CameraCharacteristics.LENS_FACING_FRONT
             ) {
                 // Rear-facing Camera
-                // continue
+                 //continue
 
                 // Front-facing Camera
                  this.cameraId = cameraId
@@ -268,7 +268,8 @@ class CameraSource(
         //compute angle validity here
         persons[0] = ProgressionTypes.fromInt(progressionType).getValidity(persons[0])
         //then copy
-        replacePersons(persons)
+        if (persons[0].score > MIN_CONFIDENCE)
+            replacePersons(persons)
         visualize(persons, bitmap)
     }
 

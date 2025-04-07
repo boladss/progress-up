@@ -19,9 +19,12 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.tensorflow.lite.examples.poseestimation.camera.CameraSource
+import org.tensorflow.lite.examples.poseestimation.data.Angles
 import org.tensorflow.lite.examples.poseestimation.data.Device
 import org.tensorflow.lite.examples.poseestimation.data.Person
 import org.tensorflow.lite.examples.poseestimation.ml.*
+import org.tensorflow.lite.examples.poseestimation.progressions.ProgressionState
+import org.tensorflow.lite.examples.poseestimation.progressions.ProgressionStates
 import org.tensorflow.lite.examples.poseestimation.progressions.ProgressionTypes
 import kotlin.math.abs
 import kotlin.math.pow
@@ -162,10 +165,37 @@ class TrackerActivity : AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        lifecycleScope.launch(Dispatchers.Default) {
-//            val heuristicsUtils = AngleHeuristicsUtils()
+//        lifecycleScope.launch(Dispatchers.Default) {
 //            val progression = ProgressionTypes.fromInt(intent.extras?.getInt("progressionType")!!)
-//            heuristicsUtils.processHeuristics(persons[0], progression)
+//            while(persons.isEmpty()) {
+//
+//            }
+
+//            while(true)
+//                runOnUiThread {
+//                    repCount.text = ""
+//                    persons[0].angles.entries.forEach {
+//                    repCount.append("${it.key}: ${it.value.valid} / ${it.value.value}" +
+//                            "\n")
+//                }
+//        }
+
+//            var currentState = ProgressionState(reps=Triple(0, 0, 0), listOf("Waiting to start"), ProgressionStates.INITIALIZE)
+//            var angles = persons[0].angles
+//            while(true) {
+//                runOnUiThread {
+//                    repCount.text = "${angles[Angles.LElbow.name]!!.valid} | ${angles[Angles.LLTorso.name]!!.valid} | ${angles[Angles.LKnee.name]!!.valid}"
+//                }
+//                angles = persons[0].angles
+//                val nextState = progression.processHeuristics(currentState, persons[0], ::debugChangeText)
+//                runOnUiThread {
+//                    repCount.text = ""
+//                    nextState.feedback.forEach{
+//                        repCount.append(it)
+//                    }
+//                }
+//                currentState = nextState
+//            }
 //            while(!angleValidity["LElbow"]!! ||//|| angleValidity["LElbow"]!!) &&
 //                    !angleValidity["LLTorso"]!! ||//|| angleValidity["LLTorso"]!!) &&
 //                    !angleValidity["LKnee"]!!) {//angleValidity.containsValue(false)) {
@@ -260,7 +290,7 @@ class TrackerActivity : AppCompatActivity() {
 //                currReps++
 //                if (goodForm) goodReps++ else badReps++
 //            }
-        }
+//        }
         openCamera()
     }
 
@@ -284,14 +314,41 @@ class TrackerActivity : AppCompatActivity() {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
+    private var currentState = ProgressionState(
+        Triple(0, 0, 0),
+        feedback = listOf("Waiting for position..."),
+        state = ProgressionStates.INITIALIZE,
+        startingArmDist = 0f,
+        errors = setOf(),
+        goodForm = true,
+        lowestArmDist = 9999999f,
+        down = false
+    )
+
     private fun replacePersons(newPersons : List<Person>) {
         persons = newPersons
+        val progression = ProgressionTypes.fromInt(intent.extras?.getInt("progressionType")!!)
+        val nextState = progression.processHeuristics(currentState, persons[0], ::debugChangeText)
+        runOnUiThread {
+            repCount.text = ""
+            nextState.feedback.forEach{
+                repCount.append(it)
+            }
+        }
+        currentState = nextState
 //        runOnUiThread {
 //            repCount.text = ""
 //            persons[0].angles.entries.forEach {
-//                repCount.append("${it.key}: ${it.value.value}\n")
+//                repCount.append("${it.key}: ${it.value.valid} / ${it.value.value}" +
+//                        "\n")
 //            }
 //        }
+    }
+
+    private fun debugChangeText(text: String) {
+        runOnUiThread {
+            repCount.text = text
+        }
     }
 
     // open camera
