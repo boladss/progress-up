@@ -42,6 +42,7 @@ import org.tensorflow.lite.examples.poseestimation.ml.PoseClassifier
 import org.tensorflow.lite.examples.poseestimation.ml.PoseDetector
 import org.tensorflow.lite.examples.poseestimation.ml.TrackerType
 import org.tensorflow.lite.examples.poseestimation.progressions.ProgressionTypes
+import org.tensorflow.lite.examples.poseestimation.sessions.RepetitionItem
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
@@ -121,7 +122,7 @@ class CameraSource(
                     imageBitmap, 0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT,
                     rotateMatrix, false
                 )
-                processImage(replacePersons, rotatedBitmap, progressionType!!) //pass progression type to processImage in preparation
+                processImage(replacePersons, rotatedBitmap, progressionType) //pass progression type to processImage in preparation
                 image.close()
             }
         }, imageReaderHandler)

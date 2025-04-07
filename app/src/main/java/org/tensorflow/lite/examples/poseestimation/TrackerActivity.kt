@@ -19,13 +19,15 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.tensorflow.lite.examples.poseestimation.camera.CameraSource
-import org.tensorflow.lite.examples.poseestimation.data.Angles
 import org.tensorflow.lite.examples.poseestimation.data.Device
 import org.tensorflow.lite.examples.poseestimation.data.Person
 import org.tensorflow.lite.examples.poseestimation.ml.*
 import org.tensorflow.lite.examples.poseestimation.progressions.ProgressionState
 import org.tensorflow.lite.examples.poseestimation.progressions.ProgressionStates
 import org.tensorflow.lite.examples.poseestimation.progressions.ProgressionTypes
+import org.tensorflow.lite.examples.poseestimation.sessions.DatabaseHandler
+import org.tensorflow.lite.examples.poseestimation.sessions.RepetitionItem
+import java.time.Instant
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -50,6 +52,7 @@ class TrackerActivity : AppCompatActivity() {
     private var device = Device.GPU
 
     var persons = listOf<Person>()
+    private lateinit var dbHandler: DatabaseHandler
     private lateinit var tvScore: TextView
     private lateinit var tvFPS: TextView
     private lateinit var spnDevice: Spinner
@@ -129,13 +132,10 @@ class TrackerActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_tracker)
 
-        val progressionType = intent.extras?.getInt("progressionType")
+        // Prepare DatabaseHandler
+        dbHandler = DatabaseHandler(this)
 
-        val progressionTypeText = if (progressionType != null) {
-            "Progression Type: $progressionType"
-        } else {
-            "No progression type passed in Intent."
-        }
+        val progressionTypeText = "Progression Type: ${ProgressionTypes.fromInt(intent.extras?.getInt("progressionType")!!)}"
 
         displayProgressionType = findViewById(R.id.tvProgressionType)
         displayProgressionType.text = progressionTypeText
@@ -179,6 +179,11 @@ class TrackerActivity : AppCompatActivity() {
         super.onPause()
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        dbHandler.close()
+    }
+
     // check if permission is granted or not.
     private fun isCameraPermissionGranted(): Boolean {
         return checkPermission(
@@ -189,7 +194,8 @@ class TrackerActivity : AppCompatActivity() {
     }
 
     private var currentState = ProgressionState(
-        Triple(0, 0, 0),
+        sessionId = 0,
+        reps = Triple(0, 0, 0),
         feedback = listOf("Waiting for position..."),
         state = ProgressionStates.INITIALIZE,
         startingArmDist = 0f,
@@ -202,7 +208,7 @@ class TrackerActivity : AppCompatActivity() {
     private fun replacePersons(newPersons : List<Person>) {
         persons = newPersons
         val progression = ProgressionTypes.fromInt(intent.extras?.getInt("progressionType")!!)
-        val nextState = progression.processHeuristics(currentState, persons[0], ::debugChangeText)
+        val nextState = progression.processHeuristics(currentState, persons[0], dbHandler)
         runOnUiThread {
             repCount.text = ""
             nextState.feedback.forEach{

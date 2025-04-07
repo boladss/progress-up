@@ -19,6 +19,7 @@ package org.tensorflow.lite.examples.poseestimation
 import org.tensorflow.lite.examples.poseestimation.components.SelectPushUpView
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import org.tensorflow.lite.examples.poseestimation.progressions.ProgressionTypes
 
@@ -30,10 +31,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var standardPushUpButton: SelectPushUpView
     private lateinit var declinePushUpButton: SelectPushUpView
     private lateinit var pseudoPlanchePushUpButton: SelectPushUpView
+    private lateinit var sessionMenuButton: Button
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Button to open session menu
+        sessionMenuButton = findViewById<Button>(R.id.sessionMenuButton)
+        sessionMenuButton.setOnClickListener {
+            val intent = Intent(this, SessionMenuActivity::class.java)
+            startActivity(intent)
+        }
 
         /** PROGRESSION INDEX GUIDE --- For sending data through Intent (progressionType)
          *  See ProgressionTypes.kt, using .ordinal
@@ -100,7 +109,7 @@ class MainActivity : AppCompatActivity() {
         pseudoPlanchePushUpButton.setDescription("Mimicking the planche hold.")
         pseudoPlanchePushUpButton.setOnClickListener {
             val intent = Intent(this, TrackerActivity::class.java)
-            intent.putExtra("progressionType", ProgressionTypes.PPPU.ordinal)
+            intent.putExtra("progressionType", ProgressionTypes.PSEUDOPLANCHE.ordinal)
             startActivity(intent)
         }
     }

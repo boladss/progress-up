@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="#15163e"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_height="wrap_content"
+        android:layout_width="match_parent"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/textProgressionType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="PROG TYPE"
+            android:textStyle="bold"
+            android:textColor="#32f4d1"
+            android:textSize="20sp"
+            />
+
+        <TextView
+            android:id="@+id/textRepCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textStyle="bold"
+            android:gravity="end"
+            android:text="X REPS"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            />
+    </LinearLayout>
+
+        <TextView
+            android:id="@+id/textStartTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Start Time"
+            android:textColor="@color/white"
+            android:textSize="17sp"
+            />
+
+<!--        <TextView-->
+<!--            android:id="@+id/textEndTime"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1"-->
+<!--            android:text="End Time"-->
+<!--            android:textColor="@color/white"-->
+<!--            android:textSize="18sp"-->
+<!--            />-->
+
+
+    <Button
+        android:id="@+id/deleteSessionButton"
+        android:layout_height="wrap_content"
+        android:layout_width="wrap_content"
+        android:layout_gravity="end"
+        android:textSize="12sp"
+        android:text="Delete"
+        android:focusable="false"
+        android:clickable="false"
+        />
+
+</LinearLayout>
