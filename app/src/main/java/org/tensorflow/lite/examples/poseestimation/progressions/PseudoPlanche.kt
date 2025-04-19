@@ -91,7 +91,7 @@ fun getFeedbackPseudoPlanche(currentState: ProgressionState, person:Person, dbHa
             if (!angles[Angles.LLTorso.name]!!.valid || //!angleValidity["LLTorso"]!! || //check if the torso buckles
                 !angles[Angles.LKnee.name]!!.valid){// || !angleValidity["LKnee"]!!){ // or the knees buckle
                 currentState.goodForm = false
-                errors.add("Body buckling")
+                errors.add("Body is buckling.")
             }
 
             //check if hands are in the bottom 60% of hips to shoulders
@@ -101,7 +101,7 @@ fun getFeedbackPseudoPlanche(currentState: ProgressionState, person:Person, dbHa
                 )
             {// && abs(pixels[6].y - pixels[10].y) > 100){
                 currentState.goodForm = false
-                errors.add("Hands should be closer to hips")
+                errors.add("Hands should be closer to hips.")
             }
 
             //check if feet are level with hands
@@ -125,7 +125,7 @@ fun getFeedbackPseudoPlanche(currentState: ProgressionState, person:Person, dbHa
         ProgressionStates.GOINGUP -> {
             //check range of motion here, make rep bad if not enough
             if (currentState.goodForm && startingArmDist - lowestArmDist < 0.5 * startingArmDist) {
-                errors.add("ROM not enough")
+                errors.add("Not enough range of motion.")
                 currentState.goodForm = false
             }
 
@@ -135,6 +135,7 @@ fun getFeedbackPseudoPlanche(currentState: ProgressionState, person:Person, dbHa
                 goodReps++
             } else {
                 dbHandler.insertRepetitionData(currentState.sessionId, totalReps, false)
+                dbHandler.insertMistakeData(currentState.sessionId, totalReps, errors)
                 badReps++
             }
             currentState.reps = Triple(totalReps, badReps, goodReps)

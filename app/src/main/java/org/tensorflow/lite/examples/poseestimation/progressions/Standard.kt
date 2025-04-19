@@ -93,7 +93,7 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
             //check if hands are under shoulders
             if (abs(keypoints[BodyPart.LEFT_SHOULDER.ordinal].coordinate.y - keypoints[BodyPart.LEFT_WRIST.ordinal].coordinate.y) > 60){// && abs(pixels[6].y - pixels[10].y) > 100){
                 currentState.goodForm = false
-                errors.add("Hands not under shoulders.")
+                errors.add("Hands are not under shoulders.")
             }
 
             //check if feet are level with hands

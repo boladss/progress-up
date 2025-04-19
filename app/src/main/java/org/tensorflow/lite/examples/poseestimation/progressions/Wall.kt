@@ -91,13 +91,13 @@ fun getFeedbackWall(currentState: ProgressionState, person:Person, dbHandler: Da
             if (!angles[Angles.LLTorso.name]!!.valid || //!angleValidity["LLTorso"]!! || //check if the torso buckles
                 !angles[Angles.LKnee.name]!!.valid){// || !angleValidity["LKnee"]!!){ // or the knees buckle
                 currentState.goodForm = false
-                errors.add("Body buckling")
+                errors.add("Body is buckling.")
             }
 
             //check if hands are lower than shoulders
             if (keypoints[BodyPart.LEFT_WRIST.ordinal].coordinate.y < keypoints[BodyPart.LEFT_SHOULDER.ordinal].coordinate.y){// && abs(pixels[6].y - pixels[10].y) > 100){
                 currentState.goodForm = false
-                errors.add("Hands not under shoulders")
+                errors.add("Hands are not under shoulders.")
             }
 
             //check if feet are level with hands
@@ -121,7 +121,7 @@ fun getFeedbackWall(currentState: ProgressionState, person:Person, dbHandler: Da
         ProgressionStates.GOINGUP -> {
             //check range of motion here, make rep bad if not enough
             if (currentState.goodForm && startingArmDist - lowestArmDist < 0.5 * startingArmDist) {
-                errors.add("ROM not enough")
+                errors.add("Not enough range of motion.")
                 currentState.goodForm = false
             }
 
@@ -131,6 +131,7 @@ fun getFeedbackWall(currentState: ProgressionState, person:Person, dbHandler: Da
                 goodReps++
             } else {
                 dbHandler.insertRepetitionData(currentState.sessionId, totalReps, false)
+                dbHandler.insertMistakeData(currentState.sessionId, totalReps, errors)
                 badReps++
             }
             currentState.reps = Triple(totalReps, badReps, goodReps)
