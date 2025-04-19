@@ -1,6 +1,8 @@
 package org.tensorflow.lite.examples.poseestimation.progressions
 
+import android.media.MediaPlayer
 import android.provider.ContactsContract.Data
+import org.tensorflow.lite.examples.poseestimation.R
 import org.tensorflow.lite.examples.poseestimation.data.Angles
 import org.tensorflow.lite.examples.poseestimation.data.BodyPart
 import org.tensorflow.lite.examples.poseestimation.data.KeyPoint
@@ -30,7 +32,7 @@ fun checkValidityWall(person: Person) : Person {
     return person
 }
 
-fun getFeedbackWall(currentState: ProgressionState, person:Person, dbHandler: DatabaseHandler) : ProgressionState {
+fun getFeedbackWall(currentState: ProgressionState, person:Person, dbHandler: DatabaseHandler, mediaPlayer: MediaPlayer) : ProgressionState {
     val angles = person.angles
     val keypoints = person.keyPoints
     val startingArmDist = currentState.startingArmDist
@@ -135,6 +137,7 @@ fun getFeedbackWall(currentState: ProgressionState, person:Person, dbHandler: Da
 
             if (currentState.goodForm)  {
                 currentState.feedback = listOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps} | Rep good")
+                //playAudio(mediaPlayer, R.raw.goodForm)
             }
             else {
                 feedback = mutableListOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps} | Errors:\n")
@@ -142,6 +145,7 @@ fun getFeedbackWall(currentState: ProgressionState, person:Person, dbHandler: Da
                     feedback.add(it + "\n")
                 }
                 currentState.feedback = feedback
+                //playAudio(mediaPlayer, R.raw.badForm)
             }
 
             if (computeTriangleHeight(keypoints, BodyPart.LEFT_WRIST, BodyPart.LEFT_HIP, BodyPart.LEFT_SHOULDER) < startingArmDist - 15 ||

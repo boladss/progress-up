@@ -1,9 +1,10 @@
 package org.tensorflow.lite.examples.poseestimation.progressions
 
+import android.media.MediaPlayer
 import org.tensorflow.lite.examples.poseestimation.data.Person
 import org.tensorflow.lite.examples.poseestimation.sessions.DatabaseHandler
 
-enum class ProgressionTypes(val processHeuristics: (ProgressionState, Person, DatabaseHandler) -> ProgressionState, val getValidity: (Person) -> Person) {
+enum class ProgressionTypes(val processHeuristics: (ProgressionState, Person, DatabaseHandler, MediaPlayer) -> ProgressionState, val getValidity: (Person) -> Person) {
     WALL(::getFeedbackWall, ::checkValidityWall),
     INCLINE(::getFeedbackStandard, ::checkValidityStandard),
     KNEE(::getFeedbackStandard, ::checkValidityStandard),

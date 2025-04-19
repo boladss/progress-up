@@ -1,5 +1,6 @@
 package org.tensorflow.lite.examples.poseestimation.progressions
 
+import android.media.MediaPlayer
 import android.provider.ContactsContract.Data
 import org.tensorflow.lite.examples.poseestimation.data.Angles
 import org.tensorflow.lite.examples.poseestimation.data.BodyPart
@@ -30,7 +31,7 @@ fun checkValidityStandard(person: Person) : Person {
     return person
 }
 
-fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler: DatabaseHandler) : ProgressionState {
+fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler: DatabaseHandler, mediaPlayer: MediaPlayer) : ProgressionState {
     val angles = person.angles
     val keypoints = person.keyPoints
     val startingArmDist = currentState.startingArmDist
