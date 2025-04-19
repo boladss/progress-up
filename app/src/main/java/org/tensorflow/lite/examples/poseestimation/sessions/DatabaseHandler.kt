@@ -213,6 +213,49 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
         return mistakes
     }
 
+    // Fetch summarized list of mistakes
+    fun summarizeMistakeData(sessionId: Long): List<String> {
+        val db = readableDatabase
+        val mistakesQuery = """
+            SELECT 
+                $MISTAKES_COL_TYPE, 
+                COUNT(*) AS mistakeCount, 
+                GROUP_CONCAT('#' || $MISTAKES_COL_REP_NUM, ', ') AS mistakeRepNumbers
+            FROM
+                $MISTAKES_TABLE_NAME
+            WHERE 
+                $MISTAKES_COL_SESSION_ID = $sessionId
+            GROUP BY
+                $MISTAKES_COL_TYPE
+            ORDER BY
+                mistakeCount DESC;
+        """.trimIndent()
+
+        val mistakesSummary = mutableListOf<String>()
+        val cursor = db.rawQuery(mistakesQuery, null)
+
+        // Format output
+        cursor.use {
+            if (it.moveToFirst()) {
+                do {
+                    val mistake = it.getString(it.getColumnIndexOrThrow(MISTAKES_COL_TYPE))
+                    val mistakeCount = it.getInt(it.getColumnIndexOrThrow("mistakeCount"))
+                    val mistakeRepNumbers = it.getString(it.getColumnIndexOrThrow("mistakeRepNumbers"))
+
+                    val formattedString = if (mistakeCount == 1) {
+                        "$mistake — $mistakeCount rep ($mistakeRepNumbers)"
+                    } else {
+                        "$mistake — $mistakeCount reps ($mistakeRepNumbers)"
+                    }
+                    mistakesSummary.add(formattedString)
+
+                } while (it.moveToNext())
+            }
+        }
+
+        return mistakesSummary
+    }
+
     // HELPER FUNCTIONS
     fun instantToISO8601(instant: Instant): String {
         return DateTimeFormatter.ISO_INSTANT.format(instant)

@@ -70,6 +70,8 @@ class SessionCursorAdapter(
             val textStartTime = convertView.findViewById<TextView>(R.id.textStartTime)
 //            val textEndTime = convertView.findViewById<TextView>(R.id.textEndTime)
             val textProgressionType = convertView.findViewById<TextView>(R.id.textProgressionType)
+            val textMistakesSummary = convertView.findViewById<TextView>(R.id.textMistakesSummary)
+            val textMistakesSummaryTitle = convertView.findViewById<TextView>(R.id.textMistakesSummaryTitle)
 
             // Get values from entry
             val sessionId = sessionData.id
@@ -90,11 +92,24 @@ class SessionCursorAdapter(
             val startTime = "${iso8601ToFormat(startTimeISO)}"
 //            val endTime = "Ended: ${iso8601ToFormat(endTimeISO)}"
             val repCountText = "$repCount REPS"
+            var mistakesSummaryText = ""
+
+            // Summarize mistake data
+            val mistakesSummary = dbHandler.summarizeMistakeData(sessionId)
+            if (mistakesSummary.isNotEmpty()) {
+                mistakesSummaryText = mistakesSummary.joinToString("\n")
+                textMistakesSummary.visibility = View.VISIBLE
+                textMistakesSummaryTitle.visibility = View.VISIBLE
+            } else {
+                textMistakesSummary.visibility = View.GONE
+                textMistakesSummaryTitle.visibility = View.GONE
+            }
 
             textProgressionType.text = progType
             textRepCount.text = repCountText
             textStartTime.text = startTime
 //            textEndTime.text = endTime
+            textMistakesSummary.text = mistakesSummaryText
 
         } else {
             val textRepCount = convertView!!.findViewById<TextView>(R.id.textRepCount)

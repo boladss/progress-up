@@ -39,9 +39,10 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:layout_marginBottom="10dp"
             android:text="Start Time"
             android:textColor="@color/white"
-            android:textSize="17sp"
+            android:textSize="14sp"
             />
 
 <!--        <TextView-->
@@ -53,6 +54,27 @@
 <!--            android:textColor="@color/white"-->
 <!--            android:textSize="18sp"-->
 <!--            />-->
+
+    <TextView
+        android:id="@+id/textMistakesSummaryTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Common Mistakes:"
+        android:textColor="@color/white"
+        android:textStyle="bold"
+        android:textSize="14sp"
+        />
+    <TextView
+        android:id="@+id/textMistakesSummary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Mistake List"
+        android:textColor="@color/white"
+        android:textSize="12sp"
+        android:lineSpacingExtra="5dp"
+        />
 
 
     <Button
