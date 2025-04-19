@@ -86,7 +86,8 @@ class SessionCursorAdapter(
             }
 
             // Format timestamps and text
-            val startTime = "${iso8601ToFormat(startTimeISO)} (ID: $sessionId)"
+//            val startTime = "${iso8601ToFormat(startTimeISO)} (ID: $sessionId)"
+            val startTime = "${iso8601ToFormat(startTimeISO)}"
 //            val endTime = "Ended: ${iso8601ToFormat(endTimeISO)}"
             val repCountText = "$repCount REPS"
 
@@ -128,7 +129,8 @@ class SessionCursorAdapter(
             val repQuality = repetitionData.goodQuality
             
             // Format text
-            val idNumber = "(ID: $repId)"
+//            val idNumber = "(ID: $repId)"
+            val idNumber = ""
             val repCountText = "Rep #$repCount"
             val repQualityText = if (repQuality) "Good" else "Bad"
             var repMistakesText = ""

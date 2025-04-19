@@ -174,15 +174,21 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
         return db.rawQuery(readDataQuery, null)
     }
 
-    // Add entry for a mistake done in a repetition
-    fun insertMistakeData(sessionId: Long, repNumber: Int, mistake: String): Long {
+    // Add entry for a list of mistakes done in a repetition
+    fun insertMistakeData(sessionId: Long, repNumber: Int, mistakes: Set<String>): List<Long> {
         val db = writableDatabase
-        val values = ContentValues()
-        values.put(MISTAKES_COL_SESSION_ID, sessionId)
-        values.put(MISTAKES_COL_REP_NUM, repNumber)
-        values.put(MISTAKES_COL_TYPE, mistake)
-        val id = db.insert(MISTAKES_TABLE_NAME, null, values)
-        return id
+        val insertedIds = mutableListOf<Long>()
+
+        for (mistake in mistakes) {
+            val values = ContentValues()
+            values.put(MISTAKES_COL_SESSION_ID, sessionId)
+            values.put(MISTAKES_COL_REP_NUM, repNumber)
+            values.put(MISTAKES_COL_TYPE, mistake)
+            val id = db.insert(MISTAKES_TABLE_NAME, null, values)
+            insertedIds.add(id)
+        }
+
+        return insertedIds
     }
 
     // Fetch list of mistakes done for a repetition
