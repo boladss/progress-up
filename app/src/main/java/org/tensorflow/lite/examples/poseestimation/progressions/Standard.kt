@@ -11,8 +11,8 @@ import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-val progression = ProgressionTypes.STANDARD
-val Standards = mapOf(
+private val progression = ProgressionTypes.STANDARD
+private val Standards = mapOf(
     Pair("STANDARD_LOWER_TORSO_ANGLE", 180),
     Pair("STANDARD_UPPER_TORSO_ANGLE", 180),
     Pair("STANDARD_ELBOW_ANGLE", 180),
@@ -80,7 +80,7 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
             if (currentArmDist < lowestArmDist)
                 currentState.lowestArmDist = currentArmDist
 
-            if (!angles[Angles.LElbow.name]!!.valid) //assume push up has started once elbow bends
+            if (!angles[Angles.LElbow.name]!!.valid && currentArmDist < 0.8 * startingArmDist) //assume push up has started once elbow bends
                 currentState.down = true
 
             if (!angles[Angles.LLTorso.name]!!.valid || //!angleValidity["LLTorso"]!! || //check if the torso buckles
@@ -141,7 +141,8 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
                 currentState.feedback = feedback
             }
 
-            if (computeDistOfTwoParts(keypoints, BodyPart.LEFT_SHOULDER, BodyPart.LEFT_WRIST) < startingArmDist - 10) {
+            if (computeDistOfTwoParts(keypoints, BodyPart.LEFT_SHOULDER, BodyPart.LEFT_WRIST) < startingArmDist - 10 &&
+                !person.angles[Angles.LElbow.name]!!.valid) {
                 //wait until close to start
                 return currentState
             }

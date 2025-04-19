@@ -1,9 +1,7 @@
 package org.tensorflow.lite.examples.poseestimation.progressions
 
-import android.provider.ContactsContract.Data
 import org.tensorflow.lite.examples.poseestimation.data.Angles
 import org.tensorflow.lite.examples.poseestimation.data.BodyPart
-import org.tensorflow.lite.examples.poseestimation.data.KeyPoint
 import org.tensorflow.lite.examples.poseestimation.data.Person
 import org.tensorflow.lite.examples.poseestimation.sessions.DatabaseHandler
 import java.time.Instant
@@ -11,50 +9,51 @@ import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-private val progression = ProgressionTypes.WALL
+private val progression = ProgressionTypes.PSEUDOPLANCHE
 private val Standards = mapOf(
     Pair("STANDARD_LOWER_TORSO_ANGLE", 180),
     Pair("STANDARD_UPPER_TORSO_ANGLE", 180),
     Pair("STANDARD_ELBOW_ANGLE", 180),
-    Pair("STANDARD_LOWER_TORSO_DOF", 20),
+    Pair("STANDARD_LOWER_TORSO_DOF", 25),
     Pair("STANDARD_UPPER_TORSO_DOF", 20),
     Pair("STANDARD_ELBOW_DOF", 20), // degrees of freedom --- INCREASED TO 10
     Pair("STANDARD_KNEE_ANGLE", 180),
     Pair("STANDARD_KNEE_DOF", 25)
 )
 
-fun checkValidityWall(person: Person) : Person {
+fun checkValidityPseudoPlanche(person: Person) : Person {
     Angles.entries.forEach {
         person.angles[it.name]!!.valid = it.check(person.angles[it.name]!!.value, Standards)
     }
     return person
 }
 
-fun getFeedbackWall(currentState: ProgressionState, person:Person, dbHandler: DatabaseHandler) : ProgressionState {
+fun getFeedbackPseudoPlanche(currentState: ProgressionState, person:Person, dbHandler: DatabaseHandler) : ProgressionState {
     val angles = person.angles
     val keypoints = person.keyPoints
     val startingArmDist = currentState.startingArmDist
     val lowestArmDist = currentState.lowestArmDist
 
     var feedback = currentState.feedback.toMutableList()
-    var errors = currentState.errors.toMutableSet()
+    val errors = currentState.errors.toMutableSet()
     var (totalReps, badReps, goodReps) = currentState.reps
 
     when (currentState.state) {
         ProgressionStates.INITIALIZE -> {
             //wait until the body is in the correct state
             if (!angles[Angles.LElbow.name]!!.valid || //|| angleValidity["LElbow"]!!) &&
-                    !angles[Angles.LLTorso.name]!!.valid || //|| angleValidity["LLTorso"]!!) &&
-                    !angles[Angles.LKnee.name]!!.valid) {
+                !angles[Angles.LLTorso.name]!!.valid || //|| angleValidity["LLTorso"]!!) &&
+                !angles[Angles.LKnee.name]!!.valid) {
                 currentState.feedback =
                     listOf("${angles[Angles.LElbow.name]!!.valid} | ${angles[Angles.LLTorso.name]!!.valid} | ${angles[Angles.LKnee.name]!!.valid}")
                 return currentState
             }
             else {
                 currentState.sessionId = dbHandler.insertSessionData(Instant.now(), Instant.now(), progression)
-                currentState.feedback = listOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps}")
+                currentState.feedback = listOf("Good: $goodReps | Bad: $badReps | Total: $totalReps")
                 currentState.state = ProgressionStates.START
-                currentState.startingArmDist = computeTriangleHeight(keypoints, BodyPart.LEFT_WRIST, BodyPart.LEFT_HIP, BodyPart.LEFT_SHOULDER)
+                //change starting arm dist from actual distance to only x distance
+                currentState.startingArmDist = abs(keypoints[BodyPart.LEFT_SHOULDER.ordinal].coordinate.x - keypoints[BodyPart.LEFT_WRIST.ordinal].coordinate.x)
                 return currentState
             }
         }
@@ -65,6 +64,7 @@ fun getFeedbackWall(currentState: ProgressionState, person:Person, dbHandler: Da
                 angles[Angles.LKnee.name]!!.valid) { //|| angleValidity["LKnee"]!!)))
                 if (feedback.last() != "| Next Rep")
                     feedback.add("| Next Rep")
+                currentState.startingArmDist = abs(keypoints[BodyPart.LEFT_SHOULDER.ordinal].coordinate.x - keypoints[BodyPart.LEFT_WRIST.ordinal].coordinate.x)
                 currentState.feedback = feedback
                 currentState.state = ProgressionStates.GOINGDOWN
                 currentState.goodForm = true
@@ -74,14 +74,15 @@ fun getFeedbackWall(currentState: ProgressionState, person:Person, dbHandler: Da
             } else return currentState
         }
         ProgressionStates.GOINGDOWN -> {
+            //track hand and shoulder distance
+
             if (feedback.last() != " | GoingDown")
                 feedback.add(" | GoingDown")
+            val currentArmDist = abs(keypoints[BodyPart.LEFT_SHOULDER.ordinal].coordinate.x - keypoints[BodyPart.LEFT_WRIST.ordinal].coordinate.x)
 
-            //track hand and shoulder distance
-            val currentArmDist = computeTriangleHeight(keypoints, BodyPart.LEFT_WRIST, BodyPart.LEFT_HIP, BodyPart.LEFT_SHOULDER)
-
-            if (currentArmDist < lowestArmDist)
+            if (currentArmDist < lowestArmDist) {
                 currentState.lowestArmDist = currentArmDist
+            }
 
             if (!angles[Angles.LElbow.name]!!.valid && currentArmDist < 0.8 * startingArmDist) //assume push up has started once elbow bends
                 currentState.down = true
@@ -92,10 +93,14 @@ fun getFeedbackWall(currentState: ProgressionState, person:Person, dbHandler: Da
                 errors.add("Body buckling")
             }
 
-            //check if hands are lower than shoulders
-            if (keypoints[BodyPart.LEFT_WRIST.ordinal].coordinate.y < keypoints[BodyPart.LEFT_SHOULDER.ordinal].coordinate.y){// && abs(pixels[6].y - pixels[10].y) > 100){
+            //check if hands are in the bottom 60% of hips to shoulders
+            if (keypoints[BodyPart.LEFT_WRIST.ordinal].coordinate.y >
+                keypoints[BodyPart.LEFT_HIP.ordinal].coordinate.y +
+                   0.6 * abs(keypoints[BodyPart.LEFT_SHOULDER.ordinal].coordinate.y - keypoints[BodyPart.LEFT_HIP.ordinal].coordinate.y)
+                )
+            {// && abs(pixels[6].y - pixels[10].y) > 100){
                 currentState.goodForm = false
-                errors.add("Hands not under shoulders")
+                errors.add("Hands should be closer to hips")
             }
 
             //check if feet are level with hands
@@ -134,38 +139,23 @@ fun getFeedbackWall(currentState: ProgressionState, person:Person, dbHandler: Da
             currentState.reps = Triple(totalReps, badReps, goodReps)
 
             if (currentState.goodForm)  {
-                currentState.feedback = listOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps} | Rep good")
+                currentState.feedback = listOf("Good: $goodReps | Bad: $badReps | Total: $totalReps | Rep good")
             }
             else {
-                feedback = mutableListOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps} | Errors:\n")
+                feedback = mutableListOf("Good: $goodReps | Bad: $badReps | Total: $totalReps | Errors:\n")
                 errors.forEach{
                     feedback.add(it + "\n")
                 }
                 currentState.feedback = feedback
             }
 
-            if (computeTriangleHeight(keypoints, BodyPart.LEFT_WRIST, BodyPart.LEFT_HIP, BodyPart.LEFT_SHOULDER) < startingArmDist - 15 ||
-                !person.angles[Angles.LElbow.name]!!.valid) {
+            if (computeDistOfTwoParts(keypoints, BodyPart.LEFT_SHOULDER, BodyPart.LEFT_WRIST) < startingArmDist - 10 &&
+                person.angles[Angles.LElbow.name]!!.valid) {
                 //wait until close to start
-                currentState.state = ProgressionStates.PAUSE
                 return currentState
             }
             else {
-                currentState.startingArmDist = computeTriangleHeight(keypoints, BodyPart.LEFT_WRIST, BodyPart.LEFT_HIP, BodyPart.LEFT_SHOULDER)
-                currentState.state = ProgressionStates.START
-                return currentState
-            }
-        }
-        ProgressionStates.PAUSE -> {
-            if (computeTriangleHeight(keypoints, BodyPart.LEFT_WRIST, BodyPart.LEFT_HIP, BodyPart.LEFT_SHOULDER) < startingArmDist - 15 ||
-                !person.angles[Angles.LElbow.name]!!.valid) {
-                //wait until close to start
-                //currentState.feedback = listOf("${currentState.startingArmDist} VS ${computeTriangleHeight(keypoints, BodyPart.LEFT_WRIST, BodyPart.LEFT_HIP, BodyPart.LEFT_SHOULDER)}")
-                currentState.state = ProgressionStates.PAUSE
-                return currentState
-            }
-            else {
-                currentState.startingArmDist = computeTriangleHeight(keypoints, BodyPart.LEFT_WRIST, BodyPart.LEFT_HIP, BodyPart.LEFT_SHOULDER)
+                currentState.startingArmDist = computeDistOfTwoParts(keypoints, BodyPart.LEFT_SHOULDER, BodyPart.LEFT_WRIST)
                 currentState.state = ProgressionStates.START
                 return currentState
             }

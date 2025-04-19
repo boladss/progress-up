@@ -4,13 +4,13 @@ import org.tensorflow.lite.examples.poseestimation.data.Person
 import org.tensorflow.lite.examples.poseestimation.sessions.DatabaseHandler
 
 enum class ProgressionTypes(val processHeuristics: (ProgressionState, Person, DatabaseHandler) -> ProgressionState, val getValidity: (Person) -> Person) {
-    WALL(::getFeedbackStandard, ::checkValidityStandard),
+    WALL(::getFeedbackWall, ::checkValidityWall),
     INCLINE(::getFeedbackStandard, ::checkValidityStandard),
     KNEE(::getFeedbackStandard, ::checkValidityStandard),
     STANDARD(::getFeedbackStandard, ::checkValidityStandard),
     DECLINE(::getFeedbackStandard, ::checkValidityStandard),
-    PSEUDOPLANCHE(::getFeedbackStandard, ::checkValidityStandard);
-    companion object{
+    PSEUDOPLANCHE(::getFeedbackPseudoPlanche, ::checkValidityPseudoPlanche);
+    companion object {
         private val map = ProgressionTypes.entries.associateBy{it.ordinal}
         fun fromInt(position: Int): ProgressionTypes = map.getValue(position)
     }
@@ -21,6 +21,7 @@ enum class ProgressionStates {
     START,
     GOINGDOWN,
     GOINGUP,
+    PAUSE
 }
 
 data class ProgressionState(
