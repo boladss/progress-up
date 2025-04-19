@@ -42,7 +42,7 @@ class TrackerActivity : AppCompatActivity() {
     /** A [SurfaceView] for camera preview.   */
     private lateinit var surfaceView: SurfaceView
 
-    /** Default pose estimation model is 0 (MoveNet Lightning)
+    /** Default pose estimation model is 1 (MoveNet Thunder)
      * 0 == MoveNet Lightning model
      * 1 == MoveNet Thunder model
      * 2 == MoveNet MultiPose model
