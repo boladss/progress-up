@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Process
@@ -167,6 +168,10 @@ class TrackerActivity : AppCompatActivity() {
         if (!this::mediaPlayer.isInitialized) {
             mediaPlayer = MediaPlayer.create(this, R.raw.badform)
         }
+
+        // Verify orientation
+        val orientation = resources.configuration.orientation
+        updateSurfaceViewRotation(orientation)
     }
 
     override fun onStart() {
@@ -188,6 +193,24 @@ class TrackerActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         dbHandler.close()
+    }
+
+    // Update surfaceView (camera) when changing orientation
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        updateSurfaceViewRotation(newConfig.orientation)
+    }
+
+    private fun updateSurfaceViewRotation(orientation: Int) {
+        when (orientation) {
+            Configuration.ORIENTATION_PORTRAIT -> {
+                surfaceView.rotation = 0f
+            }
+            Configuration.ORIENTATION_LANDSCAPE -> {
+                surfaceView.rotation = 0f
+            }
+        }
+        surfaceView.requestLayout()
     }
 
     // check if permission is granted or not.
@@ -279,7 +302,7 @@ class TrackerActivity : AppCompatActivity() {
                             }
                         }
 
-                    }).apply {
+                    }, this).apply {
                         prepareCamera()
                     }
                 isPoseClassifier()

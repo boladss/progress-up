@@ -18,6 +18,7 @@ package org.tensorflow.lite.examples.poseestimation.camera
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.ImageFormat
 import android.graphics.Matrix
@@ -49,7 +50,8 @@ import kotlin.coroutines.resumeWithException
 
 class CameraSource(
     private val surfaceView: SurfaceView,
-    private val listener: CameraSourceListener? = null
+    private val listener: CameraSourceListener? = null,
+    private val context: Context
 ) {
 
     companion object {
@@ -169,18 +171,15 @@ class CameraSource(
         }
 
     fun prepareCamera() {
-        // Prioritize front-facing  camera
         for (cameraId in cameraManager.cameraIdList) {
             val characteristics = cameraManager.getCameraCharacteristics(cameraId)
 
             val cameraDirection = characteristics.get(CameraCharacteristics.LENS_FACING)
             if (cameraDirection != null &&
-                cameraDirection == CameraCharacteristics.LENS_FACING_FRONT
+                // Prioritize front- or rear-facing camera
+                 cameraDirection == CameraCharacteristics.LENS_FACING_FRONT
+//               cameraDirection == CameraCharacteristics.LENS_FACING_BACK
             ) {
-                // Rear-facing Camera
-                 //continue
-
-                // Front-facing Camera
                  this.cameraId = cameraId
                  return
             }
@@ -276,10 +275,25 @@ class CameraSource(
 
     private fun visualize(persons: List<Person>, bitmap: Bitmap) {
 
-        val outputBitmap = VisualizationUtils.drawBodyKeypoints(
+        // TODO: Make drawing keypoints optional via settings
+        // outputBitmap is still required, this is how the preview feed itself is drawn
+        val initialOutputBitmap = VisualizationUtils.drawBodyKeypoints(
             bitmap,
             persons.filter { it.score > MIN_CONFIDENCE }, isTrackerEnabled
         )
+
+        // Rotate bitmap for proper screen orientation
+        val outputBitmap = when (context.resources.configuration.orientation) {
+            // Rotate bitmap for landscape preview
+            Configuration.ORIENTATION_LANDSCAPE -> {
+                val rotateMatrix = Matrix()
+                rotateMatrix.postRotate(90f)
+                Bitmap.createBitmap(
+                    initialOutputBitmap, 0, 0, initialOutputBitmap.width, initialOutputBitmap.height, rotateMatrix, false
+                )
+            }
+            else -> initialOutputBitmap // No rotation applied for portrait
+        }
 
         val holder = surfaceView.holder
         val surfaceCanvas = holder.lockCanvas()
