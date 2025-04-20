@@ -57,6 +57,11 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra("progressionType", ProgressionTypes.WALL.ordinal)
             startActivity(intent)
         }
+        wallPushUpButton.getSessionLogsButton().setOnClickListener() {
+            val intent = Intent(this, SessionMenuActivity::class.java)
+            intent.putExtra("progressionType", ProgressionTypes.WALL.ordinal)
+            startActivity(intent)
+        }
 
         // 1 - INCLINE PUSH-UPS
         inclinePushUpButton = findViewById<SelectPushUpView>(R.id.inclinePushUpButton)
@@ -68,6 +73,12 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra("progressionType", ProgressionTypes.INCLINE.ordinal)
             startActivity(intent)
         }
+        inclinePushUpButton.getSessionLogsButton().setOnClickListener() {
+            val intent = Intent(this, SessionMenuActivity::class.java)
+            intent.putExtra("progressionType", ProgressionTypes.INCLINE.ordinal)
+            startActivity(intent)
+        }
+
 
         // 2 - KNEE PUSH-UPS
         kneePushUpButton = findViewById<SelectPushUpView>(R.id.kneePushUpButton)
@@ -76,6 +87,11 @@ class MainActivity : AppCompatActivity() {
         kneePushUpButton.setDescription("With knees as the fulcrum.")
         kneePushUpButton.setOnClickListener {
             val intent = Intent(this, TrackerActivity::class.java)
+            intent.putExtra("progressionType", ProgressionTypes.KNEE.ordinal)
+            startActivity(intent)
+        }
+        kneePushUpButton.getSessionLogsButton().setOnClickListener() {
+            val intent = Intent(this, SessionMenuActivity::class.java)
             intent.putExtra("progressionType", ProgressionTypes.KNEE.ordinal)
             startActivity(intent)
         }
@@ -90,6 +106,11 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra("progressionType", ProgressionTypes.STANDARD.ordinal)
             startActivity(intent)
         }
+        standardPushUpButton.getSessionLogsButton().setOnClickListener() {
+            val intent = Intent(this, SessionMenuActivity::class.java)
+            intent.putExtra("progressionType", ProgressionTypes.STANDARD.ordinal)
+            startActivity(intent)
+        }
 
         // 4 - DECLINE PUSH-UPS
         declinePushUpButton = findViewById<SelectPushUpView>(R.id.declinePushUpButton)
@@ -101,6 +122,11 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra("progressionType", ProgressionTypes.DECLINE.ordinal)
             startActivity(intent)
         }
+        declinePushUpButton.getSessionLogsButton().setOnClickListener() {
+            val intent = Intent(this, SessionMenuActivity::class.java)
+            intent.putExtra("progressionType", ProgressionTypes.DECLINE.ordinal)
+            startActivity(intent)
+        }
 
         // 5 - PSEUDO-PLANCHE PUSH-UPS
         pseudoPlanchePushUpButton = findViewById<SelectPushUpView>(R.id.pseudoPlanchePushUpButton)
@@ -109,6 +135,11 @@ class MainActivity : AppCompatActivity() {
         pseudoPlanchePushUpButton.setDescription("Mimicking the planche hold.")
         pseudoPlanchePushUpButton.setOnClickListener {
             val intent = Intent(this, TrackerActivity::class.java)
+            intent.putExtra("progressionType", ProgressionTypes.PSEUDOPLANCHE.ordinal)
+            startActivity(intent)
+        }
+        pseudoPlanchePushUpButton.getSessionLogsButton().setOnClickListener() {
+            val intent = Intent(this, SessionMenuActivity::class.java)
             intent.putExtra("progressionType", ProgressionTypes.PSEUDOPLANCHE.ordinal)
             startActivity(intent)
         }

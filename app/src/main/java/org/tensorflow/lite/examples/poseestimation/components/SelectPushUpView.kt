@@ -2,6 +2,7 @@ package org.tensorflow.lite.examples.poseestimation.components
 
 import android.content.Context
 import android.util.AttributeSet
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -17,12 +18,14 @@ class SelectPushUpView @JvmOverloads constructor(
     private val imageView: ImageView
     private val titleTextView: TextView
     private val descriptionTextView: TextView
+    private val progSessionLogsButton: Button
 
     init {
         inflate(context, R.layout.select_push_up_view, this)
         imageView = findViewById(R.id.imageView)
         titleTextView = findViewById(R.id.titleTextView)
         descriptionTextView = findViewById(R.id.descriptionTextView)
+        progSessionLogsButton = findViewById(R.id.progSessionLogsButton)
 
         isClickable = true
     }
@@ -37,5 +40,10 @@ class SelectPushUpView @JvmOverloads constructor(
 
     fun setDescription(description: String) {
         descriptionTextView.text = description
+    }
+
+    // Passes the button for the per-progression session logs
+    fun getSessionLogsButton(): Button {
+        return progSessionLogsButton
     }
 }

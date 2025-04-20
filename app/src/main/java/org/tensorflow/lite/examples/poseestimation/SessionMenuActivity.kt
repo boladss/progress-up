@@ -31,6 +31,8 @@ class SessionMenuActivity : AppCompatActivity() {
     private lateinit var deleteSessionButton: Button
     private lateinit var deleteIdText: EditText
 
+    private var progression: ProgressionTypes? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -43,11 +45,17 @@ class SessionMenuActivity : AppCompatActivity() {
         }
 
         dbHandler = DatabaseHandler(this)
+
+        // Defaults to null when no extras are inputted
+        progression = intent.extras?.getInt("progressionType")?.let {
+            ProgressionTypes.fromInt(it)
+        }
+
         displaySessionData()
     }
 
     fun displaySessionData() {
-        val cursor = dbHandler.readSessionData()
+        val cursor = dbHandler.readSessionData(progression)
         val sessionListView = findViewById<ExpandableListView>(R.id.sessionListView)
 
         val header: MutableList<SessionHeader> = ArrayList() // Sessions

@@ -103,9 +103,15 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
         return id
     }
 
-    fun readSessionData(): Cursor {
+    fun readSessionData(progressionType: ProgressionTypes? = null): Cursor {
         val db = readableDatabase
-        val readDataQuery = "SELECT * FROM $SESSIONS_TABLE_NAME"
+        // Check if should filter to one progression type
+        val readDataQuery = if (progressionType != null) {
+            "SELECT * FROM $SESSIONS_TABLE_NAME WHERE $SESSIONS_COL_PROG_TYPE = '${progressionType.name}'"
+        } else { // Otherwise, read everything
+            "SELECT * FROM $SESSIONS_TABLE_NAME"
+        }
+
         return db.rawQuery(readDataQuery, null)
     }
 

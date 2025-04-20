@@ -87,7 +87,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:background="@drawable/button_white_outline"
-                    android:text="View session logs" />
+                    android:text="View all session logs" />
 
                 <TextView
                     android:layout_width="wrap_content"
