@@ -282,10 +282,24 @@ class CameraSource(
             persons.filter { it.score > MIN_CONFIDENCE }, isTrackerEnabled
         )
 
+        // Update rotation of preview camera feed
+        // Ref: https://stackoverflow.com/questions/10380989/how-do-i-get-the-current-orientation-activityinfo-screen-orientation-of-an-a
+        // Ref: https://developer.android.com/reference/android/view/WindowManager#getDefaultDisplay()
+        // Ref: https://developer.android.com/reference/android/content/Context#getDisplay()
+        val rotation = context.getDisplay().rotation
+        // TODO: Update minimum SDK to 30
+
         // Rotate bitmap for proper screen orientation
-        val outputBitmap = when (context.resources.configuration.orientation) {
+        val outputBitmap = when (rotation) {
             // Rotate bitmap for landscape preview
-            Configuration.ORIENTATION_LANDSCAPE -> {
+            Surface.ROTATION_90 -> { // Right
+                val rotateMatrix = Matrix()
+                rotateMatrix.postRotate(270f)
+                Bitmap.createBitmap(
+                    initialOutputBitmap, 0, 0, initialOutputBitmap.width, initialOutputBitmap.height, rotateMatrix, false
+                )
+            }
+            Surface.ROTATION_270 -> { // Left
                 val rotateMatrix = Matrix()
                 rotateMatrix.postRotate(90f)
                 Bitmap.createBitmap(
