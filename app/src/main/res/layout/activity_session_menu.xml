@@ -37,6 +37,18 @@
                 android:textSize="14sp" /> -->
         </LinearLayout>
 
+        <TextView
+            android:id="@+id/noSessionsTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textColor="@color/white"
+            android:layout_marginTop="20dp"
+            android:textStyle="italic"
+            android:text="No recorded sessions found."
+            android:textSize="20sp"
+            />
+
         <ExpandableListView
             android:id="@+id/sessionListView"
             android:layout_width="match_parent"
@@ -44,6 +56,8 @@
             android:layout_marginVertical="10dp"
             >
         </ExpandableListView>
+
+
 
     </LinearLayout>
 

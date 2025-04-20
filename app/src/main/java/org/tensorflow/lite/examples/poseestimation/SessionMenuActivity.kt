@@ -2,11 +2,13 @@ package org.tensorflow.lite.examples.poseestimation
 
 import android.os.Bundle
 import android.text.InputType
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ExpandableListView
 import android.widget.ListView
 import android.widget.SimpleCursorAdapter
+import android.widget.TextView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -57,45 +59,56 @@ class SessionMenuActivity : AppCompatActivity() {
     fun displaySessionData() {
         val cursor = dbHandler.readSessionData(progression)
         val sessionListView = findViewById<ExpandableListView>(R.id.sessionListView)
+        val noSessionsTextView = findViewById<TextView>(R.id.noSessionsTextView)
 
         val header: MutableList<SessionHeader> = ArrayList() // Sessions
         val childItem: MutableList<MutableList<RepetitionItem>> = ArrayList() // Repetitions
 
-        // Go through each session
-        if (cursor.moveToFirst()) {
-            do {
-                // Get values from entry
-                val sessionId = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseHandler.SESSIONS_COL_ID))
-                val startTimeISO = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHandler.SESSIONS_COL_START_TIME))
-                val endTimeISO =  cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHandler.SESSIONS_COL_END_TIME))
-                val progType = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHandler.SESSIONS_COL_PROG_TYPE))
+        if (cursor.count > 0) {
+            // Go through each session
+            if (cursor.moveToFirst()) {
+                do {
+                    // Get values from entry
+                    val sessionId = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseHandler.SESSIONS_COL_ID))
+                    val startTimeISO = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHandler.SESSIONS_COL_START_TIME))
+                    val endTimeISO =  cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHandler.SESSIONS_COL_END_TIME))
+                    val progType = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHandler.SESSIONS_COL_PROG_TYPE))
 
-                val sessionHeader = SessionHeader(sessionId, startTimeISO, endTimeISO, progType)
-                header.add(sessionHeader)
+                    val sessionHeader = SessionHeader(sessionId, startTimeISO, endTimeISO, progType)
+                    header.add(sessionHeader)
 
-                // Obtain repetitions per session
-                val repetitions: MutableList<RepetitionItem> = ArrayList()
-                val repetitionCursor = dbHandler.readRepetitionData(sessionId)
+                    // Obtain repetitions per session
+                    val repetitions: MutableList<RepetitionItem> = ArrayList()
+                    val repetitionCursor = dbHandler.readRepetitionData(sessionId)
 
-                if (repetitionCursor.moveToFirst()) {
-                    do {
-                        val repId = repetitionCursor.getLong(repetitionCursor.getColumnIndexOrThrow(DatabaseHandler.REPS_COL_ID))
-                        val repCount = repetitionCursor.getInt(repetitionCursor.getColumnIndexOrThrow(DatabaseHandler.REPS_COL_REP_NUM))
-                        val goodQual = repetitionCursor.getInt(repetitionCursor.getColumnIndexOrThrow(DatabaseHandler.REPS_COL_GOOD_QUAL)) == 1 // Acts as boolean
+                    if (repetitionCursor.moveToFirst()) {
+                        do {
+                            val repId = repetitionCursor.getLong(repetitionCursor.getColumnIndexOrThrow(DatabaseHandler.REPS_COL_ID))
+                            val repCount = repetitionCursor.getInt(repetitionCursor.getColumnIndexOrThrow(DatabaseHandler.REPS_COL_REP_NUM))
+                            val goodQual = repetitionCursor.getInt(repetitionCursor.getColumnIndexOrThrow(DatabaseHandler.REPS_COL_GOOD_QUAL)) == 1 // Acts as boolean
 
-                        val repetitionItem = RepetitionItem(repId, sessionId, repCount, goodQual)
-                        repetitions.add(repetitionItem)
+                            val repetitionItem = RepetitionItem(repId, sessionId, repCount, goodQual)
+                            repetitions.add(repetitionItem)
 
-                    } while (repetitionCursor.moveToNext())
-                }
-                repetitionCursor.close()
-                childItem.add(repetitions)
+                        } while (repetitionCursor.moveToNext())
+                    }
+                    repetitionCursor.close()
+                    childItem.add(repetitions)
 
-            } while (cursor.moveToNext())
+                } while (cursor.moveToNext())
+            }
+            cursor.close()
+            sessionListView.visibility = View.VISIBLE
+            noSessionsTextView.visibility = View.GONE
+            sessionListView.setAdapter(SessionCursorAdapter(this, header, childItem, this, dbHandler))
+
+        } else { // Display message denoting lack of sessions
+            cursor.close()
+            sessionListView.visibility = View.GONE
+            noSessionsTextView.visibility = View.VISIBLE
         }
-        cursor.close()
 
-        sessionListView.setAdapter(SessionCursorAdapter(this, header, childItem, this, dbHandler))
+
      }
 
     private fun createNewSession() {
