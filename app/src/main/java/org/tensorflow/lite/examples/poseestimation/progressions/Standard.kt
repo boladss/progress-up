@@ -48,12 +48,14 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
                     !angles[Angles.LLTorso.name]!!.valid || //|| angleValidity["LLTorso"]!!) &&
                     !angles[Angles.LKnee.name]!!.valid) {
                 currentState.feedback =
-                    listOf("${angles[Angles.LElbow.name]!!.valid} | ${angles[Angles.LLTorso.name]!!.valid} | ${angles[Angles.LKnee.name]!!.valid}")
+                    // listOf("${angles[Angles.LElbow.name]!!.valid} | ${angles[Angles.LLTorso.name]!!.valid} | ${angles[Angles.LKnee.name]!!.valid}")
+                    listOf("Initial Form Check\nArms: ${angles[Angles.LElbow.name]!!.valid}\nTorso:${angles[Angles.LLTorso.name]!!.valid}\nLegs:${angles[Angles.LKnee.name]!!.valid}")
                 return currentState
             }
             else {
                 currentState.sessionId = dbHandler.insertSessionData(Instant.now(), Instant.now(), progression)
-                currentState.feedback = listOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps}")
+                // currentState.feedback = listOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps}")
+                currentState.feedback = listOf("Starting workout...")
                 currentState.state = ProgressionStates.START
                 currentState.startingArmDist = computeDistOfTwoParts(keypoints, BodyPart.LEFT_SHOULDER, BodyPart.LEFT_WRIST)
                 return currentState
@@ -64,7 +66,8 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
             if (angles[Angles.LElbow.name]!!.valid && //|| angleValidity["LElbow"]!!) &&
                 angles[Angles.LLTorso.name]!!.valid && //|| angleValidity["LLTorso"]!!) &&
                 angles[Angles.LKnee.name]!!.valid) { //|| angleValidity["LKnee"]!!)))
-                feedback.add(" | Next rep")
+                // feedback.add(" | Next rep")
+//                feedback.add("Starting next rep...")
                 currentState.feedback = feedback
                 currentState.state = ProgressionStates.GOINGDOWN
                 currentState.goodForm = true
@@ -132,13 +135,18 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
             currentState.reps = Triple(totalReps, badReps, goodReps)
 
             if (currentState.goodForm)  {
-                currentState.feedback = listOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps} | Rep good")
+                // currentState.feedback = listOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps} | Rep good")
+                currentState.feedback = listOf("Good rep!")
             }
             else {
-                feedback = mutableListOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps} | Errors:\n")
-                errors.forEach{
-                    feedback.add(it + "\n")
-                }
+                // feedback = mutableListOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps} | Errors:\n")
+                feedback = mutableListOf("Rep $totalReps errors:\n")
+
+                // Only add \n in between errors, not at the end
+                val errorList = errors.toList()
+                feedback.addAll(errorList.dropLast(1).map { it + "\n" })
+                errorList.lastOrNull()?.let { feedback.add(it) }
+
                 currentState.feedback = feedback
             }
 
