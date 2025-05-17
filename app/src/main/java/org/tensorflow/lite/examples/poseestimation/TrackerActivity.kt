@@ -67,7 +67,8 @@ class TrackerActivity : AppCompatActivity() {
     private lateinit var tvClassificationValue3: TextView
     private lateinit var swClassification: SwitchCompat
     private lateinit var vClassificationOption: View
-    private lateinit var repCount: TextView
+    private lateinit var repFeedback: TextView
+    private lateinit var repCounter: TextView
     private lateinit var displayProgressionType: TextView
     private lateinit var mediaPlayer: MediaPlayer
     private var cameraSource: CameraSource? = null
@@ -139,7 +140,7 @@ class TrackerActivity : AppCompatActivity() {
         // Prepare DatabaseHandler
         dbHandler = DatabaseHandler(this)
 
-        val progressionTypeText = "Progression Type: ${ProgressionTypes.fromInt(intent.extras?.getInt("progressionType")!!)}"
+        val progressionTypeText = "${ProgressionTypes.fromInt(intent.extras?.getInt("progressionType")!!)} PUSH-UP"
 
         displayProgressionType = findViewById(R.id.tvProgressionType)
         displayProgressionType.text = progressionTypeText
@@ -158,7 +159,8 @@ class TrackerActivity : AppCompatActivity() {
         tvClassificationValue3 = findViewById(R.id.tvClassificationValue3)
         swClassification = findViewById(R.id.swPoseClassification)
         vClassificationOption = findViewById(R.id.vClassificationOption)
-        repCount = findViewById(R.id.tvRepCount)
+        repFeedback = findViewById(R.id.tvRepFeedback)
+        repCounter = findViewById(R.id.tvRepCounter)
         initSpinner()
         spnModel.setSelection(modelPos)
         swClassification.setOnCheckedChangeListener(setClassificationListener)
@@ -239,10 +241,14 @@ class TrackerActivity : AppCompatActivity() {
         val progression = ProgressionTypes.fromInt(intent.extras?.getInt("progressionType")!!)
         val nextState = progression.processHeuristics(currentState, persons[0], dbHandler, mediaPlayer)
         runOnUiThread {
-            repCount.text = ""
+            repFeedback.text = ""
             nextState.feedback.forEach{
-                repCount.append(it)
+                repFeedback.append(it)
             }
+
+            val repCounterText = nextState.reps.first
+            repCounter.text = repCounterText.toString()
+
         }
         currentState = nextState
         if (currentState.state == ProgressionStates.GOINGUP &&
@@ -256,9 +262,9 @@ class TrackerActivity : AppCompatActivity() {
             mediaPlayer.start()
         }
 //        runOnUiThread {
-//            repCount.text = ""
+//            repFeedback.text = ""
 //            persons[0].angles.entries.forEach {
-//                repCount.append("${it.key}: ${it.value.valid} / ${it.value.value}" +
+//                repFeedback.append("${it.key}: ${it.value.valid} / ${it.value.value}" +
 //                        "\n")
 //            }
 //        }
@@ -266,7 +272,7 @@ class TrackerActivity : AppCompatActivity() {
 
     private fun debugChangeText(text: String) {
         runOnUiThread {
-            repCount.text = text
+            repFeedback.text = text
         }
     }
 
