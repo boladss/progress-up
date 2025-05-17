@@ -62,17 +62,13 @@ class TrackerActivity : AppCompatActivity() {
     private lateinit var spnModel: Spinner
     private lateinit var spnTracker: Spinner
     private lateinit var vTrackerOption: View
-    private lateinit var tvClassificationValue1: TextView
-    private lateinit var tvClassificationValue2: TextView
-    private lateinit var tvClassificationValue3: TextView
-    private lateinit var swClassification: SwitchCompat
-    private lateinit var vClassificationOption: View
+    private lateinit var swSkeleton: SwitchCompat
+    private lateinit var vSkeletonOption: View // RelativeLayout
     private lateinit var repFeedback: TextView
     private lateinit var repCounter: TextView
     private lateinit var displayProgressionType: TextView
     private lateinit var mediaPlayer: MediaPlayer
     private var cameraSource: CameraSource? = null
-    private var isClassifyPose = false
     private val requestPermissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestPermission()
@@ -126,11 +122,9 @@ class TrackerActivity : AppCompatActivity() {
         }
     }
 
-    private var setClassificationListener =
+    private var setSkeletonListener =
         CompoundButton.OnCheckedChangeListener { _, isChecked ->
-            showClassificationResult(isChecked)
-            isClassifyPose = isChecked
-            isPoseClassifier()
+            showSkeleton(isChecked)
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -154,16 +148,13 @@ class TrackerActivity : AppCompatActivity() {
         spnTracker = findViewById(R.id.spnTracker)
         vTrackerOption = findViewById(R.id.vTrackerOption)
         surfaceView = findViewById(R.id.surfaceView)
-        tvClassificationValue1 = findViewById(R.id.tvClassificationValue1)
-        tvClassificationValue2 = findViewById(R.id.tvClassificationValue2)
-        tvClassificationValue3 = findViewById(R.id.tvClassificationValue3)
-        swClassification = findViewById(R.id.swPoseClassification)
-        vClassificationOption = findViewById(R.id.vClassificationOption)
+        swSkeleton = findViewById(R.id.swSkeleton)
+        vSkeletonOption = findViewById(R.id.vSkeletonOption) // RelativeLayout
         repFeedback = findViewById(R.id.tvRepFeedback)
         repCounter = findViewById(R.id.tvRepCounter)
         initSpinner()
         spnModel.setSelection(modelPos)
-        swClassification.setOnCheckedChangeListener(setClassificationListener)
+        swSkeleton.setOnCheckedChangeListener(setSkeletonListener)
         if (!isCameraPermissionGranted()) {
             requestPermission()
         }
@@ -292,26 +283,11 @@ class TrackerActivity : AppCompatActivity() {
                             poseLabels: List<Pair<String, Float>>?
                         ) {
                             tvScore.text = getString(R.string.tfe_pe_tv_score, personScore ?: 0f)
-                            poseLabels?.sortedByDescending { it.second }?.let {
-                                tvClassificationValue1.text = getString(
-                                    R.string.tfe_pe_tv_classification_value,
-                                    convertPoseLabels(if (it.isNotEmpty()) it[0] else null)
-                                )
-                                tvClassificationValue2.text = getString(
-                                    R.string.tfe_pe_tv_classification_value,
-                                    convertPoseLabels(if (it.size >= 2) it[1] else null)
-                                )
-                                tvClassificationValue3.text = getString(
-                                    R.string.tfe_pe_tv_classification_value,
-                                    convertPoseLabels(if (it.size >= 3) it[2] else null)
-                                )
-                            }
                         }
 
                     }, this).apply {
                         prepareCamera()
                     }
-                isPoseClassifier()
                 lifecycleScope.launch(Dispatchers.Main) {
                     cameraSource?.initCamera(::replacePersons, intent.extras?.getInt("progressionType")!!) //progression checking starts with this function call
                 }
@@ -323,10 +299,6 @@ class TrackerActivity : AppCompatActivity() {
     private fun convertPoseLabels(pair: Pair<String, Float>?): String {
         if (pair == null) return "empty"
         return "${pair.first} (${String.format("%.2f", pair.second)})"
-    }
-
-    private fun isPoseClassifier() {
-        cameraSource?.setClassifier(if (isClassifyPose) PoseClassifier.create(this) else null)
     }
 
     // Initialize spinners to let user select model/accelerator/tracker.
@@ -443,11 +415,11 @@ class TrackerActivity : AppCompatActivity() {
         }
     }
 
-    // Show/hide the pose classification option.
+    // Show/hide the pose classification option. -> RelativeLayout
     private fun showPoseClassifier(isVisible: Boolean) {
-        vClassificationOption.visibility = if (isVisible) View.VISIBLE else View.GONE
+        vSkeletonOption.visibility = if (isVisible) View.VISIBLE else View.GONE
         if (!isVisible) {
-            swClassification.isChecked = false
+            swSkeleton.isChecked = false
         }
     }
 
@@ -457,11 +429,9 @@ class TrackerActivity : AppCompatActivity() {
     }
 
     // Show/hide classification result.
-    private fun showClassificationResult(isVisible: Boolean) {
+    private fun showSkeleton(isVisible: Boolean) {
         val visibility = if (isVisible) View.VISIBLE else View.GONE
-        tvClassificationValue1.visibility = visibility
-        tvClassificationValue2.visibility = visibility
-        tvClassificationValue3.visibility = visibility
+        VisualizationUtils.skeletonOverlay = isVisible
     }
 
     // Show/hide the tracking options.
