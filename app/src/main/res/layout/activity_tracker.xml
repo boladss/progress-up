@@ -11,54 +11,73 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:padding="0dp"
-        android:background="#131430">
-
-    </androidx.appcompat.widget.Toolbar>
-
     <include layout="@layout/bottom_sheet_layout"/>
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
+        android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="8dp"
+                android:layout_alignParentStart="true"
+                android:text="Progression Type"
+                android:id="@+id/tvProgressionType"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"/>
+
+            <LinearLayout
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:layout_margin="8dp"
+                android:orientation="vertical"
+                android:background="@drawable/button_navy"
+                android:layout_alignParentEnd="true">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    android:id="@+id/tvRepCounter"
+                    android:text="0"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:textSize="36sp"
+                    />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textAlignment="center"
+                    android:text="REPS"
+                    android:textColor="@color/white"
+                    android:textStyle="bold"
+                    android:textSize="16sp"
+                    />
+
+            </LinearLayout>
+
+        </RelativeLayout>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="?attr/actionBarSize"
+            android:padding="6dp"
             android:layout_gravity="center"
-            android:text="Progress-Up"
-            android:textColor="#32f4d1"
-            android:textSize="24sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="A real-time form checker for push-up progressions"
-            android:textColor="#FFFFFF"
-            android:textSize="14sp" />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Progression Type:"
-            android:id="@+id/tvProgressionType"
-            android:textColor="@color/white"
-            />
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
             android:text="Get into position!"
-            android:id="@+id/tvRepCount"
+            android:id="@+id/tvRepFeedback"
             android:textColor="@color/white"
+            android:textSize="16sp"
+            android:background="@drawable/button_navy"
             />
 
     </LinearLayout>
