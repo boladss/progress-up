@@ -34,8 +34,81 @@ enum class BodyPart(val position: Int) {
     RIGHT_KNEE(14),
     LEFT_ANKLE(15),
     RIGHT_ANKLE(16);
-    companion object{
+    companion object {
         private val map = entries.associateBy(BodyPart::position)
         fun fromInt(position: Int): BodyPart = map.getValue(position)
     }
 }
+
+data class BodySide (
+    val eye : Int,
+    val ear : Int,
+    val shoulder : Int,
+    val elbow : Int,
+    val wrist : Int,
+    val hip : Int,
+    val knee : Int,
+    val ankle : Int,
+    val elbowAngle : String,
+    val kneeAngle : String,
+    val lTorsoAngle : String,
+    val uTorsoAngle : String,
+) {
+    fun getSideInts() : List<Int> {
+        return listOf(eye, ear, shoulder, elbow, wrist, hip, knee, ankle)
+    }
+}
+
+val LeftParts = BodySide(
+    eye = BodyPart.LEFT_EYE.position,
+    ear = BodyPart.LEFT_EAR.position,
+    shoulder = BodyPart.LEFT_SHOULDER.position,
+    elbow = BodyPart.LEFT_ELBOW.position,
+    wrist = BodyPart.LEFT_WRIST.position,
+    hip = BodyPart.LEFT_HIP.position,
+    knee = BodyPart.LEFT_KNEE.position,
+    ankle = BodyPart.LEFT_ANKLE.position,
+    elbowAngle = "LElbow",
+    kneeAngle = "LKnee",
+    lTorsoAngle = "LLTorso",
+    uTorsoAngle = "LUTorso",
+)
+
+val RightParts = BodySide(
+    eye = BodyPart.RIGHT_EYE.position,
+    ear = BodyPart.RIGHT_EAR.position,
+    shoulder = BodyPart.RIGHT_SHOULDER.position,
+    elbow = BodyPart.RIGHT_ELBOW.position,
+    wrist = BodyPart.RIGHT_WRIST.position,
+    hip = BodyPart.RIGHT_HIP.position,
+    knee = BodyPart.RIGHT_KNEE.position,
+    ankle = BodyPart.RIGHT_ANKLE.position,
+    elbowAngle = "RElbow",
+    kneeAngle = "RKnee",
+    lTorsoAngle = "RLTorso",
+    uTorsoAngle = "RUTorso",
+)
+
+//val LeftParts = mapOf<String, Int>(
+//    to BodyPart.NOSE.position,
+//    to BodyPart.LEFT_EYE.position,
+//    to BodyPart.LEFT_EAR.position,
+//    to BodyPart.LEFT_SHOULDER.position,
+//    to BodyPart.LEFT_ELBOW.position,
+//    to BodyPart.LEFT_WRIST.position,
+//    to BodyPart.LEFT_HIP.position,
+//    to BodyPart.LEFT_KNEE.position,
+//    to BodyPart.LEFT_ANKLE.position,
+//)
+//
+//val RightParts = mapOf<String, Int>(
+//    "NOSE" to BodyPart.NOSE.position,
+//    "EYE" to BodyPart.RIGHT_EYE.position,
+//    "EAR" to BodyPart.RIGHT_EAR.position,
+//    "SHOULDER" to BodyPart.RIGHT_SHOULDER.position,
+//    "ELBOW" to BodyPart.RIGHT_ELBOW.position,
+//    "WRIST" to BodyPart.RIGHT_WRIST.position,
+//    "HIP" to BodyPart.RIGHT_HIP.position,
+//    "KNEE" to BodyPart.RIGHT_KNEE.position,
+//    "ANKLE" to BodyPart.RIGHT_ANKLE.position,
+//)

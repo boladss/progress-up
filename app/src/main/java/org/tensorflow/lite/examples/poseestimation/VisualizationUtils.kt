@@ -21,7 +21,9 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import org.tensorflow.lite.examples.poseestimation.data.BodyPart
+import org.tensorflow.lite.examples.poseestimation.data.LeftParts
 import org.tensorflow.lite.examples.poseestimation.data.Person
+import org.tensorflow.lite.examples.poseestimation.data.RightParts
 import kotlin.math.max
 
 object VisualizationUtils {
@@ -83,9 +85,10 @@ object VisualizationUtils {
 
             //todo: create a replacement for processbodyangles
 
-            person.angles.filter {
-                it.key in listOf("LKnee", "LLTorso", "LUTorso", "LElbow")
-            }.values.forEach{
+//            person.angles.filter {
+//                it.key in listOf("LKnee", "LLTorso", "LUTorso", "LElbow")
+//            }.values.forEach{
+            person.angles.values.forEach{
                 val (first, second, third) = it.indices
                 //draw body joints
                 drawBodyJoint(originalSizeCanvas, person, Pair(BodyPart.fromInt(first), BodyPart.fromInt(second)), it.valid)
@@ -175,6 +178,19 @@ object VisualizationUtils {
         ) {
         val pointA = person.keyPoints[bodyJoint.first.position].coordinate
         val pointB = person.keyPoints[bodyJoint.second.position].coordinate
+        //check for colors
+        val validColor : Int = Color.CYAN
+        val invalidColor : Int = Color.RED
+//        if (bodyJoint.first.position in LeftParts.getSideInts() && bodyJoint.second.position in LeftParts.getSideInts()) {
+//            validColor = Color.GREEN
+//            invalidColor = Color.RED
+//        } else if (bodyJoint.first.position in RightParts.getSideInts() && bodyJoint.second.position in RightParts.getSideInts()) {
+//            validColor = Color.CYAN
+//            invalidColor = Color.parseColor("#FFA500")
+//        } else {
+//            validColor = Color.parseColor("#800080")
+//            invalidColor = Color.YELLOW
+//        }
 
         // Paint circles on keypoints
         val paintCircle = Paint().apply {
@@ -189,7 +205,7 @@ object VisualizationUtils {
         val paintLine = Paint().apply {
             strokeWidth = LINE_WIDTH
             style = Paint.Style.STROKE 
-            color = if (isValid) Color.CYAN else Color.RED
+            color = if (isValid) validColor else invalidColor
         }
         canvas.drawLine(pointA.x, pointA.y, pointB.x, pointB.y, paintLine)
     }
