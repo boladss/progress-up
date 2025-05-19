@@ -1,6 +1,8 @@
 package org.tensorflow.lite.examples.poseestimation.progressions
 
 import android.media.MediaPlayer
+import org.tensorflow.lite.examples.poseestimation.data.BodySide
+import org.tensorflow.lite.examples.poseestimation.data.ErrorTypes
 import org.tensorflow.lite.examples.poseestimation.data.Person
 import org.tensorflow.lite.examples.poseestimation.sessions.DatabaseHandler
 
@@ -37,5 +39,9 @@ data class ProgressionState(
     var goodForm: Boolean,
     var lowestArmDist: Float,
     var errors: Set<String>,
-    var down: Boolean
+    var down: Boolean,
+    val errorCounter: ErrorTypes,
+    var mainSide: BodySide,
+    var subSide: BodySide,
+    var headPointingUp: Boolean
 )

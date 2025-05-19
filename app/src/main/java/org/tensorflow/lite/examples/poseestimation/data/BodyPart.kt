@@ -40,7 +40,13 @@ enum class BodyPart(val position: Int) {
     }
 }
 
+enum class Sides () {
+    LEFT,
+    RIGHT
+}
+
 data class BodySide (
+    val side : Sides,
     val eye : Int,
     val ear : Int,
     val shoulder : Int,
@@ -60,6 +66,7 @@ data class BodySide (
 }
 
 val LeftParts = BodySide(
+    side = Sides.LEFT,
     eye = BodyPart.LEFT_EYE.position,
     ear = BodyPart.LEFT_EAR.position,
     shoulder = BodyPart.LEFT_SHOULDER.position,
@@ -75,6 +82,7 @@ val LeftParts = BodySide(
 )
 
 val RightParts = BodySide(
+    side = Sides.RIGHT,
     eye = BodyPart.RIGHT_EYE.position,
     ear = BodyPart.RIGHT_EAR.position,
     shoulder = BodyPart.RIGHT_SHOULDER.position,
@@ -88,27 +96,3 @@ val RightParts = BodySide(
     lTorsoAngle = "RLTorso",
     uTorsoAngle = "RUTorso",
 )
-
-//val LeftParts = mapOf<String, Int>(
-//    to BodyPart.NOSE.position,
-//    to BodyPart.LEFT_EYE.position,
-//    to BodyPart.LEFT_EAR.position,
-//    to BodyPart.LEFT_SHOULDER.position,
-//    to BodyPart.LEFT_ELBOW.position,
-//    to BodyPart.LEFT_WRIST.position,
-//    to BodyPart.LEFT_HIP.position,
-//    to BodyPart.LEFT_KNEE.position,
-//    to BodyPart.LEFT_ANKLE.position,
-//)
-//
-//val RightParts = mapOf<String, Int>(
-//    "NOSE" to BodyPart.NOSE.position,
-//    "EYE" to BodyPart.RIGHT_EYE.position,
-//    "EAR" to BodyPart.RIGHT_EAR.position,
-//    "SHOULDER" to BodyPart.RIGHT_SHOULDER.position,
-//    "ELBOW" to BodyPart.RIGHT_ELBOW.position,
-//    "WRIST" to BodyPart.RIGHT_WRIST.position,
-//    "HIP" to BodyPart.RIGHT_HIP.position,
-//    "KNEE" to BodyPart.RIGHT_KNEE.position,
-//    "ANKLE" to BodyPart.RIGHT_ANKLE.position,
-//)

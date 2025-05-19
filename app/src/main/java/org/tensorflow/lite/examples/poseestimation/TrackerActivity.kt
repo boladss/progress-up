@@ -22,7 +22,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import org.tensorflow.lite.examples.poseestimation.camera.CameraSource
 import org.tensorflow.lite.examples.poseestimation.data.Device
+import org.tensorflow.lite.examples.poseestimation.data.ErrorTypes
+import org.tensorflow.lite.examples.poseestimation.data.LeftParts
 import org.tensorflow.lite.examples.poseestimation.data.Person
+import org.tensorflow.lite.examples.poseestimation.data.RightParts
 import org.tensorflow.lite.examples.poseestimation.ml.*
 import org.tensorflow.lite.examples.poseestimation.progressions.ProgressionState
 import org.tensorflow.lite.examples.poseestimation.progressions.ProgressionStates
@@ -208,7 +211,11 @@ class TrackerActivity : AppCompatActivity() {
         errors = setOf(),
         goodForm = true,
         lowestArmDist = 9999999f,
-        down = false
+        down = false,
+        errorCounter = ErrorTypes(),
+        mainSide = LeftParts,
+        subSide = RightParts,
+        headPointingUp = true,
     )
 
     private fun replacePersons(newPersons : List<Person>) {

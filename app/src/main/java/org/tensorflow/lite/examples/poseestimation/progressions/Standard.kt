@@ -11,9 +11,7 @@ import org.tensorflow.lite.examples.poseestimation.data.KeyPoint
 import org.tensorflow.lite.examples.poseestimation.data.Person
 import org.tensorflow.lite.examples.poseestimation.sessions.DatabaseHandler
 import java.time.Instant
-import kotlin.math.abs
-import kotlin.math.pow
-import kotlin.math.sqrt
+import kotlin.math.round
 
 private val progression = ProgressionTypes.STANDARD
 private val Standards = mapOf(
@@ -37,15 +35,13 @@ fun checkValidityStandard(person: Person) : Person {
 fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler: DatabaseHandler, mediaPlayer: MediaPlayer) : ProgressionState {
     val angles = person.angles
     val keypoints = person.keyPoints
-    val startingArmDist = currentState.startingArmDist
-    val lowestArmDist = currentState.lowestArmDist
 
     var feedback = currentState.feedback.toMutableList()
-    var errors = currentState.errors.toMutableSet()
+    val errors = currentState.errors.toMutableSet()
     var (totalReps, badReps, goodReps) = currentState.reps
 
-    var mainSide : BodySide = LeftParts
-    var subSide : BodySide = RightParts
+    val mainSide = currentState.mainSide
+    val subSide = currentState.subSide
 
     when (currentState.state) {
         ProgressionStates.INITIALIZE -> {
@@ -53,36 +49,35 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
             if (keypoints[BodyPart.NOSE.position].coordinate.y < keypoints[BodyPart.LEFT_SHOULDER.position].coordinate.y ||
                 keypoints[BodyPart.NOSE.position].coordinate.y < keypoints[BodyPart.RIGHT_SHOULDER.position].coordinate.y) {
                 //if the head is facing towards the top of the phone
+                currentState.headPointingUp = true
                 if (keypoints[BodyPart.LEFT_WRIST.position].coordinate.x < keypoints[BodyPart.LEFT_SHOULDER.position].coordinate.x ||
                     keypoints[BodyPart.RIGHT_WRIST.position].coordinate.x < keypoints[BodyPart.RIGHT_SHOULDER.position].coordinate.x) {
                     //and the arms are facing left
                     //then the primary side is the left side
-                        mainSide = LeftParts
-                        subSide = RightParts
+                        currentState.mainSide = LeftParts
+                        currentState.subSide = RightParts
                     }
                 //otherwise the primary side is the right side
                 else {
-                    mainSide = RightParts
-                    subSide = LeftParts
+                    currentState.mainSide = RightParts
+                    currentState.subSide = LeftParts
                 }
             }
             else if (keypoints[BodyPart.LEFT_WRIST.position].coordinate.x < keypoints[BodyPart.LEFT_SHOULDER.position].coordinate.x ||
                 keypoints[BodyPart.RIGHT_WRIST.position].coordinate.x < keypoints[BodyPart.RIGHT_SHOULDER.position].coordinate.x) {
                 //head down, arms left; then the primary side is the right side
-                mainSide = RightParts
-                subSide = LeftParts
+                currentState.headPointingUp = false
+                currentState.mainSide = RightParts
+                currentState.subSide = LeftParts
             }
             else {
                 //head down, arms right; primary side is the left side
-                mainSide = LeftParts
-                subSide = RightParts
+                currentState.headPointingUp = false
+                currentState.mainSide = LeftParts
+                currentState.subSide = RightParts
             }
 
             //wait until the body is in the correct state
-//            if (!angles[Angles.LElbow.name]!!.valid || //|| angleValidity["LElbow"]!!) &&
-//                !angles[Angles.LLTorso.name]!!.valid || //|| angleValidity["LLTorso"]!!) &&
-//                !angles[Angles.LKnee.name]!!.valid) {
-
             if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").any {!angles[it]!!.valid}) {
                 currentState.feedback =
                     listOf("${angles[Angles.LElbow.name]!!.valid} | ${angles[Angles.LLTorso.name]!!.valid} | ${angles[Angles.LKnee.name]!!.valid}")
@@ -92,7 +87,7 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
                 currentState.sessionId = dbHandler.insertSessionData(Instant.now(), Instant.now(), progression)
                 currentState.feedback = listOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps}")
                 currentState.state = ProgressionStates.START
-                currentState.startingArmDist = computeDistOfTwoParts(keypoints, BodyPart.LEFT_SHOULDER, BodyPart.LEFT_WRIST)
+                currentState.startingArmDist = computeDistOfTwoParts(keypoints, BodyPart.fromInt(mainSide.shoulder), BodyPart.fromInt(mainSide.wrist))
                 return currentState
             }
         }
@@ -110,47 +105,49 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
         }
         ProgressionStates.GOINGDOWN -> {
             //track hand and shoulder distance
-            val currentArmDist = sqrt(abs(keypoints[mainSide.shoulder].coordinate.x - keypoints[mainSide.wrist].coordinate.x).pow(2) +
-                    abs(keypoints[mainSide.shoulder].coordinate.y - keypoints[mainSide.wrist].coordinate.y).pow(2)
-            )
-            if (currentArmDist < lowestArmDist)
+            val currentArmDist = computeDistOfTwoParts(keypoints, BodyPart.fromInt(mainSide.shoulder), BodyPart.fromInt(mainSide.wrist))
+            if (currentArmDist < currentState.lowestArmDist)
                 currentState.lowestArmDist = currentArmDist
 
-            if (!angles[mainSide.elbowAngle]!!.valid && !angles[subSide.elbowAngle]!!.valid && currentArmDist < 0.8 * startingArmDist) //assume push up has started once elbows bend
+            if (!angles[mainSide.elbowAngle]!!.valid && !angles[subSide.elbowAngle]!!.valid && currentArmDist < 0.8 * currentState.startingArmDist) //assume push up has started once elbows bend
                 currentState.down = true
 
             if (!angles[mainSide.lTorsoAngle]!!.valid || //!angleValidity["LLTorso"]!! || //check if the torso buckles
                 !angles[mainSide.kneeAngle]!!.valid){// || !angleValidity["LKnee"]!!){ // or the knees buckle
+                currentState.errorCounter.buckling++
+            }
+            else currentState.errorCounter.buckling--
+            if (currentState.errorCounter.buckling >= 3) {
                 currentState.goodForm = false
-                errors.add("Body is buckling.")
+                errors.add("Body buckling")
             }
 
             //check if hands are under shoulders
-            if (abs(keypoints[mainSide.shoulder].coordinate.y - keypoints[mainSide.wrist].coordinate.y) > 60){// && abs(pixels[6].y - pixels[10].y) > 100){
+            if ((currentState.headPointingUp && keypoints[mainSide.shoulder].coordinate.y > keypoints[mainSide.wrist].coordinate.y + 20) ||
+                (!currentState.headPointingUp && keypoints[mainSide.shoulder].coordinate.y < keypoints[mainSide.wrist].coordinate.y - 20)) {// && abs(pixels[6].y - pixels[10].y) > 100){
                 currentState.goodForm = false
+                errors.add("head is up: ${currentState.headPointingUp}")
                 errors.add("Hands are not under shoulders.")
             }
 
             //check if feet are level with hands
             //figure out where head is relative to hands
-            //todo: change to nose
-            val isLowYDown : Boolean = if (keypoints[mainSide.shoulder].coordinate.x > keypoints[mainSide.wrist].coordinate.x) true else false
-
-//            if ((isLowYDown && pixels[15].x < pixels[9].x) ||
-//                (!isLowYDown && pixels[15].x > pixels[9].x)){
-//                goodForm = false
-//                errors.add("Hands not aligned with feet")
-//            }
+            if ((keypoints[mainSide.shoulder].coordinate.x > keypoints[mainSide.wrist].coordinate.x && keypoints[mainSide.wrist].coordinate.x > keypoints[mainSide.ankle].coordinate.x) || //facing left
+                (keypoints[mainSide.shoulder].coordinate.x < keypoints[mainSide.wrist].coordinate.x && keypoints[mainSide.wrist].coordinate.x < keypoints[mainSide.ankle].coordinate.x) ) { //facing right
+                currentState.goodForm = false
+                errors.add("Hands not aligned with feet")
+            }
 
             currentState.errors = errors
 
-            if (currentState.down && angles[mainSide.elbowAngle]!!.valid && lowestArmDist < 0.8 * startingArmDist)
+            if (currentState.down && angles[mainSide.elbowAngle]!!.valid && currentState.lowestArmDist < 0.8 * currentState.startingArmDist)
                 currentState.state = ProgressionStates.GOINGUP
             return currentState
         }
         ProgressionStates.GOINGUP -> {
             //check range of motion here, make rep bad if not enough
-            if (currentState.goodForm && startingArmDist - lowestArmDist < 0.5 * startingArmDist) {
+            if (currentState.goodForm && currentState.startingArmDist - currentState.lowestArmDist < 0.4 * currentState.startingArmDist) {
+                errors.add("Starting: ${round(currentState.startingArmDist)} | Lowest: ${round(currentState.lowestArmDist)}")
                 errors.add("Not enough range of motion.")
                 currentState.goodForm = false
             }
@@ -177,8 +174,8 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
                 currentState.feedback = feedback
             }
 
-            if (computeDistOfTwoParts(keypoints, BodyPart.fromInt(mainSide.shoulder), BodyPart.fromInt(mainSide.wrist)) < startingArmDist - 10 &&
-                !person.angles[Angles.LElbow.name]!!.valid) {
+            if (computeDistOfTwoParts(keypoints, BodyPart.fromInt(mainSide.shoulder), BodyPart.fromInt(mainSide.wrist)) < currentState.startingArmDist - 10 &&
+                !person.angles[mainSide.elbowAngle]!!.valid) {
                 //wait until close to start
                 return currentState
             }
