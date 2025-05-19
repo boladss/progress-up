@@ -1,10 +1,12 @@
 package org.tensorflow.lite.examples.poseestimation.data
 
 data class ErrorTypes(
-    var buckling: Int = 0,
+    var torsoBuckling: Int = 0,
+    var kneesBuckling: Int = 0,
     var startPosition: Int = 0
 ) {
     fun reset() {
-        buckling = 0
+        torsoBuckling = 0
+        kneesBuckling = 0
     }
 }

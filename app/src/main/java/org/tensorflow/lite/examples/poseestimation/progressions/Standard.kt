@@ -9,6 +9,7 @@ import org.tensorflow.lite.examples.poseestimation.data.LeftParts
 import org.tensorflow.lite.examples.poseestimation.data.RightParts
 import org.tensorflow.lite.examples.poseestimation.data.KeyPoint
 import org.tensorflow.lite.examples.poseestimation.data.Person
+import org.tensorflow.lite.examples.poseestimation.data.Sides
 import org.tensorflow.lite.examples.poseestimation.sessions.DatabaseHandler
 import java.time.Instant
 import kotlin.math.round
@@ -112,21 +113,26 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
             if (!angles[mainSide.elbowAngle]!!.valid && !angles[subSide.elbowAngle]!!.valid && currentArmDist < 0.8 * currentState.startingArmDist) //assume push up has started once elbows bend
                 currentState.down = true
 
-            if (!angles[mainSide.lTorsoAngle]!!.valid || //!angleValidity["LLTorso"]!! || //check if the torso buckles
-                !angles[mainSide.kneeAngle]!!.valid){// || !angleValidity["LKnee"]!!){ // or the knees buckle
-                currentState.errorCounter.buckling++
-            }
-            else currentState.errorCounter.buckling--
-            if (currentState.errorCounter.buckling >= 3) {
+            if (listOf(mainSide.lTorsoAngle, subSide.lTorsoAngle).any {angles[it]!!.valid}) //check if the torso buckles
+                currentState.errorCounter.torsoBuckling++
+            else currentState.errorCounter.torsoBuckling--
+
+            if (listOf(mainSide.kneeAngle, subSide.kneeAngle).any {angles[it]!!.valid}) // or the knees buckle
+                currentState.errorCounter.kneesBuckling++
+            else currentState.errorCounter.kneesBuckling--
+            if (currentState.errorCounter.kneesBuckling >= 3) {
                 currentState.goodForm = false
-                errors.add("Body buckling")
+                errors.add("Knees are buckling")
+            }
+            if (currentState.errorCounter.torsoBuckling >= 3) {
+                currentState.goodForm = false
+                errors.add("Torso is buckling")
             }
 
             //check if hands are under shoulders
             if ((currentState.headPointingUp && keypoints[mainSide.shoulder].coordinate.y > keypoints[mainSide.wrist].coordinate.y + 20) ||
                 (!currentState.headPointingUp && keypoints[mainSide.shoulder].coordinate.y < keypoints[mainSide.wrist].coordinate.y - 20)) {// && abs(pixels[6].y - pixels[10].y) > 100){
                 currentState.goodForm = false
-                errors.add("head is up: ${currentState.headPointingUp}")
                 errors.add("Hands are not under shoulders.")
             }
 
@@ -135,7 +141,12 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
             if ((keypoints[mainSide.shoulder].coordinate.x > keypoints[mainSide.wrist].coordinate.x && keypoints[mainSide.wrist].coordinate.x > keypoints[mainSide.ankle].coordinate.x) || //facing left
                 (keypoints[mainSide.shoulder].coordinate.x < keypoints[mainSide.wrist].coordinate.x && keypoints[mainSide.wrist].coordinate.x < keypoints[mainSide.ankle].coordinate.x) ) { //facing right
                 currentState.goodForm = false
-                errors.add("Hands not aligned with feet")
+                errors.add(if (mainSide.side == Sides.LEFT) "Right hand not aligned with feet" else "Left hand not aligned with feet")
+            }
+            if ((keypoints[subSide.shoulder].coordinate.x > keypoints[subSide.wrist].coordinate.x && keypoints[subSide.wrist].coordinate.x > keypoints[subSide.ankle].coordinate.x) || //facing left
+                (keypoints[subSide.shoulder].coordinate.x < keypoints[subSide.wrist].coordinate.x && keypoints[subSide.wrist].coordinate.x < keypoints[subSide.ankle].coordinate.x) ) { //facing right
+                currentState.goodForm = false
+                errors.add(if (subSide.side == Sides.LEFT) "Right hand not aligned with feet" else "Left hand not aligned with feet")
             }
 
             currentState.errors = errors
@@ -162,6 +173,7 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
                 badReps++
             }
             currentState.reps = Triple(totalReps, badReps, goodReps)
+            currentState.errorCounter.reset()
 
             if (currentState.goodForm)  {
                 currentState.feedback = listOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps} | Rep good")
