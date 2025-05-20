@@ -202,7 +202,7 @@ fun getFeedbackKnee(currentState: ProgressionState, person:Person, dbHandler: Da
 
             currentState.errors = errors
 
-            if (currentState.down && angles[Angles.LElbow.name]!!.valid && currentState.lowestArmDist < 0.8 * currentState.startingArmDist)
+            if (currentState.down && angles[mainSide.elbowAngle]!!.valid && currentState.lowestArmDist < 0.8 * currentState.startingArmDist)
                 currentState.state = ProgressionStates.GOINGUP
             return currentState
         }
@@ -223,6 +223,7 @@ fun getFeedbackKnee(currentState: ProgressionState, person:Person, dbHandler: Da
                 badReps++
             }
             currentState.reps = Triple(totalReps, badReps, goodReps)
+            currentState.errorCounter.reset()
 
             if (currentState.goodForm)  {
                 currentState.feedback = listOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps} | Rep good")

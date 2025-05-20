@@ -147,7 +147,7 @@ fun getFeedbackIncline(currentState: ProgressionState, person:Person, dbHandler:
             if (currentArmDist < currentState.lowestArmDist)
                 currentState.lowestArmDist = currentArmDist
 
-            if (!angles[Angles.LElbow.name]!!.valid && currentArmDist < 0.8 * currentState.startingArmDist) //assume push up has started once elbow bends
+            if (!angles[mainSide.elbowAngle]!!.valid && !angles[subSide.elbowAngle]!!.valid && currentArmDist < 0.8 * currentState.startingArmDist) //assume push up has started once elbows bend
                 currentState.down = true
 
             if (listOf(mainSide.lTorsoAngle, subSide.lTorsoAngle).any {!angles[it]!!.valid}) //check if the torso buckles
@@ -201,7 +201,7 @@ fun getFeedbackIncline(currentState: ProgressionState, person:Person, dbHandler:
 
             currentState.errors = errors
 
-            if (currentState.down && angles[Angles.LElbow.name]!!.valid && currentState.lowestArmDist < 0.8 * currentState.startingArmDist)
+            if (currentState.down && angles[mainSide.elbowAngle]!!.valid && currentState.lowestArmDist < 0.8 * currentState.startingArmDist)
                 currentState.state = ProgressionStates.GOINGUP
             return currentState
         }
@@ -222,6 +222,7 @@ fun getFeedbackIncline(currentState: ProgressionState, person:Person, dbHandler:
                 badReps++
             }
             currentState.reps = Triple(totalReps, badReps, goodReps)
+            currentState.errorCounter.reset()
 
             if (currentState.goodForm)  {
                 currentState.feedback = listOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps} | Rep good")
