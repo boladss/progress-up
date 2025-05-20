@@ -40,7 +40,7 @@ enum class BodyPart(val position: Int) {
     }
 }
 
-enum class Sides () {
+enum class Sides {
     LEFT,
     RIGHT
 }
@@ -59,6 +59,7 @@ data class BodySide (
     val kneeAngle : String,
     val lTorsoAngle : String,
     val uTorsoAngle : String,
+    val color: String,
 ) {
     fun getSideInts() : List<Int> {
         return listOf(eye, ear, shoulder, elbow, wrist, hip, knee, ankle)
@@ -82,6 +83,7 @@ val LeftParts = BodySide(
     kneeAngle = "LKnee",
     lTorsoAngle = "LLTorso",
     uTorsoAngle = "LUTorso",
+    color = "Red/Green"
 )
 
 val RightParts = BodySide(
@@ -98,4 +100,5 @@ val RightParts = BodySide(
     kneeAngle = "RKnee",
     lTorsoAngle = "RLTorso",
     uTorsoAngle = "RUTorso",
+    color = "Cyan/Orange"
 )

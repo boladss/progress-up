@@ -204,7 +204,7 @@ class TrackerActivity : AppCompatActivity() {
 
     private var currentState = ProgressionState(
         sessionId = 0,
-        reps = Triple(0, 0, 0),
+        reps = Triple(-1, 0, -1),
         feedback = listOf("Waiting for position..."),
         state = ProgressionStates.INITIALIZE,
         startingArmDist = 0f,
@@ -216,6 +216,7 @@ class TrackerActivity : AppCompatActivity() {
         headPointingUp = true,
     )
 
+    private var startPlayed = false
     private fun replacePersons(newPersons : List<Person>) {
         persons = newPersons
         val progression = ProgressionTypes.fromInt(intent.extras?.getInt("progressionType")!!)
@@ -227,8 +228,9 @@ class TrackerActivity : AppCompatActivity() {
             }
         }
         currentState = nextState
-        if (currentState.state == ProgressionStates.GOINGUP &&
-            !mediaPlayer.isPlaying) {
+        if (currentState.state == ProgressionStates.GOINGDOWN &&
+            !startPlayed) {
+            startPlayed = true
             mediaPlayer.reset()
             if (currentState.goodForm)
                 mediaPlayer.setDataSource(resources.openRawResourceFd(R.raw.goodform))
@@ -236,14 +238,8 @@ class TrackerActivity : AppCompatActivity() {
                 mediaPlayer.setDataSource(resources.openRawResourceFd(R.raw.badform))
             mediaPlayer.prepare()
             mediaPlayer.start()
-        }
-//        runOnUiThread {
-//            repCount.text = ""
-//            persons[0].angles.entries.forEach {
-//                repCount.append("${it.key}: ${it.value.valid} / ${it.value.value}" +
-//                        "\n")
-//            }
-//        }
+        } else if (startPlayed && currentState.state == ProgressionStates.START)
+            startPlayed = false
     }
 
     private fun debugChangeText(text: String) {

@@ -21,12 +21,19 @@ private val Standards = mapOf(
     Pair("STANDARD_KNEE_ANGLE", 180),
     Pair("STANDARD_KNEE_DOF", 25)
 )
+private val SubStandards = mapOf(
+    Pair("STANDARD_LOWER_TORSO_ANGLE", 180),
+    Pair("STANDARD_UPPER_TORSO_ANGLE", 180),
+    Pair("STANDARD_ELBOW_ANGLE", 180),
+    Pair("STANDARD_LOWER_TORSO_DOF", 25),
+    Pair("STANDARD_UPPER_TORSO_DOF", 20),
+    Pair("STANDARD_ELBOW_DOF", 20), // degrees of freedom --- INCREASED TO 10
+    Pair("STANDARD_KNEE_ANGLE", 180),
+    Pair("STANDARD_KNEE_DOF", 25)
+)
 
 fun checkValidityPseudoPlanche(person: Person) : Person {
-    Angles.entries.forEach {
-        person.angles[it.name]!!.valid = it.check(person.angles[it.name]!!.value, Standards)
-    }
-    return person
+    return genericValidityCheck(person, Standards, SubStandards)
 }
 
 fun getFeedbackPseudoPlanche(currentState: ProgressionState, person:Person, dbHandler: DatabaseHandler, mediaPlayer: MediaPlayer) : ProgressionState {

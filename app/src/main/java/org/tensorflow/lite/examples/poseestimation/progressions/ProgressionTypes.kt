@@ -6,6 +6,8 @@ import org.tensorflow.lite.examples.poseestimation.data.ErrorTypes
 import org.tensorflow.lite.examples.poseestimation.data.Person
 import org.tensorflow.lite.examples.poseestimation.sessions.DatabaseHandler
 
+val END_WAIT_FRAMES = 1
+
 enum class ProgressionTypes(val processHeuristics: (ProgressionState, Person, DatabaseHandler, MediaPlayer) -> ProgressionState, val getValidity: (Person) -> Person) {
     WALL(::getFeedbackWall, ::checkValidityWall),
     INCLINE(::getFeedbackIncline, ::checkValidityIncline),

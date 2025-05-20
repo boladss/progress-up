@@ -67,14 +67,7 @@ private fun areHandsUnderShoulders (keypoints: List<KeyPoint>, mainSide: BodySid
 }
 
 fun checkValidityDecline(person: Person) : Person {
-    val subAngles = person.subSide.getAngles()
-    Angles.entries.forEach {
-        if (it.name in subAngles)
-            person.angles[it.name]!!.valid = it.check(person.angles[it.name]!!.value, SubStandards)
-        else
-            person.angles[it.name]!!.valid = it.check(person.angles[it.name]!!.value, Standards)
-    }
-    return person
+    return genericValidityCheck(person, Standards, SubStandards)
 }
 
 fun getFeedbackDecline(currentState: ProgressionState, person:Person, dbHandler: DatabaseHandler, mediaPlayer: MediaPlayer) : ProgressionState {
@@ -93,41 +86,14 @@ fun getFeedbackDecline(currentState: ProgressionState, person:Person, dbHandler:
 
     when (currentState.state) {
         ProgressionStates.INITIALIZE -> {
-            //constantly set the mainSide and subSide
+            //if the head is facing towards the top of the phone
             if (keypoints[BodyPart.NOSE.position].coordinate.y < keypoints[BodyPart.LEFT_SHOULDER.position].coordinate.y ||
-                keypoints[BodyPart.NOSE.position].coordinate.y < keypoints[BodyPart.RIGHT_SHOULDER.position].coordinate.y) {
-                //if the head is facing towards the top of the phone
+                keypoints[BodyPart.NOSE.position].coordinate.y < keypoints[BodyPart.RIGHT_SHOULDER.position].coordinate.y)
                 currentState.headPointingUp = true
-                if (keypoints[BodyPart.LEFT_WRIST.position].coordinate.x < keypoints[BodyPart.LEFT_SHOULDER.position].coordinate.x ||
-                    keypoints[BodyPart.RIGHT_WRIST.position].coordinate.x < keypoints[BodyPart.RIGHT_SHOULDER.position].coordinate.x) {
-                    //and the arms are facing left
-                    //then the primary side is the left side
-                    person.mainSide = LeftParts
-                    person.subSide = RightParts
-                }
-                //otherwise the primary side is the right side
-                else {
-                    person.mainSide = RightParts
-                    person.subSide = LeftParts
-                }
-            }
-            else if (keypoints[BodyPart.LEFT_WRIST.position].coordinate.x < keypoints[BodyPart.LEFT_SHOULDER.position].coordinate.x ||
-                keypoints[BodyPart.RIGHT_WRIST.position].coordinate.x < keypoints[BodyPart.RIGHT_SHOULDER.position].coordinate.x) {
-                //head down, arms left; then the primary side is the right side
+            else
                 currentState.headPointingUp = false
-                person.mainSide = RightParts
-                person.subSide = LeftParts
-            }
-            else {
-                //head down, arms right; primary side is the left side
-                currentState.headPointingUp = false
-                person.mainSide = LeftParts
-                person.subSide = RightParts
-            }
-            facingLeft = if (keypoints[mainSide.shoulder].coordinate.x > keypoints[mainSide.wrist].coordinate.x) true else false
 
             //wait until the body is in the correct state
-
             val handsUnderShoulders = areHandsUnderShoulders(keypoints, mainSide, subSide)
             if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").any {!angles[it]!!.valid} ||
                 !handsUnderShoulders ||
@@ -146,8 +112,6 @@ fun getFeedbackDecline(currentState: ProgressionState, person:Person, dbHandler:
                     currentState.errorCounter.startPosition = 0
                     currentState.sessionId =
                         dbHandler.insertSessionData(Instant.now(), Instant.now(), progression)
-                    currentState.feedback =
-                        listOf("Good: $goodReps | Bad: $badReps | Total: $totalReps")
                     currentState.state = ProgressionStates.START
                     currentState.startingArmDist = computeDistOfTwoParts(
                         keypoints,
@@ -162,10 +126,11 @@ fun getFeedbackDecline(currentState: ProgressionState, person:Person, dbHandler:
             //wait until valid again
             if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").all {angles[it]!!.valid}) {
                 currentState.errorCounter.startPosition++
-                if (currentState.errorCounter.startPosition >= 2) {
-                    currentState.errorCounter.startPosition = 0
-                    feedback.add(" | Next rep")
-                    currentState.feedback = feedback
+                if (currentState.errorCounter.startPosition >= END_WAIT_FRAMES) {
+                    //process new rep
+                    currentState.reps = addRep(currentState, dbHandler)
+                    currentState.feedback = processFeedback(currentState)
+                    currentState.errorCounter.reset()
                     currentState.state = ProgressionStates.GOINGDOWN
                     currentState.goodForm = true
                     currentState.errors = setOf()
@@ -231,29 +196,6 @@ fun getFeedbackDecline(currentState: ProgressionState, person:Person, dbHandler:
             if (currentState.goodForm && currentState.startingArmDist - currentState.lowestArmDist < 0.3 * currentState.startingArmDist) {
                 errors.add("Not enough range of motion.")
                 currentState.goodForm = false
-            }
-
-            totalReps++
-            if (currentState.goodForm) {
-                dbHandler.insertRepetitionData(currentState.sessionId, totalReps, true)
-                goodReps++
-            } else {
-                dbHandler.insertRepetitionData(currentState.sessionId, totalReps, false)
-                dbHandler.insertMistakeData(currentState.sessionId, totalReps, errors)
-                badReps++
-            }
-            currentState.reps = Triple(totalReps, badReps, goodReps)
-            currentState.errorCounter.reset()
-
-            if (currentState.goodForm)  {
-                currentState.feedback = listOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps} | Rep good")
-            }
-            else {
-                feedback = mutableListOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps} | Errors:\n")
-                errors.forEach{
-                    feedback.add(it + "\n")
-                }
-                currentState.feedback = feedback
             }
 
             if (computeDistOfTwoParts(keypoints, BodyPart.fromInt(mainSide.shoulder), BodyPart.fromInt(mainSide.wrist)) < currentState.startingArmDist - 10 &&

@@ -1,8 +1,13 @@
 package org.tensorflow.lite.examples.poseestimation.progressions
 
 import android.media.MediaPlayer
+import org.tensorflow.lite.examples.poseestimation.data.Angles
 import org.tensorflow.lite.examples.poseestimation.data.BodyPart
 import org.tensorflow.lite.examples.poseestimation.data.KeyPoint
+import org.tensorflow.lite.examples.poseestimation.data.LeftParts
+import org.tensorflow.lite.examples.poseestimation.data.Person
+import org.tensorflow.lite.examples.poseestimation.data.RightParts
+import org.tensorflow.lite.examples.poseestimation.sessions.DatabaseHandler
 import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.sqrt
@@ -11,6 +16,31 @@ fun computeDistOfTwoParts(keypoints : List<KeyPoint>, part1: BodyPart, part2: Bo
     return sqrt(
         (keypoints[part1.ordinal].coordinate.x - keypoints[part2.ordinal].coordinate.x).pow(2) +
             (keypoints[part1.ordinal].coordinate.y - keypoints[part2.ordinal].coordinate.y).pow(2))
+}
+
+fun genericValidityCheck(person: Person, standards: Map<String, Int>, subStandards: Map<String, Int>) : Person {
+    val subAngles = person.subSide.getAngles()
+    Angles.entries.forEach {
+        if (it.name in subAngles)
+            person.angles[it.name]!!.valid = it.check(person.angles[it.name]!!.value, subStandards)
+        else
+            person.angles[it.name]!!.valid = it.check(person.angles[it.name]!!.value, standards)
+    }
+
+    val keypoints = person.keyPoints
+    val mainSide = person.mainSide
+    val facingLeft = (keypoints[mainSide.shoulder].coordinate.x > keypoints[mainSide.wrist].coordinate.x)
+    val facingUp = (keypoints[BodyPart.NOSE.position].coordinate.y < keypoints[BodyPart.LEFT_SHOULDER.position].coordinate.y ||
+            keypoints[BodyPart.NOSE.position].coordinate.y < keypoints[BodyPart.RIGHT_SHOULDER.position].coordinate.y)
+
+    if ((facingUp && facingLeft) || (!facingUp && !facingLeft)) {
+        person.mainSide = LeftParts
+        person.subSide = RightParts
+    } else {
+        person.mainSide = RightParts
+        person.subSide = LeftParts
+    }
+    return person
 }
 
 /**
@@ -29,6 +59,39 @@ fun computeTriangleHeight(keypoints : List<KeyPoint>, part1: BodyPart, part2: Bo
 
     //use area to compute height, A = bh/2, h = 2A/b
     return 2 * area / length23
+}
+
+fun addRep(currentState: ProgressionState, dbHandler: DatabaseHandler) : Triple<Int, Int, Int> {
+    var (totalReps, badReps, goodReps) = currentState.reps
+    val errors = currentState.errors.toMutableSet()
+    totalReps++
+        if (currentState.goodForm) {
+            goodReps++
+            if (totalReps > 0) dbHandler.insertRepetitionData(currentState.sessionId, totalReps, true)
+        } else {
+            badReps++
+            if (totalReps > 0) {
+                dbHandler.insertRepetitionData(currentState.sessionId, totalReps, false)
+                dbHandler.insertMistakeData(currentState.sessionId, totalReps, errors)
+            }
+        }
+    return Triple(totalReps, badReps, goodReps)
+}
+
+fun processFeedback(currentState: ProgressionState) : List<String> {
+    val (totalReps, badReps, goodReps) = currentState.reps
+    val errors = currentState.errors.toMutableSet()
+    if (currentState.goodForm)  {
+        currentState.feedback = listOf("Good: $goodReps | Bad: $badReps | Total: $totalReps | Rep good")
+    }
+    else {
+        val feedback = mutableListOf("Good: $goodReps | Bad: $badReps | Total: $totalReps | Errors:\n")
+        errors.forEach{
+            feedback.add(it + "\n")
+        }
+        currentState.feedback = feedback
+    }
+    return currentState.feedback
 }
 
 //fun playAudio(mediaPlayer: MediaPlayer, file: Int) {
