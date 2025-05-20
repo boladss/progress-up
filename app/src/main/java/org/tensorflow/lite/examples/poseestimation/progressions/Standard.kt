@@ -1,13 +1,10 @@
 package org.tensorflow.lite.examples.poseestimation.progressions
 
 import android.media.MediaPlayer
-import android.provider.ContactsContract.Data
 import org.tensorflow.lite.examples.poseestimation.data.Angles
 import org.tensorflow.lite.examples.poseestimation.data.BodyPart
-import org.tensorflow.lite.examples.poseestimation.data.BodySide
 import org.tensorflow.lite.examples.poseestimation.data.LeftParts
 import org.tensorflow.lite.examples.poseestimation.data.RightParts
-import org.tensorflow.lite.examples.poseestimation.data.KeyPoint
 import org.tensorflow.lite.examples.poseestimation.data.Person
 import org.tensorflow.lite.examples.poseestimation.data.Sides
 import org.tensorflow.lite.examples.poseestimation.sessions.DatabaseHandler
@@ -25,10 +22,24 @@ private val Standards = mapOf(
     Pair("STANDARD_KNEE_ANGLE", 180),
     Pair("STANDARD_KNEE_DOF", 25)
 )
+private val SubStandards = mapOf(
+    Pair("STANDARD_LOWER_TORSO_ANGLE", 180),
+    Pair("STANDARD_UPPER_TORSO_ANGLE", 180),
+    Pair("STANDARD_ELBOW_ANGLE", 180),
+    Pair("STANDARD_LOWER_TORSO_DOF", 25),
+    Pair("STANDARD_UPPER_TORSO_DOF", 20),
+    Pair("STANDARD_ELBOW_DOF", 20),
+    Pair("STANDARD_KNEE_ANGLE", 180),
+    Pair("STANDARD_KNEE_DOF", 25)
+)
 
 fun checkValidityStandard(person: Person) : Person {
+    val subAngles = person.subSide.getAngles()
     Angles.entries.forEach {
-        person.angles[it.name]!!.valid = it.check(person.angles[it.name]!!.value, Standards)
+        if (it.name in subAngles)
+            person.angles[it.name]!!.valid = it.check(person.angles[it.name]!!.value, SubStandards)
+        else
+            person.angles[it.name]!!.valid = it.check(person.angles[it.name]!!.value, Standards)
     }
     return person
 }
@@ -41,8 +52,8 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
     val errors = currentState.errors.toMutableSet()
     var (totalReps, badReps, goodReps) = currentState.reps
 
-    val mainSide = currentState.mainSide
-    val subSide = currentState.subSide
+    val mainSide = person.mainSide
+    val subSide = person.subSide
 
     when (currentState.state) {
         ProgressionStates.INITIALIZE -> {
@@ -55,27 +66,27 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
                     keypoints[BodyPart.RIGHT_WRIST.position].coordinate.x < keypoints[BodyPart.RIGHT_SHOULDER.position].coordinate.x) {
                     //and the arms are facing left
                     //then the primary side is the left side
-                        currentState.mainSide = LeftParts
-                        currentState.subSide = RightParts
+                        person.mainSide = LeftParts
+                        person.subSide = RightParts
                     }
                 //otherwise the primary side is the right side
                 else {
-                    currentState.mainSide = RightParts
-                    currentState.subSide = LeftParts
+                    person.mainSide = RightParts
+                    person.subSide = LeftParts
                 }
             }
             else if (keypoints[BodyPart.LEFT_WRIST.position].coordinate.x < keypoints[BodyPart.LEFT_SHOULDER.position].coordinate.x ||
                 keypoints[BodyPart.RIGHT_WRIST.position].coordinate.x < keypoints[BodyPart.RIGHT_SHOULDER.position].coordinate.x) {
                 //head down, arms left; then the primary side is the right side
                 currentState.headPointingUp = false
-                currentState.mainSide = RightParts
-                currentState.subSide = LeftParts
+                person.mainSide = RightParts
+                person.subSide = LeftParts
             }
             else {
                 //head down, arms right; primary side is the left side
                 currentState.headPointingUp = false
-                currentState.mainSide = LeftParts
-                currentState.subSide = RightParts
+                person.mainSide = LeftParts
+                person.subSide = RightParts
             }
 
             //wait until the body is in the correct state
@@ -86,7 +97,7 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
             }
             else {
                 currentState.sessionId = dbHandler.insertSessionData(Instant.now(), Instant.now(), progression)
-                currentState.feedback = listOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps}")
+                currentState.feedback = listOf("Good: $goodReps | Bad: $badReps | Total: $totalReps")
                 currentState.state = ProgressionStates.START
                 currentState.startingArmDist = computeDistOfTwoParts(keypoints, BodyPart.fromInt(mainSide.shoulder), BodyPart.fromInt(mainSide.wrist))
                 return currentState
@@ -113,27 +124,41 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
             if (!angles[mainSide.elbowAngle]!!.valid && !angles[subSide.elbowAngle]!!.valid && currentArmDist < 0.8 * currentState.startingArmDist) //assume push up has started once elbows bend
                 currentState.down = true
 
-            if (listOf(mainSide.lTorsoAngle, subSide.lTorsoAngle).any {angles[it]!!.valid}) //check if the torso buckles
+            if (listOf(mainSide.lTorsoAngle, subSide.lTorsoAngle).any {!angles[it]!!.valid}) //check if the torso buckles
                 currentState.errorCounter.torsoBuckling++
-            else currentState.errorCounter.torsoBuckling--
-
-            if (listOf(mainSide.kneeAngle, subSide.kneeAngle).any {angles[it]!!.valid}) // or the knees buckle
-                currentState.errorCounter.kneesBuckling++
-            else currentState.errorCounter.kneesBuckling--
-            if (currentState.errorCounter.kneesBuckling >= 3) {
-                currentState.goodForm = false
-                errors.add("Knees are buckling")
-            }
+            else if (currentState.errorCounter.torsoBuckling > 0) currentState.errorCounter.torsoBuckling--
             if (currentState.errorCounter.torsoBuckling >= 3) {
                 currentState.goodForm = false
                 errors.add("Torso is buckling")
+                currentState.errorCounter.reset()
             }
 
-            //check if hands are under shoulders
+            if (listOf(mainSide.kneeAngle, subSide.kneeAngle).any {!angles[it]!!.valid}) // check if the knees buckle
+                currentState.errorCounter.kneesBuckling++
+            else if (currentState.errorCounter.kneesBuckling > 0) currentState.errorCounter.kneesBuckling--
+            if (currentState.errorCounter.kneesBuckling >= 3) {
+                currentState.goodForm = false
+                errors.add("Knees are buckling")
+                currentState.errorCounter.reset()
+            }
+
+            //hands shouldn't go above shoulders (pike)
             if ((currentState.headPointingUp && keypoints[mainSide.shoulder].coordinate.y > keypoints[mainSide.wrist].coordinate.y + 20) ||
-                (!currentState.headPointingUp && keypoints[mainSide.shoulder].coordinate.y < keypoints[mainSide.wrist].coordinate.y - 20)) {// && abs(pixels[6].y - pixels[10].y) > 100){
+                (!currentState.headPointingUp && keypoints[mainSide.shoulder].coordinate.y < keypoints[mainSide.wrist].coordinate.y - 20) ||
+                (currentState.headPointingUp && keypoints[subSide.shoulder].coordinate.y > keypoints[subSide.wrist].coordinate.y + 20) ||
+                (!currentState.headPointingUp && keypoints[subSide.shoulder].coordinate.y < keypoints[subSide.wrist].coordinate.y - 20)) {
                 currentState.goodForm = false
                 errors.add("Hands are not under shoulders.")
+            }
+            //hands shouldn't be too close to hips (pseudo-planche)
+            val midX = if (currentState.headPointingUp)
+                (2 * keypoints[mainSide.shoulder].coordinate.y + keypoints[mainSide.hip].coordinate.y) / 3 else
+                (keypoints[mainSide.shoulder].coordinate.y + 2 * keypoints[mainSide.hip].coordinate.y) / 3
+            if (!((midX - keypoints[mainSide.shoulder].coordinate.y < 0) xor (midX - keypoints[mainSide.hip].coordinate.y < 0))) {
+                //checks if wrist is in the middle of the shoulder and 1/4 of the hip-shoulder line
+                //basically, subtract the middle point to the outer points. one result should be negative, the other positive.
+                currentState.goodForm = false
+                errors.add("Hands too close to hips.")
             }
 
             //check if feet are level with hands
@@ -157,7 +182,7 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
         }
         ProgressionStates.GOINGUP -> {
             //check range of motion here, make rep bad if not enough
-            if (currentState.goodForm && currentState.startingArmDist - currentState.lowestArmDist < 0.4 * currentState.startingArmDist) {
+            if (currentState.goodForm && currentState.startingArmDist - currentState.lowestArmDist < 0.3 * currentState.startingArmDist) {
                 errors.add("Starting: ${round(currentState.startingArmDist)} | Lowest: ${round(currentState.lowestArmDist)}")
                 errors.add("Not enough range of motion.")
                 currentState.goodForm = false
@@ -176,10 +201,10 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
             currentState.errorCounter.reset()
 
             if (currentState.goodForm)  {
-                currentState.feedback = listOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps} | Rep good")
+                currentState.feedback = listOf("Good: $goodReps | Bad: $badReps | Total: $totalReps | Rep good")
             }
             else {
-                feedback = mutableListOf("Good: ${goodReps} | Bad: ${badReps} | Total: ${totalReps} | Errors:\n")
+                feedback = mutableListOf("Good: $goodReps | Bad: $badReps | Total: $totalReps | Errors:\n")
                 errors.forEach{
                     feedback.add(it + "\n")
                 }

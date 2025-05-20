@@ -213,8 +213,6 @@ class TrackerActivity : AppCompatActivity() {
         lowestArmDist = 9999999f,
         down = false,
         errorCounter = ErrorTypes(),
-        mainSide = LeftParts,
-        subSide = RightParts,
         headPointingUp = true,
     )
 

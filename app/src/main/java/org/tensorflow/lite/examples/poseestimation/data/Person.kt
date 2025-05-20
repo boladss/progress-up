@@ -25,7 +25,13 @@ data class Person(
     val score: Float,
 
     /**
-     * The angles are defined in
+     * The angles are defined in Angle.kt
      */
-    val angles: MutableMap<String, Angle> = mutableMapOf()
+    val angles: MutableMap<String, Angle> = mutableMapOf(),
+
+    /**
+     * Need to check which side is the main side.
+     */
+    var mainSide : BodySide = LeftParts,
+    var subSide : BodySide = RightParts
 )

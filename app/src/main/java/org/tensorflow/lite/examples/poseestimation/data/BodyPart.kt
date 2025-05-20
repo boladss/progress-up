@@ -63,6 +63,9 @@ data class BodySide (
     fun getSideInts() : List<Int> {
         return listOf(eye, ear, shoulder, elbow, wrist, hip, knee, ankle)
     }
+    fun getAngles() : List<String> {
+        return listOf(elbowAngle, kneeAngle, lTorsoAngle, uTorsoAngle)
+    }
 }
 
 val LeftParts = BodySide(
