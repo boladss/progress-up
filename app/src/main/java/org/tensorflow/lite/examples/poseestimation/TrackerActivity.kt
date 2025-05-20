@@ -46,6 +46,8 @@ class TrackerActivity : AppCompatActivity() {
     /** Default pose estimation model is 1 (MoveNet Thunder)
      * 0 == MoveNet Lightning model
      * 1 == MoveNet Thunder model
+     *
+     * Unused models:
      * 2 == MoveNet MultiPose model
      * 3 == PoseNet model
      **/
@@ -63,8 +65,6 @@ class TrackerActivity : AppCompatActivity() {
     private lateinit var tvFPS: TextView
     private lateinit var spnDevice: Spinner
     private lateinit var spnModel: Spinner
-    private lateinit var spnTracker: Spinner
-    private lateinit var vTrackerOption: View
     private lateinit var swSkeleton: SwitchCompat
     private lateinit var vSkeletonOption: View
     private lateinit var swAudio: SwitchCompat
@@ -117,16 +117,6 @@ class TrackerActivity : AppCompatActivity() {
         }
     }
 
-    private var changeTrackerListener = object : AdapterView.OnItemSelectedListener {
-        override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-            changeTracker(position)
-        }
-
-        override fun onNothingSelected(parent: AdapterView<*>?) {
-            // do nothing
-        }
-    }
-
     private var setSkeletonListener =
         CompoundButton.OnCheckedChangeListener { _, isChecked ->
             showSkeleton(isChecked)
@@ -155,8 +145,6 @@ class TrackerActivity : AppCompatActivity() {
         tvFPS = findViewById(R.id.tvFps)
         spnModel = findViewById(R.id.spnModel)
         spnDevice = findViewById(R.id.spnDevice)
-        spnTracker = findViewById(R.id.spnTracker)
-        vTrackerOption = findViewById(R.id.vTrackerOption)
         surfaceView = findViewById(R.id.surfaceView)
 
         // Switch for skeleton overlay
@@ -322,7 +310,7 @@ class TrackerActivity : AppCompatActivity() {
         return "${pair.first} (${String.format("%.2f", pair.second)})"
     }
 
-    // Initialize spinners to let user select model/accelerator/tracker.
+    // Initialize spinners to let user select model/accelerator.
     private fun initSpinner() {
         ArrayAdapter.createFromResource(
             this,
@@ -345,16 +333,6 @@ class TrackerActivity : AppCompatActivity() {
             spnDevice.adapter = adapter
             spnDevice.onItemSelectedListener = changeDeviceListener
         }
-
-        ArrayAdapter.createFromResource(
-            this,
-            R.array.tfe_pe_tracker_array, android.R.layout.simple_spinner_item
-        ).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-            spnTracker.adapter = adapter
-            spnTracker.onItemSelectedListener = changeTrackerListener
-        }
     }
 
     // Change model when app is running
@@ -376,52 +354,17 @@ class TrackerActivity : AppCompatActivity() {
         createPoseEstimator()
     }
 
-    // Change tracker for Movenet MultiPose model
-    private fun changeTracker(position: Int) {
-        cameraSource?.setTracker(
-            when (position) {
-                1 -> TrackerType.BOUNDING_BOX
-                2 -> TrackerType.KEYPOINTS
-                else -> TrackerType.OFF
-            }
-        )
-    }
-
     private fun createPoseEstimator() {
-        // For MoveNet MultiPose, hide score and disable pose classifier as the model returns
-        // multiple Person instances.
         val poseDetector = when (modelPos) {
             0 -> {
                 // MoveNet Lightning (SinglePose)
                 showDetectionScore(true)
-                showTracker(false)
                 MoveNet.create(this, device, ModelType.Lightning)
             }
             1 -> {
                 // MoveNet Thunder (SinglePose)
                 showDetectionScore(true)
-                showTracker(false)
                 MoveNet.create(this, device, ModelType.Thunder)
-            }
-            2 -> {
-                // MoveNet (Lightning) MultiPose
-                showDetectionScore(false)
-                // Movenet MultiPose Dynamic does not support GPUDelegate
-                if (device == Device.GPU) {
-                    showToast(getString(R.string.tfe_pe_gpu_error))
-                }
-                showTracker(true)
-                MoveNetMultiPose.create(
-                    this,
-                    device,
-                    Type.Dynamic
-                )
-            }
-            3 -> {
-                // PoseNet (SinglePose)
-                showDetectionScore(true)
-                showTracker(false)
-                PoseNet.create(this, device)
             }
             else -> {
                 null
@@ -445,19 +388,6 @@ class TrackerActivity : AppCompatActivity() {
 
     private fun toggleAudio(isEnabled: Boolean) {
         repetitionAudio = isEnabled
-    }
-
-    // Show/hide the tracking options.
-    private fun showTracker(isVisible: Boolean) {
-        if (isVisible) {
-            // Show tracker options and enable Bounding Box tracker.
-            vTrackerOption.visibility = View.VISIBLE
-            spnTracker.setSelection(1)
-        } else {
-            // Set tracker type to off and hide tracker option.
-            vTrackerOption.visibility = View.GONE
-            spnTracker.setSelection(0)
-        }
     }
 
     private fun requestPermission() {
