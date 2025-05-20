@@ -82,13 +82,14 @@ fun processFeedback(currentState: ProgressionState) : List<String> {
     val (totalReps, badReps, goodReps) = currentState.reps
     val errors = currentState.errors.toMutableSet()
     if (currentState.goodForm)  {
-        currentState.feedback = listOf("Good: $goodReps | Bad: $badReps | Total: $totalReps | Rep good")
+        if (totalReps > 0)
+            currentState.feedback = listOf("Good rep!")
     }
     else {
-        val feedback = mutableListOf("Good: $goodReps | Bad: $badReps | Total: $totalReps | Errors:\n")
-        errors.forEach{
-            feedback.add(it + "\n")
-        }
+        val feedback = mutableListOf("Rep $totalReps errors:\n")
+        val errorList = errors.toList()
+        feedback.addAll(errorList.dropLast(1).map { it + "\n" })
+        errorList.lastOrNull()?.let { feedback.add(it) }
         currentState.feedback = feedback
     }
     return currentState.feedback
