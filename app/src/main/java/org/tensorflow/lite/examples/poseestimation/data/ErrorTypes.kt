@@ -8,5 +8,6 @@ data class ErrorTypes(
     fun reset() {
         torsoBuckling = 0
         kneesBuckling = 0
+        startPosition = 0
     }
 }

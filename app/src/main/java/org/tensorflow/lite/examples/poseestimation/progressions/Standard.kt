@@ -96,22 +96,36 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
                 return currentState
             }
             else {
-                currentState.sessionId = dbHandler.insertSessionData(Instant.now(), Instant.now(), progression)
-                currentState.feedback = listOf("Good: $goodReps | Bad: $badReps | Total: $totalReps")
-                currentState.state = ProgressionStates.START
-                currentState.startingArmDist = computeDistOfTwoParts(keypoints, BodyPart.fromInt(mainSide.shoulder), BodyPart.fromInt(mainSide.wrist))
+                currentState.errorCounter.startPosition++ //using this as a counter for start position
+                if (currentState.errorCounter.startPosition >= 3) {
+                    currentState.errorCounter.startPosition = 0
+                    currentState.sessionId =
+                        dbHandler.insertSessionData(Instant.now(), Instant.now(), progression)
+                    currentState.feedback =
+                        listOf("Good: $goodReps | Bad: $badReps | Total: $totalReps")
+                    currentState.state = ProgressionStates.START
+                    currentState.startingArmDist = computeDistOfTwoParts(
+                        keypoints,
+                        BodyPart.fromInt(mainSide.shoulder),
+                        BodyPart.fromInt(mainSide.wrist)
+                    )
+                }
                 return currentState
             }
         }
         ProgressionStates.START -> {
             //wait until valid again
             if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").all {angles[it]!!.valid}) {
-                feedback.add(" | Next rep")
-                currentState.feedback = feedback
-                currentState.state = ProgressionStates.GOINGDOWN
-                currentState.goodForm = true
-                currentState.errors = setOf()
-                currentState.lowestArmDist = 9999999f
+                currentState.errorCounter.startPosition++
+                if (currentState.errorCounter.startPosition >= 2) {
+                    currentState.errorCounter.startPosition = 0
+                    feedback.add(" | Next rep")
+                    currentState.feedback = feedback
+                    currentState.state = ProgressionStates.GOINGDOWN
+                    currentState.goodForm = true
+                    currentState.errors = setOf()
+                    currentState.lowestArmDist = 9999999f
+                }
                 return currentState
             } else return currentState
         }
