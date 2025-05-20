@@ -67,7 +67,7 @@ object VisualizationUtils {
 
         val output = input.copy(Bitmap.Config.ARGB_8888, true)
 
-        while (skeletonOverlay) {
+        if (skeletonOverlay) {
             val originalSizeCanvas = Canvas(output)
             persons.forEach { person ->
                 // draw person id if tracker is enable
