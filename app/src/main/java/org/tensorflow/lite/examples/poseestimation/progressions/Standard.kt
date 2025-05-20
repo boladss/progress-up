@@ -1,6 +1,8 @@
 package org.tensorflow.lite.examples.poseestimation.progressions
 
+import android.content.res.Resources
 import android.media.MediaPlayer
+import org.tensorflow.lite.examples.poseestimation.calculateAngle
 import org.tensorflow.lite.examples.poseestimation.data.Angles
 import org.tensorflow.lite.examples.poseestimation.data.BodyPart
 import org.tensorflow.lite.examples.poseestimation.data.LeftParts
@@ -33,6 +35,7 @@ private val SubStandards = mapOf(
     Pair("STANDARD_KNEE_DOF", 25)
 )
 
+
 fun checkValidityStandard(person: Person) : Person {
     val subAngles = person.subSide.getAngles()
     Angles.entries.forEach {
@@ -54,6 +57,9 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
 
     val mainSide = person.mainSide
     val subSide = person.subSide
+
+    //figure out where head is relative to hands
+    var facingLeft : Boolean = if (keypoints[mainSide.shoulder].coordinate.x > keypoints[mainSide.wrist].coordinate.x) true else false
 
     when (currentState.state) {
         ProgressionStates.INITIALIZE -> {
@@ -88,9 +94,13 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
                 person.mainSide = LeftParts
                 person.subSide = RightParts
             }
+            facingLeft = if (keypoints[mainSide.shoulder].coordinate.x > keypoints[mainSide.wrist].coordinate.x) true else false
 
             //wait until the body is in the correct state
-            if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").any {!angles[it]!!.valid}) {
+            if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").any {!angles[it]!!.valid} ||
+                //make sure feet aren't too high
+                (facingLeft && keypoints[mainSide.ankle].coordinate.x > keypoints[mainSide.shoulder].coordinate.x) ||
+                (!facingLeft && keypoints[mainSide.ankle].coordinate.x < keypoints[mainSide.shoulder].coordinate.x)) {
                 currentState.feedback =
                     listOf("${angles[Angles.LElbow.name]!!.valid} | ${angles[Angles.LLTorso.name]!!.valid} | ${angles[Angles.LKnee.name]!!.valid}")
                 return currentState
@@ -143,7 +153,7 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
             else if (currentState.errorCounter.torsoBuckling > 0) currentState.errorCounter.torsoBuckling--
             if (currentState.errorCounter.torsoBuckling >= 3) {
                 currentState.goodForm = false
-                errors.add("Torso is buckling")
+                errors.add("Torso is buckling.")
                 currentState.errorCounter.reset()
             }
 
@@ -152,7 +162,7 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
             else if (currentState.errorCounter.kneesBuckling > 0) currentState.errorCounter.kneesBuckling--
             if (currentState.errorCounter.kneesBuckling >= 3) {
                 currentState.goodForm = false
-                errors.add("Knees are buckling")
+                errors.add("Knees are buckling.")
                 currentState.errorCounter.reset()
             }
 
@@ -176,16 +186,15 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
             }
 
             //check if feet are level with hands
-            //figure out where head is relative to hands
-            if ((keypoints[mainSide.shoulder].coordinate.x > keypoints[mainSide.wrist].coordinate.x && keypoints[mainSide.wrist].coordinate.x > keypoints[mainSide.ankle].coordinate.x) || //facing left
-                (keypoints[mainSide.shoulder].coordinate.x < keypoints[mainSide.wrist].coordinate.x && keypoints[mainSide.wrist].coordinate.x < keypoints[mainSide.ankle].coordinate.x) ) { //facing right
+            if ((facingLeft && keypoints[mainSide.wrist].coordinate.x > keypoints[mainSide.ankle].coordinate.x) ||
+                (!facingLeft && keypoints[mainSide.wrist].coordinate.x < keypoints[mainSide.ankle].coordinate.x) ) {
                 currentState.goodForm = false
-                errors.add(if (mainSide.side == Sides.LEFT) "Right hand not aligned with feet" else "Left hand not aligned with feet")
+                errors.add(if (mainSide.side == Sides.LEFT) "Right hand not level with feet." else "Left hand not level with feet.")
             }
-            if ((keypoints[subSide.shoulder].coordinate.x > keypoints[subSide.wrist].coordinate.x && keypoints[subSide.wrist].coordinate.x > keypoints[subSide.ankle].coordinate.x) || //facing left
-                (keypoints[subSide.shoulder].coordinate.x < keypoints[subSide.wrist].coordinate.x && keypoints[subSide.wrist].coordinate.x < keypoints[subSide.ankle].coordinate.x) ) { //facing right
+            if ((facingLeft && keypoints[subSide.wrist].coordinate.x > keypoints[subSide.ankle].coordinate.x) ||
+                (!facingLeft && keypoints[subSide.wrist].coordinate.x < keypoints[subSide.ankle].coordinate.x) ) {
                 currentState.goodForm = false
-                errors.add(if (subSide.side == Sides.LEFT) "Right hand not aligned with feet" else "Left hand not aligned with feet")
+                errors.add(if (subSide.side == Sides.LEFT) "Right hand not level with feet." else "Left hand not level with feet.")
             }
 
             currentState.errors = errors
@@ -195,9 +204,19 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
             return currentState
         }
         ProgressionStates.GOINGUP -> {
+            //make sure feet aren't too high
+            val pointB = Pair(keypoints[mainSide.shoulder].coordinate.x, keypoints[mainSide.shoulder].coordinate.y)
+            val pointC = Pair(keypoints[mainSide.ankle].coordinate.x, keypoints[mainSide.ankle].coordinate.y)
+            val pointA = Pair(keypoints[mainSide.shoulder].coordinate.x, keypoints[mainSide.ankle].coordinate.y)
+            if ((calculateAngle(pointA, pointB, pointC) < 10) || //torso too close to parallel)
+                (facingLeft && keypoints[mainSide.ankle].coordinate.x > keypoints[mainSide.shoulder].coordinate.x) || //decline
+                (!facingLeft && keypoints[mainSide.ankle].coordinate.x < keypoints[mainSide.shoulder].coordinate.x)) {
+                currentState.goodForm = false
+                errors.add("Feet too high up.")
+            }
+
             //check range of motion here, make rep bad if not enough
             if (currentState.goodForm && currentState.startingArmDist - currentState.lowestArmDist < 0.3 * currentState.startingArmDist) {
-                errors.add("Starting: ${round(currentState.startingArmDist)} | Lowest: ${round(currentState.lowestArmDist)}")
                 errors.add("Not enough range of motion.")
                 currentState.goodForm = false
             }
