@@ -4,6 +4,7 @@ import android.Manifest
 import android.app.AlertDialog
 import android.app.Dialog
 import android.content.pm.PackageManager
+import android.content.res.Configuration
 import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Process
@@ -69,7 +70,8 @@ class TrackerActivity : AppCompatActivity() {
     private lateinit var tvClassificationValue3: TextView
     private lateinit var swClassification: SwitchCompat
     private lateinit var vClassificationOption: View
-    private lateinit var repCount: TextView
+    private lateinit var repFeedback: TextView
+    private lateinit var repCounter: TextView
     private lateinit var displayProgressionType: TextView
     private lateinit var mediaPlayer: MediaPlayer
     private var cameraSource: CameraSource? = null
@@ -141,7 +143,7 @@ class TrackerActivity : AppCompatActivity() {
         // Prepare DatabaseHandler
         dbHandler = DatabaseHandler(this)
 
-        val progressionTypeText = "Progression Type: ${ProgressionTypes.fromInt(intent.extras?.getInt("progressionType")!!)}"
+        val progressionTypeText = "${ProgressionTypes.fromInt(intent.extras?.getInt("progressionType")!!)} PUSH-UP"
 
         displayProgressionType = findViewById(R.id.tvProgressionType)
         displayProgressionType.text = progressionTypeText
@@ -160,7 +162,8 @@ class TrackerActivity : AppCompatActivity() {
         tvClassificationValue3 = findViewById(R.id.tvClassificationValue3)
         swClassification = findViewById(R.id.swPoseClassification)
         vClassificationOption = findViewById(R.id.vClassificationOption)
-        repCount = findViewById(R.id.tvRepCount)
+        repFeedback = findViewById(R.id.tvRepFeedback)
+        repCounter = findViewById(R.id.tvRepCounter)
         initSpinner()
         spnModel.setSelection(modelPos)
         swClassification.setOnCheckedChangeListener(setClassificationListener)
@@ -170,6 +173,10 @@ class TrackerActivity : AppCompatActivity() {
         if (!this::mediaPlayer.isInitialized) {
             mediaPlayer = MediaPlayer.create(this, R.raw.badform)
         }
+
+        // Verify orientation
+        val orientation = resources.configuration.orientation
+        updateSurfaceViewRotation(orientation)
     }
 
     override fun onStart() {
@@ -191,6 +198,24 @@ class TrackerActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         dbHandler.close()
+    }
+
+    // Update surfaceView (camera) when changing orientation
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        updateSurfaceViewRotation(newConfig.orientation)
+    }
+
+    private fun updateSurfaceViewRotation(orientation: Int) {
+        when (orientation) {
+            Configuration.ORIENTATION_PORTRAIT -> {
+                surfaceView.rotation = 0f
+            }
+            Configuration.ORIENTATION_LANDSCAPE -> {
+                surfaceView.rotation = 0f
+            }
+        }
+        surfaceView.requestLayout()
     }
 
     // check if permission is granted or not.
@@ -222,10 +247,14 @@ class TrackerActivity : AppCompatActivity() {
         val progression = ProgressionTypes.fromInt(intent.extras?.getInt("progressionType")!!)
         val nextState = progression.processHeuristics(currentState, persons[0], dbHandler, mediaPlayer)
         runOnUiThread {
-            repCount.text = ""
+            repFeedback.text = ""
             nextState.feedback.forEach{
-                repCount.append(it)
+                repFeedback.append(it)
             }
+
+            val repCounterText = nextState.reps.first
+            repCounter.text = repCounterText.toString()
+
         }
         currentState = nextState
         if (currentState.state == ProgressionStates.GOINGDOWN &&
@@ -244,7 +273,7 @@ class TrackerActivity : AppCompatActivity() {
 
     private fun debugChangeText(text: String) {
         runOnUiThread {
-            repCount.text = text
+            repFeedback.text = text
         }
     }
 
@@ -280,7 +309,7 @@ class TrackerActivity : AppCompatActivity() {
                             }
                         }
 
-                    }).apply {
+                    }, this).apply {
                         prepareCamera()
                     }
                 isPoseClassifier()

@@ -13,14 +13,15 @@
 
     <include layout="@layout/bottom_sheet_layout"/>
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="match_parent">
+
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
             >
 
             <TextView
@@ -30,9 +31,11 @@
                 android:layout_alignParentStart="true"
                 android:text="Progression Type"
                 android:id="@+id/tvProgressionType"
-                android:textSize="20sp"
+                android:textAlignment="center"
+                android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/white"/>
+                android:textColor="@color/navy"
+                />
 
             <LinearLayout
                 android:layout_width="80dp"
@@ -70,16 +73,17 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
             android:layout_marginBottom="?attr/actionBarSize"
             android:padding="6dp"
-            android:layout_gravity="center"
             android:text="Get into position!"
+            android:layout_centerHorizontal="true"
             android:id="@+id/tvRepFeedback"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:background="@drawable/button_navy"
             />
 
-    </LinearLayout>
+    </RelativeLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

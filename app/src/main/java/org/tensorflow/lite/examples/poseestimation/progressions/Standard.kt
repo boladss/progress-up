@@ -1,6 +1,5 @@
 package org.tensorflow.lite.examples.poseestimation.progressions
 
-import android.content.res.Resources
 import android.media.MediaPlayer
 import org.tensorflow.lite.examples.poseestimation.calculateAngle
 import org.tensorflow.lite.examples.poseestimation.data.Angles
@@ -35,7 +34,6 @@ private val SubStandards = mapOf(
     Pair("STANDARD_KNEE_DOF", 25)
 )
 
-
 fun checkValidityStandard(person: Person) : Person {
     return genericValidityCheck(person, Standards, SubStandards)
 }
@@ -69,7 +67,10 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
                 (facingLeft && keypoints[mainSide.ankle].coordinate.x < keypoints[mainSide.wrist].coordinate.x) ||
                 (!facingLeft && keypoints[mainSide.ankle].coordinate.x > keypoints[mainSide.wrist].coordinate.x)) {
                 currentState.feedback =
-                    listOf("${angles[Angles.LElbow.name]!!.valid} | ${angles[Angles.LLTorso.name]!!.valid} | ${angles[Angles.LKnee.name]!!.valid}")
+                    listOf("Initial Form Check\n" +
+                            "Arms: ${angles[mainSide.elbowAngle]!!.valid && angles[subSide.elbowAngle]!!.valid}\n" +
+                            "Torso:${angles[mainSide.lTorsoAngle]!!.valid && angles[subSide.lTorsoAngle]!!.valid}\n" +
+                            "Legs:${angles[mainSide.kneeAngle]!!.valid && angles[subSide.kneeAngle]!!.valid}")
                 return currentState
             }
             else {
@@ -78,6 +79,7 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
                     currentState.errorCounter.startPosition = 0
                     currentState.sessionId =
                         dbHandler.insertSessionData(Instant.now(), Instant.now(), progression)
+                    currentState.feedback = listOf("Starting workout...")
                     currentState.state = ProgressionStates.START
                     currentState.startingArmDist = computeDistOfTwoParts(
                         keypoints,

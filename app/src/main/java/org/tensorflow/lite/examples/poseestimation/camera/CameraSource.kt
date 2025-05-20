@@ -18,6 +18,7 @@ package org.tensorflow.lite.examples.poseestimation.camera
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.ImageFormat
 import android.graphics.Matrix
@@ -49,7 +50,8 @@ import kotlin.coroutines.resumeWithException
 
 class CameraSource(
     private val surfaceView: SurfaceView,
-    private val listener: CameraSourceListener? = null
+    private val listener: CameraSourceListener? = null,
+    private val context: Context
 ) {
 
     companion object {
@@ -116,7 +118,7 @@ class CameraSource(
                 rotateMatrix.postRotate(90.0f)
 
                 // Mirror front-facing camera
-                // rotateMatrix.postScale(1f, -1f)
+                 rotateMatrix.postScale(1f, -1f)
 
                 val rotatedBitmap = Bitmap.createBitmap(
                     imageBitmap, 0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT,
@@ -169,21 +171,19 @@ class CameraSource(
         }
 
     fun prepareCamera() {
-        // Prioritize front-facing  camera
         for (cameraId in cameraManager.cameraIdList) {
             val characteristics = cameraManager.getCameraCharacteristics(cameraId)
 
             val cameraDirection = characteristics.get(CameraCharacteristics.LENS_FACING)
             if (cameraDirection != null &&
-                cameraDirection == CameraCharacteristics.LENS_FACING_FRONT) {
-                // Rear-facing Camera
-                continue
-                // Front-facing Camera
-                // this.cameraId = cameraId
-                // return
+                // Prioritize front- or rear-facing camera
+                 cameraDirection == CameraCharacteristics.LENS_FACING_FRONT
+//               cameraDirection == CameraCharacteristics.LENS_FACING_BACK
+            ) {
+                 this.cameraId = cameraId
+                 return
             }
             this.cameraId = cameraId
-            return
         }
     }
 
@@ -275,10 +275,39 @@ class CameraSource(
 
     private fun visualize(persons: List<Person>, bitmap: Bitmap) {
 
-        val outputBitmap = VisualizationUtils.drawBodyKeypoints(
+        // TODO: Make drawing keypoints optional via settings
+        // outputBitmap is still required, this is how the preview feed itself is drawn
+        val initialOutputBitmap = VisualizationUtils.drawBodyKeypoints(
             bitmap,
             persons.filter { it.score > MIN_CONFIDENCE }, isTrackerEnabled
         )
+
+        // Update rotation of preview camera feed
+        // Ref: https://stackoverflow.com/questions/10380989/how-do-i-get-the-current-orientation-activityinfo-screen-orientation-of-an-a
+        // Ref: https://developer.android.com/reference/android/view/WindowManager#getDefaultDisplay()
+        // Ref: https://developer.android.com/reference/android/content/Context#getDisplay()
+        val rotation = context.getDisplay().rotation
+        // TODO: Update minimum SDK to 30
+
+        // Rotate bitmap for proper screen orientation
+        val outputBitmap = when (rotation) {
+            // Rotate bitmap for landscape preview
+            Surface.ROTATION_90 -> { // Right
+                val rotateMatrix = Matrix()
+                rotateMatrix.postRotate(270f)
+                Bitmap.createBitmap(
+                    initialOutputBitmap, 0, 0, initialOutputBitmap.width, initialOutputBitmap.height, rotateMatrix, false
+                )
+            }
+            Surface.ROTATION_270 -> { // Left
+                val rotateMatrix = Matrix()
+                rotateMatrix.postRotate(90f)
+                Bitmap.createBitmap(
+                    initialOutputBitmap, 0, 0, initialOutputBitmap.width, initialOutputBitmap.height, rotateMatrix, false
+                )
+            }
+            else -> initialOutputBitmap // No rotation applied for portrait
+        }
 
         val holder = surfaceView.holder
         val surfaceCanvas = holder.lockCanvas()
