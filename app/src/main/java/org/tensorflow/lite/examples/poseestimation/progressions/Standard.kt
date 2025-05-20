@@ -99,8 +99,8 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
             //wait until the body is in the correct state
             if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").any {!angles[it]!!.valid} ||
                 //make sure feet aren't too high
-                (facingLeft && keypoints[mainSide.ankle].coordinate.x > keypoints[mainSide.shoulder].coordinate.x) ||
-                (!facingLeft && keypoints[mainSide.ankle].coordinate.x < keypoints[mainSide.shoulder].coordinate.x)) {
+                (facingLeft && keypoints[mainSide.ankle].coordinate.x < keypoints[mainSide.wrist].coordinate.x) ||
+                (!facingLeft && keypoints[mainSide.ankle].coordinate.x > keypoints[mainSide.wrist].coordinate.x)) {
                 currentState.feedback =
                     listOf("${angles[Angles.LElbow.name]!!.valid} | ${angles[Angles.LLTorso.name]!!.valid} | ${angles[Angles.LKnee.name]!!.valid}")
                 return currentState
@@ -209,8 +209,8 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
             val pointC = Pair(keypoints[mainSide.ankle].coordinate.x, keypoints[mainSide.ankle].coordinate.y)
             val pointA = Pair(keypoints[mainSide.shoulder].coordinate.x, keypoints[mainSide.ankle].coordinate.y)
             if ((calculateAngle(pointA, pointB, pointC) < 10) || //torso too close to parallel)
-                (facingLeft && keypoints[mainSide.ankle].coordinate.x > keypoints[mainSide.shoulder].coordinate.x) || //decline
-                (!facingLeft && keypoints[mainSide.ankle].coordinate.x < keypoints[mainSide.shoulder].coordinate.x)) {
+                (facingLeft && keypoints[mainSide.ankle].coordinate.x < keypoints[mainSide.wrist].coordinate.x) || //decline
+                (!facingLeft && keypoints[mainSide.ankle].coordinate.x > keypoints[mainSide.wrist].coordinate.x)) {
                 currentState.goodForm = false
                 errors.add("Feet too high up.")
             }
