@@ -49,6 +49,8 @@ class TrackerActivity : AppCompatActivity() {
     /** Default pose estimation model is 1 (MoveNet Thunder)
      * 0 == MoveNet Lightning model
      * 1 == MoveNet Thunder model
+     *
+     * Unused models:
      * 2 == MoveNet MultiPose model
      * 3 == PoseNet model
      **/
@@ -57,25 +59,24 @@ class TrackerActivity : AppCompatActivity() {
     /** Default device is GPU */
     private var device = Device.GPU
 
+    /** Beeps disabled by default */
+    private var repetitionAudio = false
+
     var persons = listOf<Person>()
     private lateinit var dbHandler: DatabaseHandler
     private lateinit var tvScore: TextView
     private lateinit var tvFPS: TextView
     private lateinit var spnDevice: Spinner
     private lateinit var spnModel: Spinner
-    private lateinit var spnTracker: Spinner
-    private lateinit var vTrackerOption: View
-    private lateinit var tvClassificationValue1: TextView
-    private lateinit var tvClassificationValue2: TextView
-    private lateinit var tvClassificationValue3: TextView
-    private lateinit var swClassification: SwitchCompat
-    private lateinit var vClassificationOption: View
+    private lateinit var swSkeleton: SwitchCompat
+    private lateinit var vSkeletonOption: View
+    private lateinit var swAudio: SwitchCompat
+    private lateinit var vAudioOption: View
     private lateinit var repFeedback: TextView
     private lateinit var repCounter: TextView
     private lateinit var displayProgressionType: TextView
     private lateinit var mediaPlayer: MediaPlayer
     private var cameraSource: CameraSource? = null
-    private var isClassifyPose = false
     private val requestPermissionLauncher =
         registerForActivityResult(
             ActivityResultContracts.RequestPermission()
@@ -119,21 +120,14 @@ class TrackerActivity : AppCompatActivity() {
         }
     }
 
-    private var changeTrackerListener = object : AdapterView.OnItemSelectedListener {
-        override fun onItemSelected(parent: AdapterView<*>?, view: View?, position: Int, id: Long) {
-            changeTracker(position)
-        }
-
-        override fun onNothingSelected(parent: AdapterView<*>?) {
-            // do nothing
-        }
-    }
-
-    private var setClassificationListener =
+    private var setSkeletonListener =
         CompoundButton.OnCheckedChangeListener { _, isChecked ->
-            showClassificationResult(isChecked)
-            isClassifyPose = isChecked
-            isPoseClassifier()
+            showSkeleton(isChecked)
+        }
+
+    private var setAudioListener =
+        CompoundButton.OnCheckedChangeListener { _, isChecked ->
+            toggleAudio(isChecked)
         }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -154,19 +148,24 @@ class TrackerActivity : AppCompatActivity() {
         tvFPS = findViewById(R.id.tvFps)
         spnModel = findViewById(R.id.spnModel)
         spnDevice = findViewById(R.id.spnDevice)
-        spnTracker = findViewById(R.id.spnTracker)
-        vTrackerOption = findViewById(R.id.vTrackerOption)
         surfaceView = findViewById(R.id.surfaceView)
-        tvClassificationValue1 = findViewById(R.id.tvClassificationValue1)
-        tvClassificationValue2 = findViewById(R.id.tvClassificationValue2)
-        tvClassificationValue3 = findViewById(R.id.tvClassificationValue3)
-        swClassification = findViewById(R.id.swPoseClassification)
-        vClassificationOption = findViewById(R.id.vClassificationOption)
+
+        // Switch for skeleton overlay
+        swSkeleton = findViewById<SwitchCompat>(R.id.swSkeleton)
+        vSkeletonOption = findViewById<View>(R.id.vSkeletonOption) // RelativeLayout
+
+        // Switch for beeping
+        swAudio = findViewById<SwitchCompat>(R.id.swAudio)
+        vAudioOption = findViewById<View>(R.id.vAudioOption) // RelativeLayout
+
         repFeedback = findViewById(R.id.tvRepFeedback)
         repCounter = findViewById(R.id.tvRepCounter)
         initSpinner()
         spnModel.setSelection(modelPos)
-        swClassification.setOnCheckedChangeListener(setClassificationListener)
+
+        swSkeleton.setOnCheckedChangeListener(setSkeletonListener)
+        swAudio.setOnCheckedChangeListener(setAudioListener)
+
         if (!isCameraPermissionGranted()) {
             requestPermission()
         }
@@ -257,8 +256,9 @@ class TrackerActivity : AppCompatActivity() {
 
         }
         currentState = nextState
-        if (currentState.state == ProgressionStates.GOINGDOWN &&
-            !startPlayed) {
+        
+        // Beeping per repetition denoting good or poor performance
+        if (repetitionAudio && currentState.state == ProgressionStates.GOINGUP && !startPlayed) {
             startPlayed = true
             mediaPlayer.reset()
             if (currentState.goodForm)
@@ -293,26 +293,11 @@ class TrackerActivity : AppCompatActivity() {
                             poseLabels: List<Pair<String, Float>>?
                         ) {
                             tvScore.text = getString(R.string.tfe_pe_tv_score, personScore ?: 0f)
-                            poseLabels?.sortedByDescending { it.second }?.let {
-                                tvClassificationValue1.text = getString(
-                                    R.string.tfe_pe_tv_classification_value,
-                                    convertPoseLabels(if (it.isNotEmpty()) it[0] else null)
-                                )
-                                tvClassificationValue2.text = getString(
-                                    R.string.tfe_pe_tv_classification_value,
-                                    convertPoseLabels(if (it.size >= 2) it[1] else null)
-                                )
-                                tvClassificationValue3.text = getString(
-                                    R.string.tfe_pe_tv_classification_value,
-                                    convertPoseLabels(if (it.size >= 3) it[2] else null)
-                                )
-                            }
                         }
 
                     }, this).apply {
                         prepareCamera()
                     }
-                isPoseClassifier()
                 lifecycleScope.launch(Dispatchers.Main) {
                     cameraSource?.initCamera(::replacePersons, intent.extras?.getInt("progressionType")!!) //progression checking starts with this function call
                 }
@@ -326,11 +311,7 @@ class TrackerActivity : AppCompatActivity() {
         return "${pair.first} (${String.format("%.2f", pair.second)})"
     }
 
-    private fun isPoseClassifier() {
-        cameraSource?.setClassifier(if (isClassifyPose) PoseClassifier.create(this) else null)
-    }
-
-    // Initialize spinners to let user select model/accelerator/tracker.
+    // Initialize spinners to let user select model/accelerator.
     private fun initSpinner() {
         ArrayAdapter.createFromResource(
             this,
@@ -353,16 +334,6 @@ class TrackerActivity : AppCompatActivity() {
             spnDevice.adapter = adapter
             spnDevice.onItemSelectedListener = changeDeviceListener
         }
-
-        ArrayAdapter.createFromResource(
-            this,
-            R.array.tfe_pe_tracker_array, android.R.layout.simple_spinner_item
-        ).also { adapter ->
-            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-
-            spnTracker.adapter = adapter
-            spnTracker.onItemSelectedListener = changeTrackerListener
-        }
     }
 
     // Change model when app is running
@@ -384,56 +355,17 @@ class TrackerActivity : AppCompatActivity() {
         createPoseEstimator()
     }
 
-    // Change tracker for Movenet MultiPose model
-    private fun changeTracker(position: Int) {
-        cameraSource?.setTracker(
-            when (position) {
-                1 -> TrackerType.BOUNDING_BOX
-                2 -> TrackerType.KEYPOINTS
-                else -> TrackerType.OFF
-            }
-        )
-    }
-
     private fun createPoseEstimator() {
-        // For MoveNet MultiPose, hide score and disable pose classifier as the model returns
-        // multiple Person instances.
         val poseDetector = when (modelPos) {
             0 -> {
                 // MoveNet Lightning (SinglePose)
-                showPoseClassifier(true)
                 showDetectionScore(true)
-                showTracker(false)
                 MoveNet.create(this, device, ModelType.Lightning)
             }
             1 -> {
                 // MoveNet Thunder (SinglePose)
-                showPoseClassifier(true)
                 showDetectionScore(true)
-                showTracker(false)
                 MoveNet.create(this, device, ModelType.Thunder)
-            }
-            2 -> {
-                // MoveNet (Lightning) MultiPose
-                showPoseClassifier(false)
-                showDetectionScore(false)
-                // Movenet MultiPose Dynamic does not support GPUDelegate
-                if (device == Device.GPU) {
-                    showToast(getString(R.string.tfe_pe_gpu_error))
-                }
-                showTracker(true)
-                MoveNetMultiPose.create(
-                    this,
-                    device,
-                    Type.Dynamic
-                )
-            }
-            3 -> {
-                // PoseNet (SinglePose)
-                showPoseClassifier(true)
-                showDetectionScore(true)
-                showTracker(false)
-                PoseNet.create(this, device)
             }
             else -> {
                 null
@@ -444,38 +376,19 @@ class TrackerActivity : AppCompatActivity() {
         }
     }
 
-    // Show/hide the pose classification option.
-    private fun showPoseClassifier(isVisible: Boolean) {
-        vClassificationOption.visibility = if (isVisible) View.VISIBLE else View.GONE
-        if (!isVisible) {
-            swClassification.isChecked = false
-        }
-    }
-
     // Show/hide the detection score.
     private fun showDetectionScore(isVisible: Boolean) {
         tvScore.visibility = if (isVisible) View.VISIBLE else View.GONE
     }
 
-    // Show/hide classification result.
-    private fun showClassificationResult(isVisible: Boolean) {
-        val visibility = if (isVisible) View.VISIBLE else View.GONE
-        tvClassificationValue1.visibility = visibility
-        tvClassificationValue2.visibility = visibility
-        tvClassificationValue3.visibility = visibility
+    // Show/hide skeleton overlay
+    private fun showSkeleton(isVisible: Boolean) {
+//        val visibility = if (isVisible) View.VISIBLE else View.GONE
+        VisualizationUtils.skeletonOverlay = isVisible
     }
 
-    // Show/hide the tracking options.
-    private fun showTracker(isVisible: Boolean) {
-        if (isVisible) {
-            // Show tracker options and enable Bounding Box tracker.
-            vTrackerOption.visibility = View.VISIBLE
-            spnTracker.setSelection(1)
-        } else {
-            // Set tracker type to off and hide tracker option.
-            vTrackerOption.visibility = View.GONE
-            spnTracker.setSelection(0)
-        }
+    private fun toggleAudio(isEnabled: Boolean) {
+        repetitionAudio = isEnabled
     }
 
     private fun requestPermission() {

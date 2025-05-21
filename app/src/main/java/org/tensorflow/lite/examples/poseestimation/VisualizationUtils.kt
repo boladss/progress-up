@@ -41,6 +41,9 @@ object VisualizationUtils {
 
     private const val ANGLE_TEXT_MARGIN = 6f
 
+    // Enable skeleton overlay
+    public var skeletonOverlay = false;
+
     // Draw line and point indicate body pose
     fun drawBodyKeypoints(
         input: Bitmap,
@@ -65,22 +68,42 @@ object VisualizationUtils {
         }
 
         val output = input.copy(Bitmap.Config.ARGB_8888, true)
-        val originalSizeCanvas = Canvas(output)
-        persons.forEach { person ->
-            // draw person id if tracker is enable
-            if (isTrackerEnabled) {
-                person.boundingBox?.let {
-                    val personIdX = max(0f, it.left)
-                    val personIdY = max(0f, it.top)
 
-                    originalSizeCanvas.drawText(
-                        person.id.toString(),
-                        personIdX,
-                        personIdY - PERSON_ID_MARGIN,
-                        paintText
-                    )
-                    originalSizeCanvas.drawRect(it, paintLine)
+        if (skeletonOverlay) {
+            val originalSizeCanvas = Canvas(output)
+            persons.forEach { person ->
+                // draw person id if tracker is enable
+                if (isTrackerEnabled) {
+                    person.boundingBox?.let {
+                        val personIdX = max(0f, it.left)
+                        val personIdY = max(0f, it.top)
+
+                        originalSizeCanvas.drawText(
+                            person.id.toString(),
+                            personIdX,
+                            personIdY - PERSON_ID_MARGIN,
+                            paintText
+                        )
+                        originalSizeCanvas.drawRect(it, paintLine)
+                    }
                 }
+
+                //todo: create a replacement for processbodyangles
+
+                person.angles.filter {
+                    it.key in listOf("LKnee", "LLTorso", "LUTorso", "LElbow")
+                }.values.forEach{
+                    val (first, second, third) = it.indices
+                    //draw body joints
+                    drawBodyJoint(originalSizeCanvas, person, Pair(BodyPart.fromInt(first), BodyPart.fromInt(second)), it.valid)
+                    drawBodyJoint(originalSizeCanvas, person, Pair(BodyPart.fromInt(second), BodyPart.fromInt(third)), it.valid)
+                    //draw angle text
+                    drawAngleText(originalSizeCanvas, person, BodyPart.fromInt(first), it.value, it.valid)
+                }
+
+                //additional QoL lines
+                drawBodyJoint(originalSizeCanvas, person, Pair(BodyPart.LEFT_SHOULDER, BodyPart.RIGHT_SHOULDER), true)
+                drawBodyJoint(originalSizeCanvas, person, Pair(BodyPart.LEFT_HIP, BodyPart.RIGHT_HIP), true)
             }
 
             //todo: create a replacement for processbodyangles

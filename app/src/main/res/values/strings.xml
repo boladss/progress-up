@@ -1,19 +1,15 @@
 <resources>
-    <string name="tfe_pe_app_name">TFL Pose Estimation</string>
+    <string name="pu_app_name">Progress-Up</string>
     <string name="tfe_pe_request_permission">This app needs camera permission.</string>
     <string name="tfe_pe_tv_score">Score: %.2f</string>
     <string name="tfe_pe_tv_model">Model: </string>
     <string name="tfe_pe_tv_fps">Fps: %d</string>
     <string name="tfe_pe_tv_device">Device: </string>
-    <string name="tfe_pe_tv_classification_value">- %s</string>
-    <string name="tfe_pe_tv_pose_classification">Pose Classification</string>
-    <string name="tfe_pe_tv_tracking">Tracker: </string>
-    <string name="tfe_pe_gpu_error">Movenet MultiPose does not support GPU. Fallback to CPU.</string>
+    <string name="pu_skeleton">Display skeleton overlay:</string>
+    <string name="pu_audio">Enable repetition beeps:</string>
     <string-array name="tfe_pe_models_array">
         <item>Movenet Lightning</item>
         <item>Movenet Thunder</item>
-        <item>Movenet MultiPose</item>
-        <item>Posenet</item>
     </string-array>
 
     <string-array name="tfe_pe_device_name">
@@ -22,9 +18,11 @@
         <item>NNAPI</item>
     </string-array>
 
-    <string-array name="tfe_pe_tracker_array">
-        <item>Off</item>
-        <item>BoundingBox</item>
-        <item>Keypoint</item>
-    </string-array>
+    <string name="pu_init_feedback">Get into position! For accurate tracking,\nposition your head towards the top of your phone.</string>
+    <string name="pu_init_rep_count">0</string>
+    <string name="pu_init_prog_type">Progression Type</string>
+    <string name="pu_rep_subtitle">REPS</string>
+
+    <string name="pu_settings_tracker">Tracker Settings:</string>
+    <string name="pu_settings_model">HPE Model Settings:</string>
 </resources>
