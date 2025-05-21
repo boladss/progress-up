@@ -96,14 +96,15 @@ fun getFeedbackDecline(currentState: ProgressionState, person:Person, dbHandler:
             //wait until the body is in the correct state
             val handsUnderShoulders = areHandsUnderShoulders(keypoints, mainSide, subSide)
             if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").any {!angles[it]!!.valid} ||
+                !areArmsOnSameSide(keypoints, mainSide, subSide) ||
                 !handsUnderShoulders ||
                 !isFeetHigherThanHands(keypoints, mainSide, facingLeft)) {
                 currentState.feedback =
-                    listOf("Elbow: ${angles[Angles.LElbow.name]!!.valid} ${angles[Angles.RElbow.name]!!.valid}\n" +
-                            "Knee: ${angles[Angles.LKnee.name]!!.valid} ${angles[Angles.RKnee.name]!!.valid}\n" +
-                            "LTorso: ${angles[Angles.LLTorso.name]!!.valid} ${angles[Angles.RLTorso.name]!!.valid}" +
-                            "Wrists under shoulders: $handsUnderShoulders\n" +
-                            "Mainside: ${mainSide.kneeAngle}")
+                    listOf("Initial Form Check:\n" +
+                            "Arms: ${angles[mainSide.elbowAngle]!!.valid && angles[subSide.elbowAngle]!!.valid}\n" +
+                            "Torso:${angles[mainSide.lTorsoAngle]!!.valid && angles[subSide.lTorsoAngle]!!.valid}\n" +
+                            "Legs:${angles[mainSide.kneeAngle]!!.valid && angles[subSide.kneeAngle]!!.valid}\n" +
+                            "Wrists under shoulders: $handsUnderShoulders")
                 return currentState
             }
             else {
@@ -112,6 +113,7 @@ fun getFeedbackDecline(currentState: ProgressionState, person:Person, dbHandler:
                     currentState.errorCounter.startPosition = 0
                     currentState.sessionId =
                         dbHandler.insertSessionData(Instant.now(), Instant.now(), progression)
+                    currentState.feedback = listOf("Starting workout...")
                     currentState.state = ProgressionStates.START
                     currentState.startingArmDist = computeDistOfTwoParts(
                         keypoints,
@@ -124,7 +126,8 @@ fun getFeedbackDecline(currentState: ProgressionState, person:Person, dbHandler:
         }
         ProgressionStates.START -> {
             //wait until valid again
-            if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").all {angles[it]!!.valid}) {
+            if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").all {angles[it]!!.valid} &&
+                areArmsOnSameSide(keypoints, mainSide, subSide)) {
                 currentState.errorCounter.startPosition++
                 if (currentState.errorCounter.startPosition >= END_WAIT_FRAMES) {
                     //process new rep

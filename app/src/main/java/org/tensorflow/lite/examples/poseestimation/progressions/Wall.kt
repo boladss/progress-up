@@ -3,12 +3,15 @@ package org.tensorflow.lite.examples.poseestimation.progressions
 import android.media.MediaPlayer
 import android.provider.ContactsContract.Data
 import org.tensorflow.lite.examples.poseestimation.R
+import org.tensorflow.lite.examples.poseestimation.calculateAngle
 import org.tensorflow.lite.examples.poseestimation.data.Angles
 import org.tensorflow.lite.examples.poseestimation.data.BodyPart
+import org.tensorflow.lite.examples.poseestimation.data.BodySide
 import org.tensorflow.lite.examples.poseestimation.data.KeyPoint
 import org.tensorflow.lite.examples.poseestimation.data.LeftParts
 import org.tensorflow.lite.examples.poseestimation.data.RightParts
 import org.tensorflow.lite.examples.poseestimation.data.Person
+import org.tensorflow.lite.examples.poseestimation.data.Sides
 import org.tensorflow.lite.examples.poseestimation.sessions.DatabaseHandler
 import java.time.Instant
 import kotlin.math.abs
@@ -41,6 +44,13 @@ fun checkValidityWall(person: Person) : Person {
     return genericValidityCheck(person, Standards, SubStandards)
 }
 
+private fun hasValidArmAngle(keypoints: List<KeyPoint>, mainSide: BodySide, subSide: BodySide) : Boolean {
+    val mainAngle = calculateAngle(keypoints[mainSide.elbow].coordinate, keypoints[mainSide.shoulder].coordinate, keypoints[mainSide.hip].coordinate)
+    val subAngle = calculateAngle(keypoints[subSide.elbow].coordinate, keypoints[subSide.shoulder].coordinate, keypoints[subSide.hip].coordinate)
+
+    return (mainAngle > 50 && subAngle > 45)
+}
+
 fun getFeedbackWall(currentState: ProgressionState, person:Person, dbHandler: DatabaseHandler, mediaPlayer: MediaPlayer) : ProgressionState {
     val angles = person.angles
     val keypoints = person.keyPoints
@@ -62,11 +72,17 @@ fun getFeedbackWall(currentState: ProgressionState, person:Person, dbHandler: Da
             currentState.headPointingUp = true
 
             //wait until the body is in the correct state
-            if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").any {!angles[it]!!.valid}) {
+            if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").any {!angles[it]!!.valid} ||
+                (!areArmsOnSameSide(keypoints, mainSide, subSide)) ||
+                !hasValidArmAngle(keypoints, mainSide, subSide)) {
                 currentState.feedback =
-                    listOf("${angles[Angles.LElbow.name]!!.valid} | ${angles[Angles.LLTorso.name]!!.valid} | ${angles[Angles.LKnee.name]!!.valid}\n" +
-                        "Mainside: ${mainSide.color}\n" +
-                        "Facing left: $facingLeft")
+                    listOf("Initial Form Check:\n" +
+                            "Arms: ${angles[mainSide.elbowAngle]!!.valid && angles[subSide.elbowAngle]!!.valid}\n" +
+                            "Torso:${angles[mainSide.lTorsoAngle]!!.valid && angles[subSide.lTorsoAngle]!!.valid}\n" +
+                            "Legs:${angles[mainSide.kneeAngle]!!.valid && angles[subSide.kneeAngle]!!.valid}\n" +
+//                            "Mainside: ${mainSide.color}\n" +
+//                            "Facing left: $facingLeft" +
+                            "validArmAngle: ${hasValidArmAngle(keypoints, mainSide, subSide)}")
                 return currentState
             }
             else {
@@ -75,6 +91,7 @@ fun getFeedbackWall(currentState: ProgressionState, person:Person, dbHandler: Da
                     currentState.errorCounter.startPosition = 0
                     currentState.sessionId =
                         dbHandler.insertSessionData(Instant.now(), Instant.now(), progression)
+                    currentState.feedback = listOf("Starting workout...")
                     currentState.state = ProgressionStates.START
                     currentState.startingArmDist = computeDistOfTwoParts(
                         keypoints,
@@ -87,7 +104,9 @@ fun getFeedbackWall(currentState: ProgressionState, person:Person, dbHandler: Da
         }
         ProgressionStates.START -> {
             //wait until valid again
-            if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").all {angles[it]!!.valid}) {
+            if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").all {angles[it]!!.valid} &&
+                areArmsOnSameSide(keypoints, mainSide, subSide) &&
+                hasValidArmAngle(keypoints, mainSide, subSide)){
                 currentState.errorCounter.startPosition++
                 if (currentState.errorCounter.startPosition >= END_WAIT_FRAMES) {
                     //process new rep

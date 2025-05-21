@@ -31,9 +31,9 @@ private val SubStandards = mapOf(
     Pair("STANDARD_LOWER_TORSO_ANGLE", 180),
     Pair("STANDARD_UPPER_TORSO_ANGLE", 180),
     Pair("STANDARD_ELBOW_ANGLE", 180),
-    Pair("STANDARD_LOWER_TORSO_DOF", 35),
+    Pair("STANDARD_LOWER_TORSO_DOF", 45),
     Pair("STANDARD_UPPER_TORSO_DOF", 10),
-    Pair("STANDARD_ELBOW_DOF", 35),
+    Pair("STANDARD_ELBOW_DOF", 45),
     Pair("STANDARD_KNEE_ANGLE", 180),
     Pair("STANDARD_KNEE_DOF", 35)
 )
@@ -67,11 +67,15 @@ fun getFeedbackIncline(currentState: ProgressionState, person:Person, dbHandler:
 
             //wait until the body is in the correct state
             if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").any {!angles[it]!!.valid} ||
+                !areArmsOnSameSide(keypoints, mainSide, subSide) ||
                 //make sure hands are higher than ankles
                 (facingLeft && keypoints[mainSide.ankle].coordinate.x > keypoints[mainSide.wrist].coordinate.x) ||
                 (!facingLeft && keypoints[mainSide.ankle].coordinate.x < keypoints[mainSide.wrist].coordinate.x)) {
                 currentState.feedback =
-                    listOf("${angles[Angles.LElbow.name]!!.valid} | ${angles[Angles.LLTorso.name]!!.valid} | ${angles[Angles.LKnee.name]!!.valid}")
+                listOf("Initial Form Check:\n" +
+                        "Arms: ${angles[mainSide.elbowAngle]!!.valid && angles[subSide.elbowAngle]!!.valid}\n" +
+                        "Torso:${angles[mainSide.lTorsoAngle]!!.valid && angles[subSide.lTorsoAngle]!!.valid}\n" +
+                        "Legs:${angles[mainSide.kneeAngle]!!.valid && angles[subSide.kneeAngle]!!.valid}\n")
                 return currentState
             }
             else {
@@ -80,6 +84,7 @@ fun getFeedbackIncline(currentState: ProgressionState, person:Person, dbHandler:
                     currentState.errorCounter.startPosition = 0
                     currentState.sessionId =
                         dbHandler.insertSessionData(Instant.now(), Instant.now(), progression)
+                    currentState.feedback = listOf("Starting workout...")
                     currentState.state = ProgressionStates.START
                     currentState.startingArmDist = computeDistOfTwoParts(
                         keypoints,
@@ -92,7 +97,8 @@ fun getFeedbackIncline(currentState: ProgressionState, person:Person, dbHandler:
         }
         ProgressionStates.START -> {
             //wait until valid again
-            if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").all {angles[it]!!.valid}) {
+            if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").all {angles[it]!!.valid} &&
+                areArmsOnSameSide(keypoints, mainSide, subSide)) {
                 currentState.errorCounter.startPosition++
                 if (currentState.errorCounter.startPosition >= END_WAIT_FRAMES) {
                     //process new rep

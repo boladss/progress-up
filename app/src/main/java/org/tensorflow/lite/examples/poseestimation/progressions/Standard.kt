@@ -4,6 +4,8 @@ import android.media.MediaPlayer
 import org.tensorflow.lite.examples.poseestimation.calculateAngle
 import org.tensorflow.lite.examples.poseestimation.data.Angles
 import org.tensorflow.lite.examples.poseestimation.data.BodyPart
+import org.tensorflow.lite.examples.poseestimation.data.BodySide
+import org.tensorflow.lite.examples.poseestimation.data.KeyPoint
 import org.tensorflow.lite.examples.poseestimation.data.LeftParts
 import org.tensorflow.lite.examples.poseestimation.data.RightParts
 import org.tensorflow.lite.examples.poseestimation.data.Person
@@ -38,6 +40,20 @@ fun checkValidityStandard(person: Person) : Person {
     return genericValidityCheck(person, Standards, SubStandards)
 }
 
+private fun areHandsUnderShoulders (keypoints: List<KeyPoint>, mainSide: BodySide, subSide: BodySide) : Boolean {
+    var pointB = Pair(keypoints[mainSide.shoulder].coordinate.x, keypoints[mainSide.shoulder].coordinate.y)
+    var pointC = Pair(keypoints[mainSide.wrist].coordinate.x, keypoints[mainSide.wrist].coordinate.y)
+    var pointA = Pair(keypoints[mainSide.wrist].coordinate.x, keypoints[mainSide.shoulder].coordinate.y)
+    val main : Boolean = (calculateAngle(pointA, pointB, pointC) < 20)
+
+    pointB = Pair(keypoints[subSide.shoulder].coordinate.x, keypoints[subSide.shoulder].coordinate.y)
+    pointC = Pair(keypoints[subSide.wrist].coordinate.x, keypoints[subSide.wrist].coordinate.y)
+    pointA = Pair(keypoints[subSide.wrist].coordinate.x, keypoints[subSide.shoulder].coordinate.y)
+    val sub : Boolean = (calculateAngle(pointA, pointB, pointC) < 20)
+
+    return main && sub
+}
+
 fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler: DatabaseHandler, mediaPlayer: MediaPlayer) : ProgressionState {
     val angles = person.angles
     val keypoints = person.keyPoints
@@ -62,15 +78,21 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
                 currentState.headPointingUp = false
 
             //wait until the body is in the correct state
+            val handsUnderShoulders = areHandsUnderShoulders(keypoints, mainSide, subSide)
             if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").any {!angles[it]!!.valid} ||
+                //make sure arms on same side
+                !areArmsOnSameSide(keypoints, mainSide, subSide) ||
                 //make sure feet aren't too high
                 (facingLeft && keypoints[mainSide.ankle].coordinate.x < keypoints[mainSide.wrist].coordinate.x) ||
-                (!facingLeft && keypoints[mainSide.ankle].coordinate.x > keypoints[mainSide.wrist].coordinate.x)) {
+                (!facingLeft && keypoints[mainSide.ankle].coordinate.x > keypoints[mainSide.wrist].coordinate.x) ||
+                //make sure wrists below shoulders
+                !handsUnderShoulders) {
                 currentState.feedback =
-                    listOf("Initial Form Check\n" +
+                    listOf("Initial Form Check:\n" +
                             "Arms: ${angles[mainSide.elbowAngle]!!.valid && angles[subSide.elbowAngle]!!.valid}\n" +
                             "Torso:${angles[mainSide.lTorsoAngle]!!.valid && angles[subSide.lTorsoAngle]!!.valid}\n" +
-                            "Legs:${angles[mainSide.kneeAngle]!!.valid && angles[subSide.kneeAngle]!!.valid}")
+                            "Legs:${angles[mainSide.kneeAngle]!!.valid && angles[subSide.kneeAngle]!!.valid}\n" +
+                            "Wrists under shoulders: $handsUnderShoulders")
                 return currentState
             }
             else {
@@ -92,7 +114,11 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
         }
         ProgressionStates.START -> {
             //wait until valid again
-            if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").all {angles[it]!!.valid}) {
+            if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").all {angles[it]!!.valid} &&
+                //make sure arms on same side
+                areArmsOnSameSide(keypoints, mainSide, subSide) &&
+                //make sure wrists below shoulders
+                (areHandsUnderShoulders(keypoints, mainSide, subSide))) {
                 currentState.errorCounter.startPosition++
                 if (currentState.errorCounter.startPosition >= END_WAIT_FRAMES) {
                     //process new rep
@@ -155,15 +181,16 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
 
             //check if feet are level with hands
             if ((facingLeft && keypoints[mainSide.wrist].coordinate.x > keypoints[mainSide.ankle].coordinate.x) ||
-                (!facingLeft && keypoints[mainSide.wrist].coordinate.x < keypoints[mainSide.ankle].coordinate.x) ) {
-                currentState.goodForm = false
-                errors.add(if (mainSide.side == Sides.LEFT) "Right hand not level with feet." else "Left hand not level with feet.")
-            }
-            if ((facingLeft && keypoints[subSide.wrist].coordinate.x > keypoints[subSide.ankle].coordinate.x) ||
-                (!facingLeft && keypoints[subSide.wrist].coordinate.x < keypoints[subSide.ankle].coordinate.x) ) {
-                currentState.goodForm = false
-                errors.add(if (subSide.side == Sides.LEFT) "Right hand not level with feet." else "Left hand not level with feet.")
-            }
+                (!facingLeft && keypoints[mainSide.wrist].coordinate.x < keypoints[mainSide.ankle].coordinate.x) ||
+                (facingLeft && keypoints[subSide.wrist].coordinate.x > keypoints[subSide.ankle].coordinate.x) ||
+                (!facingLeft && keypoints[subSide.wrist].coordinate.x < keypoints[subSide.ankle].coordinate.x)) {
+                currentState.errorCounter.handFeetAlignment++
+                if (currentState.errorCounter.handFeetAlignment > 3) {
+                    currentState.goodForm = false
+                    errors.add("Hands not level with feet")
+                }
+            } else if (currentState.errorCounter.handFeetAlignment > 0)
+                currentState.errorCounter.handFeetAlignment--
 
             currentState.errors = errors
 

@@ -1,8 +1,10 @@
 package org.tensorflow.lite.examples.poseestimation.progressions
 
 import android.media.MediaPlayer
+import org.tensorflow.lite.examples.poseestimation.calculateAngle
 import org.tensorflow.lite.examples.poseestimation.data.Angles
 import org.tensorflow.lite.examples.poseestimation.data.BodyPart
+import org.tensorflow.lite.examples.poseestimation.data.BodySide
 import org.tensorflow.lite.examples.poseestimation.data.KeyPoint
 import org.tensorflow.lite.examples.poseestimation.data.LeftParts
 import org.tensorflow.lite.examples.poseestimation.data.Person
@@ -93,6 +95,13 @@ fun processFeedback(currentState: ProgressionState) : List<String> {
         currentState.feedback = feedback
     }
     return currentState.feedback
+}
+
+fun areArmsOnSameSide (keypoints: List<KeyPoint>, mainSide: BodySide, subSide: BodySide) : Boolean {
+    val main = (keypoints[mainSide.shoulder].coordinate.x < keypoints[mainSide.wrist].coordinate.x)
+    val sub = (keypoints[subSide.shoulder].coordinate.x < keypoints[subSide.wrist].coordinate.x)
+
+    return !(main xor sub)
 }
 
 //fun playAudio(mediaPlayer: MediaPlayer, file: Int) {

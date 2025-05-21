@@ -59,8 +59,8 @@ class TrackerActivity : AppCompatActivity() {
     /** Default device is GPU */
     private var device = Device.GPU
 
-    /** Beeps disabled by default */
-    private var repetitionAudio = false
+    /** Beeps enabled by default */
+    private var repetitionAudio = true
 
     var persons = listOf<Person>()
     private lateinit var dbHandler: DatabaseHandler
