@@ -238,6 +238,7 @@ class TrackerActivity : AppCompatActivity() {
         down = false,
         errorCounter = ErrorTypes(),
         headPointingUp = true,
+        prevRepGood = true
     )
 
     private var startPlayed = false
@@ -258,10 +259,10 @@ class TrackerActivity : AppCompatActivity() {
         currentState = nextState
         
         // Beeping per repetition denoting good or poor performance
-        if (repetitionAudio && currentState.state == ProgressionStates.GOINGUP && !startPlayed) {
+        if (repetitionAudio && currentState.state == ProgressionStates.GOINGDOWN && !startPlayed) {
             startPlayed = true
             mediaPlayer.reset()
-            if (currentState.goodForm)
+            if (currentState.prevRepGood)
                 mediaPlayer.setDataSource(resources.openRawResourceFd(R.raw.goodform))
             else
                 mediaPlayer.setDataSource(resources.openRawResourceFd(R.raw.badform))

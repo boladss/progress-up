@@ -113,7 +113,7 @@ fun getFeedbackDecline(currentState: ProgressionState, person:Person, dbHandler:
                     currentState.errorCounter.startPosition = 0
                     currentState.sessionId =
                         dbHandler.insertSessionData(Instant.now(), Instant.now(), progression)
-                    currentState.feedback = listOf("Starting workout...")
+                    currentState.feedback = listOf("Starting workout...\nStay in starting position!")
                     currentState.state = ProgressionStates.START
                     currentState.startingArmDist = computeDistOfTwoParts(
                         keypoints,
@@ -135,6 +135,7 @@ fun getFeedbackDecline(currentState: ProgressionState, person:Person, dbHandler:
                     currentState.feedback = processFeedback(currentState)
                     currentState.errorCounter.reset()
                     currentState.state = ProgressionStates.GOINGDOWN
+                    currentState.prevRepGood = currentState.goodForm
                     currentState.goodForm = true
                     currentState.errors = setOf()
                     currentState.lowestArmDist = 9999999f
@@ -200,6 +201,9 @@ fun getFeedbackDecline(currentState: ProgressionState, person:Person, dbHandler:
                 errors.add("Not enough range of motion.")
                 currentState.goodForm = false
             }
+
+            //inform the user that the rep is counted
+            currentState.feedback = listOf("Rep done! \n Return to start position for feedback.")
 
             if (computeDistOfTwoParts(keypoints, BodyPart.fromInt(mainSide.shoulder), BodyPart.fromInt(mainSide.wrist)) < currentState.startingArmDist - 10 &&
                 !person.angles[mainSide.elbowAngle]!!.valid) {

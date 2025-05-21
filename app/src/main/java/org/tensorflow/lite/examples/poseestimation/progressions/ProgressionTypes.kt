@@ -43,5 +43,6 @@ data class ProgressionState(
     var errors: Set<String>,
     var down: Boolean,
     val errorCounter: ErrorTypes,
-    var headPointingUp: Boolean
+    var headPointingUp: Boolean,
+    var prevRepGood: Boolean
 )

@@ -82,13 +82,13 @@ fun addRep(currentState: ProgressionState, dbHandler: DatabaseHandler) : Triple<
 
 fun processFeedback(currentState: ProgressionState) : List<String> {
     val (totalReps, badReps, goodReps) = currentState.reps
-    val errors = currentState.errors.toMutableSet()
+    val errors = currentState.errors
     if (currentState.goodForm)  {
         if (totalReps > 0)
-            currentState.feedback = listOf("Good rep!")
+            currentState.feedback = listOf("$badReps :: $goodReps | Good rep!")
     }
     else {
-        val feedback = mutableListOf("Rep $totalReps errors:\n")
+        val feedback = mutableListOf("$badReps :: $goodReps | Rep $totalReps errors:\n")
         val errorList = errors.toList()
         feedback.addAll(errorList.dropLast(1).map { it + "\n" })
         errorList.lastOrNull()?.let { feedback.add(it) }
