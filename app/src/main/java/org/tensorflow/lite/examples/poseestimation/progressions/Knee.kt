@@ -70,9 +70,9 @@ fun getFeedbackKnee(currentState: ProgressionState, person:Person, dbHandler: Da
             val pointC = Pair(keypoints[mainSide.knee].coordinate.x, keypoints[mainSide.knee].coordinate.y)
             val pointA = Pair(keypoints[mainSide.wrist].coordinate.x, keypoints[mainSide.knee].coordinate.y)
             if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").any {!angles[it]!!.valid} ||
-                (calculateAngle(pointA, pointB, pointC) > 10)) { //knees shouldn't be too far from parallel
+                (calculateAngle(pointA, pointB, pointC) > 10)) {   // Knees should be level with hands
                 currentState.feedback =
-                    listOf("Angle: ${calculateAngle(pointA, pointB, pointC)}")
+                    listOf("Initial Form Check:\n" + "Knees: ${calculateAngle(pointA, pointB, pointC) <= 10}")
                 return currentState
             }
             else {
