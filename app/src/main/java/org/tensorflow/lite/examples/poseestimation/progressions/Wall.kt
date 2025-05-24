@@ -77,12 +77,10 @@ fun getFeedbackWall(currentState: ProgressionState, person:Person, dbHandler: Da
                 !hasValidArmAngle(keypoints, mainSide, subSide)) {
                 currentState.feedback =
                     listOf("Initial Form Check:\n" +
-                            "Arms: ${angles[mainSide.elbowAngle]!!.valid && angles[subSide.elbowAngle]!!.valid}\n" +
-                            "Torso:${angles[mainSide.lTorsoAngle]!!.valid && angles[subSide.lTorsoAngle]!!.valid}\n" +
-                            "Legs:${angles[mainSide.kneeAngle]!!.valid && angles[subSide.kneeAngle]!!.valid}\n" +
-//                            "Mainside: ${mainSide.color}\n" +
-//                            "Facing left: $facingLeft" +
-                            "validArmAngle: ${hasValidArmAngle(keypoints, mainSide, subSide)}")
+                            // "Arms: ${angles[mainSide.elbowAngle]!!.valid && angles[subSide.elbowAngle]!!.valid}\n" +
+                            "Arms: ${hasValidArmAngle(keypoints, mainSide, subSide)}\n" +
+                            "Torso: ${angles[mainSide.lTorsoAngle]!!.valid && angles[subSide.lTorsoAngle]!!.valid}\n" +
+                            "Legs: ${angles[mainSide.kneeAngle]!!.valid && angles[subSide.kneeAngle]!!.valid}\n")
                 return currentState
             }
             else {

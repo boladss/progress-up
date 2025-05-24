@@ -90,8 +90,8 @@ fun getFeedbackStandard(currentState: ProgressionState, person:Person, dbHandler
                 currentState.feedback =
                     listOf("Initial Form Check:\n" +
                             "Arms: ${angles[mainSide.elbowAngle]!!.valid && angles[subSide.elbowAngle]!!.valid}\n" +
-                            "Torso:${angles[mainSide.lTorsoAngle]!!.valid && angles[subSide.lTorsoAngle]!!.valid}\n" +
-                            "Legs:${angles[mainSide.kneeAngle]!!.valid && angles[subSide.kneeAngle]!!.valid}\n" +
+                            "Torso: ${angles[mainSide.lTorsoAngle]!!.valid && angles[subSide.lTorsoAngle]!!.valid}\n" +
+                            "Legs: ${angles[mainSide.kneeAngle]!!.valid && angles[subSide.kneeAngle]!!.valid}\n" +
                             "Wrists under shoulders: $handsUnderShoulders")
                 return currentState
             }

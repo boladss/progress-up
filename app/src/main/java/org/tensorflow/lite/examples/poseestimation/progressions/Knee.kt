@@ -72,7 +72,10 @@ fun getFeedbackKnee(currentState: ProgressionState, person:Person, dbHandler: Da
             if (listOf("LElbow", "LLTorso", "LKnee", "RElbow", "RLTorso", "RKnee").any {!angles[it]!!.valid} ||
                 (calculateAngle(pointA, pointB, pointC) > 10)) {   // Knees should be level with hands
                 currentState.feedback =
-                    listOf("Initial Form Check:\n" + "Knees: ${calculateAngle(pointA, pointB, pointC) <= 10}")
+                    listOf("Initial Form Check:\n" +
+                            "Arms: ${angles[mainSide.elbowAngle]!!.valid && angles[subSide.elbowAngle]!!.valid}\n" +
+                            "Torso: ${angles[mainSide.lTorsoAngle]!!.valid && angles[subSide.lTorsoAngle]!!.valid}\n" +
+                            "Knees: ${calculateAngle(pointA, pointB, pointC) <= 10}")
                 return currentState
             }
             else {
