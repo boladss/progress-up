@@ -59,6 +59,7 @@
                 android:minHeight="0dp"
                 android:minWidth="0dp"
                 android:background="@drawable/button_white_outline"
+                android:textColor="@color/white"
                 android:text="@string/pu_prog_form_guide"
                 />
 
@@ -73,6 +74,7 @@
                 android:minHeight="0dp"
                 android:minWidth="0dp"
                 android:background="@drawable/button_white_outline"
+                android:textColor="@color/white"
                 android:text="@string/pu_prog_exercise_logs"
                 />
 

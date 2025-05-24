@@ -89,6 +89,7 @@
                     android:layout_marginTop="12dp"
                     android:layout_marginBottom="24dp"
                     android:background="@drawable/button_white_outline"
+                    android:textColor="@color/white"
                     android:text="@string/pu_logs_button" />
             </LinearLayout>
 
