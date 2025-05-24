@@ -18,6 +18,7 @@ class SelectPushUpView @JvmOverloads constructor(
     private val imageView: ImageView
     private val titleTextView: TextView
     private val descriptionTextView: TextView
+    private val progFormGuideButton: Button
     private val progSessionLogsButton: Button
 
     init {
@@ -25,6 +26,7 @@ class SelectPushUpView @JvmOverloads constructor(
         imageView = findViewById(R.id.imageView)
         titleTextView = findViewById(R.id.titleTextView)
         descriptionTextView = findViewById(R.id.descriptionTextView)
+        progFormGuideButton = findViewById(R.id.progFormGuideButton)
         progSessionLogsButton = findViewById(R.id.progSessionLogsButton)
 
         isClickable = true
@@ -40,6 +42,11 @@ class SelectPushUpView @JvmOverloads constructor(
 
     fun setDescription(description: String) {
         descriptionTextView.text = description
+    }
+
+    // Passes the button for the per-progression form guides
+    fun getFormGuideButton(): Button {
+        return progFormGuideButton
     }
 
     // Passes the button for the per-progression session logs

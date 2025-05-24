@@ -18,6 +18,10 @@
         <item>NNAPI</item>
     </string-array>
 
+    <string name="pu_prog_form_guide">Form Guide</string>
+    <string name="pu_prog_exercise_logs">Logs</string>
+    <string name="pu_prog_diagram_desc">Diagram of push-up progression</string>
+
     <string name="pu_init_feedback">Get into position! For accurate tracking,\nposition your head towards the top of your phone.</string>
     <string name="pu_init_rep_count">0</string>
     <string name="pu_init_prog_type">Progression Type</string>
