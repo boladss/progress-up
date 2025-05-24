@@ -1,5 +1,7 @@
 <resources>
     <string name="pu_app_name">Progress-Up</string>
+    <string name="pu_app_description">A real-time form checker for push-up progressions</string>
+
     <string name="tfe_pe_request_permission">This app needs camera permission.</string>
     <string name="tfe_pe_tv_score">Score: %.2f</string>
     <string name="tfe_pe_tv_model">Model: </string>
@@ -21,6 +23,7 @@
     <string name="pu_prog_form_guide">Form Guide</string>
     <string name="pu_prog_exercise_logs">Logs</string>
     <string name="pu_prog_diagram_desc">Diagram of push-up progression</string>
+    <string name="pu_logs_button">View all exercise logs</string>
 
     <string name="pu_init_feedback">Get into position! For accurate tracking,\nposition your head towards the top of your phone.</string>
     <string name="pu_init_rep_count">0</string>

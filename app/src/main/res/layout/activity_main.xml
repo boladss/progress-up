@@ -22,7 +22,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Progress-Up"
+                android:text="@string/pu_app_name"
                 android:textColor="#32f4d1"
                 android:textSize="24sp"
                 android:textStyle="bold" />
@@ -31,7 +31,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="A real-time form checker for push-up progressions"
+                android:text="@string/pu_app_description"
                 android:textColor="#FFFFFF"
                 android:textSize="14sp" />
         </LinearLayout>
@@ -89,7 +89,7 @@
                     android:layout_marginTop="12dp"
                     android:layout_marginBottom="24dp"
                     android:background="@drawable/button_white_outline"
-                    android:text="View all session logs" />
+                    android:text="@string/pu_logs_button" />
             </LinearLayout>
 
         </ScrollView>
