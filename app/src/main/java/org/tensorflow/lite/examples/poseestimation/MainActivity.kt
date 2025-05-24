@@ -146,7 +146,7 @@ class MainActivity : AppCompatActivity() {
 
     // Display alert dialog containing form guide for the selected progression
     private fun createProgressionAlertDialog(progType: String, message: String) {
-        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+        val builder: AlertDialog.Builder = AlertDialog.Builder(this, R.style.AlertDialogTheme)
         builder
             .setMessage(Html.fromHtml(message, HtmlCompat.FROM_HTML_MODE_LEGACY))
             .setTitle("$progType PUSH-UP")

@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.BaseExpandableListAdapter
 import android.widget.Button
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import org.tensorflow.lite.examples.poseestimation.R
 import org.tensorflow.lite.examples.poseestimation.SessionMenuActivity
 import java.time.Instant
@@ -80,19 +81,29 @@ class SessionCursorAdapter(
             val progType = "${sessionData.progressionType} PUSH-UPS"
             val repCount = dbHandler.countTotalReps(sessionId)
 
-            // Handle deleting of session
-            val deleteSessionButton = convertView.findViewById<Button>(R.id.deleteSessionButton)
-            deleteSessionButton.setOnClickListener {
-                dbHandler.deleteSessionData(sessionId)
-                activity.displaySessionData()
-            }
-
             // Format timestamps and text
 //            val startTime = "${iso8601ToFormat(startTimeISO)} (ID: $sessionId)"
             val startTime = "${iso8601ToFormat(startTimeISO)}"
 //            val endTime = "Ended: ${iso8601ToFormat(endTimeISO)}"
+            val repCountNum = "$repCount"
             val repCountText = "$repCount REPS"
             var mistakesSummaryText = ""
+
+            // Handle deleting of session
+            val deleteSessionButton = convertView.findViewById<Button>(R.id.deleteSessionButton)
+            deleteSessionButton.setOnClickListener {
+                val builder: AlertDialog.Builder = AlertDialog.Builder(context, R.style.AlertDialogTheme)
+                builder
+                    .setMessage("Are you sure you want to delete this session ($startTime) with $repCountNum logged reps?")
+                    .setTitle("Delete Session")
+                    .setPositiveButton("Delete") { dialog, which ->
+                        dbHandler.deleteSessionData(sessionId)
+                        activity.displaySessionData()
+                    }
+                    .setNegativeButton("Cancel") {_, _ -> }
+                val dialog: AlertDialog = builder.create()
+                dialog.show()
+            }
 
             // Summarize mistake data
             val mistakesSummary = dbHandler.summarizeMistakeData(sessionId)
