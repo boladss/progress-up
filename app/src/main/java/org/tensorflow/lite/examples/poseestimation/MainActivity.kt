@@ -50,23 +50,20 @@ class MainActivity : AppCompatActivity() {
         /** PROGRESSION INDEX GUIDE --- For sending data through Intent (progressionType)
          *  See ProgressionTypes.kt, using .ordinal
          **/
+
         // 0 - WALL PUSH-UPS
         wallPushUpButton = findViewById<SelectPushUpView>(R.id.wallPushUpButton)
         wallPushUpButton.setImageSrc(R.drawable.wall_push_up)
         wallPushUpButton.setTitle("WALL PUSH-UP")
         wallPushUpButton.setDescription("If the other progressions feel hard, start here!")
         wallPushUpButton.setOnClickListener {
-            val intent = Intent(this, TrackerActivity::class.java)
-            intent.putExtra("progressionType", ProgressionTypes.WALL.ordinal)
-            startActivity(intent)
+            startTracker(ProgressionTypes.WALL.ordinal)
+        }
+        wallPushUpButton.getSessionLogsButton().setOnClickListener() {
+            startSessionMenu(ProgressionTypes.WALL.ordinal)
         }
         wallPushUpButton.getFormGuideButton().setOnClickListener() {
             createProgressionAlertDialog(ProgressionTypes.WALL.toString(),"This is the form guide for the wall push-up.")
-        }
-        wallPushUpButton.getSessionLogsButton().setOnClickListener() {
-            val intent = Intent(this, SessionMenuActivity::class.java)
-            intent.putExtra("progressionType", ProgressionTypes.WALL.ordinal)
-            startActivity(intent)
         }
 
         // 1 - INCLINE PUSH-UPS
@@ -79,15 +76,12 @@ class MainActivity : AppCompatActivity() {
             intent.putExtra("progressionType", ProgressionTypes.INCLINE.ordinal)
             startActivity(intent)
         }
+        inclinePushUpButton.getSessionLogsButton().setOnClickListener() {
+            startSessionMenu(ProgressionTypes.INCLINE.ordinal)
+        }
         inclinePushUpButton.getFormGuideButton().setOnClickListener() {
             createProgressionAlertDialog(ProgressionTypes.INCLINE.toString(),"This is the form guide for the incline push-up.")
         }
-        inclinePushUpButton.getSessionLogsButton().setOnClickListener() {
-            val intent = Intent(this, SessionMenuActivity::class.java)
-            intent.putExtra("progressionType", ProgressionTypes.INCLINE.ordinal)
-            startActivity(intent)
-        }
-
 
         // 2 - KNEE PUSH-UPS
         kneePushUpButton = findViewById<SelectPushUpView>(R.id.kneePushUpButton)
@@ -95,17 +89,13 @@ class MainActivity : AppCompatActivity() {
         kneePushUpButton.setTitle("KNEE PUSH-UP")
         kneePushUpButton.setDescription("Go here when incline push-ups get easy.")
         kneePushUpButton.setOnClickListener {
-            val intent = Intent(this, TrackerActivity::class.java)
-            intent.putExtra("progressionType", ProgressionTypes.KNEE.ordinal)
-            startActivity(intent)
+            startTracker(ProgressionTypes.KNEE.ordinal)
+        }
+        kneePushUpButton.getSessionLogsButton().setOnClickListener() {
+            startSessionMenu(ProgressionTypes.KNEE.ordinal)
         }
         kneePushUpButton.getFormGuideButton().setOnClickListener() {
             createProgressionAlertDialog(ProgressionTypes.KNEE.toString(),"This is the form guide for the knee push-up.")
-        }
-        kneePushUpButton.getSessionLogsButton().setOnClickListener() {
-            val intent = Intent(this, SessionMenuActivity::class.java)
-            intent.putExtra("progressionType", ProgressionTypes.KNEE.ordinal)
-            startActivity(intent)
         }
 
         // 3 - STANDARD PUSH-UPS
@@ -114,17 +104,13 @@ class MainActivity : AppCompatActivity() {
         standardPushUpButton.setTitle("STANDARD PUSH-UP")
         standardPushUpButton.setDescription("A regular push-up.")
         standardPushUpButton.setOnClickListener {
-            val intent = Intent(this, TrackerActivity::class.java)
-            intent.putExtra("progressionType", ProgressionTypes.STANDARD.ordinal)
-            startActivity(intent)
+            startTracker(ProgressionTypes.STANDARD.ordinal)
+        }
+        standardPushUpButton.getSessionLogsButton().setOnClickListener() {
+            startSessionMenu(ProgressionTypes.STANDARD.ordinal)
         }
         standardPushUpButton.getFormGuideButton().setOnClickListener() {
             createProgressionAlertDialog(ProgressionTypes.STANDARD.toString(),"This is the form guide for the standard push-up.")
-        }
-        standardPushUpButton.getSessionLogsButton().setOnClickListener() {
-            val intent = Intent(this, SessionMenuActivity::class.java)
-            intent.putExtra("progressionType", ProgressionTypes.STANDARD.ordinal)
-            startActivity(intent)
         }
 
         // 4 - DECLINE PUSH-UPS
@@ -133,17 +119,13 @@ class MainActivity : AppCompatActivity() {
         declinePushUpButton.setTitle("DECLINE PUSH-UP")
         declinePushUpButton.setDescription("Raising the legs puts more weight on the hands.")
         declinePushUpButton.setOnClickListener {
-            val intent = Intent(this, TrackerActivity::class.java)
-            intent.putExtra("progressionType", ProgressionTypes.DECLINE.ordinal)
-            startActivity(intent)
+            startTracker(ProgressionTypes.DECLINE.ordinal)
+        }
+        declinePushUpButton.getSessionLogsButton().setOnClickListener() {
+            startSessionMenu(ProgressionTypes.DECLINE.ordinal)
         }
         declinePushUpButton.getFormGuideButton().setOnClickListener() {
             createProgressionAlertDialog(ProgressionTypes.DECLINE.toString(),"This is the form guide for the decline push-up.")
-        }
-        declinePushUpButton.getSessionLogsButton().setOnClickListener() {
-            val intent = Intent(this, SessionMenuActivity::class.java)
-            intent.putExtra("progressionType", ProgressionTypes.DECLINE.ordinal)
-            startActivity(intent)
         }
 
         // 5 - PSEUDO-PLANCHE PUSH-UPS
@@ -152,17 +134,13 @@ class MainActivity : AppCompatActivity() {
         pseudoPlanchePushUpButton.setTitle("PSEUDO-PLANCHE PUSH-UP")
         pseudoPlanchePushUpButton.setDescription("Moving the hands closer to the hips reduces leverage significantly.")
         pseudoPlanchePushUpButton.setOnClickListener {
-            val intent = Intent(this, TrackerActivity::class.java)
-            intent.putExtra("progressionType", ProgressionTypes.PSEUDOPLANCHE.ordinal)
-            startActivity(intent)
+            startTracker(ProgressionTypes.PSEUDOPLANCHE.ordinal)
+        }
+        pseudoPlanchePushUpButton.getSessionLogsButton().setOnClickListener() {
+            startSessionMenu(ProgressionTypes.PSEUDOPLANCHE.ordinal)
         }
         pseudoPlanchePushUpButton.getFormGuideButton().setOnClickListener() {
             createProgressionAlertDialog(ProgressionTypes.PSEUDOPLANCHE.toString(),"This is the form guide for the pseudo-planche push-up.")
-        }
-        pseudoPlanchePushUpButton.getSessionLogsButton().setOnClickListener() {
-            val intent = Intent(this, SessionMenuActivity::class.java)
-            intent.putExtra("progressionType", ProgressionTypes.PSEUDOPLANCHE.ordinal)
-            startActivity(intent)
         }
     }
 
@@ -170,11 +148,25 @@ class MainActivity : AppCompatActivity() {
     private fun createProgressionAlertDialog(progType: String, message: String) {
         val builder: AlertDialog.Builder = AlertDialog.Builder(this)
         builder
-            .setMessage(message)
+            .setMessage(Html.fromHtml(message, HtmlCompat.FROM_HTML_MODE_LEGACY))
             .setTitle("$progType PUSH-UP")
         val dialog = builder.create()
         dialog.show()
         return
+    }
+
+    // Start new activity for tracker
+    private fun startTracker(progTypeNumber: Int) {
+        val intent = Intent(this, TrackerActivity::class.java)
+        intent.putExtra("progressionType", progTypeNumber)
+        startActivity(intent)
+    }
+
+    // Start new activity for session menu
+    private fun startSessionMenu(progTypeNumber: Int) {
+        val intent = Intent(this, SessionMenuActivity::class.java)
+        intent.putExtra("progressionType", progTypeNumber)
+        startActivity(intent)
     }
 }
 
