@@ -142,7 +142,7 @@ class MainActivity : AppCompatActivity() {
             startSessionMenu(ProgressionTypes.PSEUDOPLANCHE.ordinal)
         }
         pseudoPlanchePushUpButton.getFormGuideButton().setOnClickListener() {
-            createProgressionAlertDialog(ProgressionTypes.PSEUDOPLANCHE.toString(),getString(R.string.pu_form_guide_pseudoplanche), getString(R.string.pu_video_guide_standard))
+            createProgressionAlertDialog(ProgressionTypes.PSEUDOPLANCHE.toString(),getString(R.string.pu_form_guide_pseudoplanche), getString(R.string.pu_video_guide_pseudoplanche))
         }
     }
 
