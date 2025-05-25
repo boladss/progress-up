@@ -184,4 +184,11 @@
         Your scapulae should be fully depressed. At the top of the motion, they should be protracted. They should retract at the bottom, and return back to protracted at the top.<br/>
         ]]>
     </string>
+
+    <string name="pu_video_guide_wall">https://www.youtube.com/watch?v=jNWTFBqZzAU</string>
+    <string name="pu_video_guide_incline">https://www.youtube.com/watch?v=cfns5VDVVvk</string>
+    <string name="pu_video_guide_knee">https://www.youtube.com/watch?v=lFR1GWy1Dcs</string>
+    <string name="pu_video_guide_standard">https://www.youtube.com/watch?v=IODxDxX7oi4</string>
+    <string name="pu_video_guide_decline">https://www.youtube.com/watch?v=b_CC4kAF1HQ</string>
+    <string name="pu_video_guide_pseudoplanche">https://www.youtube.com/watch?v=odcPqBOlJhI</string>
 </resources>

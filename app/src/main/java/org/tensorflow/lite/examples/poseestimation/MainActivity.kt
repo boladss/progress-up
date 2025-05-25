@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
             startSessionMenu(ProgressionTypes.WALL.ordinal)
         }
         wallPushUpButton.getFormGuideButton().setOnClickListener() {
-            createProgressionAlertDialog(ProgressionTypes.WALL.toString(), getString(R.string.pu_form_guide_wall))
+            createProgressionAlertDialog(ProgressionTypes.WALL.toString(), getString(R.string.pu_form_guide_wall), getString(R.string.pu_video_guide_wall))
         }
 
         // 1 - INCLINE PUSH-UPS
@@ -82,7 +82,7 @@ class MainActivity : AppCompatActivity() {
             startSessionMenu(ProgressionTypes.INCLINE.ordinal)
         }
         inclinePushUpButton.getFormGuideButton().setOnClickListener() {
-            createProgressionAlertDialog(ProgressionTypes.INCLINE.toString(),getString(R.string.pu_form_guide_incline))
+            createProgressionAlertDialog(ProgressionTypes.INCLINE.toString(),getString(R.string.pu_form_guide_incline), getString(R.string.pu_video_guide_incline))
         }
 
         // 2 - KNEE PUSH-UPS
@@ -97,7 +97,7 @@ class MainActivity : AppCompatActivity() {
             startSessionMenu(ProgressionTypes.KNEE.ordinal)
         }
         kneePushUpButton.getFormGuideButton().setOnClickListener() {
-            createProgressionAlertDialog(ProgressionTypes.KNEE.toString(),getString(R.string.pu_form_guide_knee))
+            createProgressionAlertDialog(ProgressionTypes.KNEE.toString(),getString(R.string.pu_form_guide_knee), getString(R.string.pu_video_guide_knee))
         }
 
         // 3 - STANDARD PUSH-UPS
@@ -112,7 +112,7 @@ class MainActivity : AppCompatActivity() {
             startSessionMenu(ProgressionTypes.STANDARD.ordinal)
         }
         standardPushUpButton.getFormGuideButton().setOnClickListener() {
-            createProgressionAlertDialog(ProgressionTypes.STANDARD.toString(),getString(R.string.pu_form_guide_standard))
+            createProgressionAlertDialog(ProgressionTypes.STANDARD.toString(), getString(R.string.pu_form_guide_standard), getString(R.string.pu_video_guide_standard))
         }
 
         // 4 - DECLINE PUSH-UPS
@@ -127,7 +127,7 @@ class MainActivity : AppCompatActivity() {
             startSessionMenu(ProgressionTypes.DECLINE.ordinal)
         }
         declinePushUpButton.getFormGuideButton().setOnClickListener() {
-            createProgressionAlertDialog(ProgressionTypes.DECLINE.toString(),getString(R.string.pu_form_guide_decline))
+            createProgressionAlertDialog(ProgressionTypes.DECLINE.toString(),getString(R.string.pu_form_guide_decline), getString(R.string.pu_video_guide_decline))
         }
 
         // 5 - PSEUDO-PLANCHE PUSH-UPS
@@ -142,16 +142,13 @@ class MainActivity : AppCompatActivity() {
             startSessionMenu(ProgressionTypes.PSEUDOPLANCHE.ordinal)
         }
         pseudoPlanchePushUpButton.getFormGuideButton().setOnClickListener() {
-            createProgressionAlertDialog(ProgressionTypes.PSEUDOPLANCHE.toString(),getString(R.string.pu_form_guide_pseudoplanche))
+            createProgressionAlertDialog(ProgressionTypes.PSEUDOPLANCHE.toString(),getString(R.string.pu_form_guide_pseudoplanche), getString(R.string.pu_video_guide_standard))
         }
     }
 
     // Display alert dialog containing form guide for the selected progression
-    private fun createProgressionAlertDialog(progType: String, message: String) {
+    private fun createProgressionAlertDialog(progType: String, message: String, videoUrl: String?= null) {
         val builder: AlertDialog.Builder = AlertDialog.Builder(this, R.style.AlertDialogTheme)
-
-        // Temporary link
-        val videoUrl = "https://www.youtube.com/"
 
         // Create dialog with form guide
         builder
@@ -159,16 +156,17 @@ class MainActivity : AppCompatActivity() {
             .setTitle("FORM GUIDE: $progType PUSH-UP")
 
         // Include button to video guide per progression
-        builder.setPositiveButton("Video Guide") { dialog, _ ->
-            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(videoUrl))
-            try {
-                startActivity(intent)
-            } catch (e: Exception) {
-                Toast.makeText(this, "No application found to open link.", Toast.LENGTH_SHORT).show()
+        if (videoUrl != null) {
+            builder.setPositiveButton("Video Guide") { dialog, _ ->
+                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(videoUrl))
+                try {
+                    startActivity(intent)
+                } catch (e: Exception) {
+                    Toast.makeText(this, "No application found to open link.", Toast.LENGTH_SHORT).show()
+                }
+                dialog.dismiss()
             }
-            dialog.dismiss()
         }
-        
         val dialog = builder.create()
         dialog.show()
         return
