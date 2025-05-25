@@ -25,7 +25,7 @@
     <string name="pu_prog_diagram_desc">Diagram of push-up progression</string>
     <string name="pu_logs_button">View all exercise logs</string>
 
-    <string name="pu_init_feedback">Get into position! For accurate tracking,\nposition your head towards the top of your phone.</string>
+    <string name="pu_init_feedback">Get into position! For accurate tracking,\nposition your head towards the top of your phone.\n\nSimply go back to end the session.</string>
     <string name="pu_init_rep_count">0</string>
     <string name="pu_init_good_rep_count">0 good</string>
     <string name="pu_init_poor_rep_count">0 poor</string>
