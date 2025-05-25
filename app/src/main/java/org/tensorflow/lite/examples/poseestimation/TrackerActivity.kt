@@ -77,6 +77,8 @@ class TrackerActivity : AppCompatActivity() {
     private lateinit var vAudioOption: View
     private lateinit var repFeedback: TextView
     private lateinit var repCounter: TextView
+    private lateinit var goodRepCounter: TextView
+    private lateinit var poorRepCounter: TextView
     private lateinit var displayProgressionType: TextView
     private lateinit var mediaPlayer: MediaPlayer
     private var cameraSource: CameraSource? = null
@@ -170,6 +172,8 @@ class TrackerActivity : AppCompatActivity() {
 
         repFeedback = findViewById(R.id.tvRepFeedback)
         repCounter = findViewById(R.id.tvRepCounter)
+        goodRepCounter = findViewById(R.id.tvGoodRepCounter)
+        poorRepCounter = findViewById(R.id.tvPoorRepCounter)
         initSpinner()
         spnModel.setSelection(modelPos)
 
@@ -262,9 +266,13 @@ class TrackerActivity : AppCompatActivity() {
                 repFeedback.append(it)
             }
 
-            val repCounterText = nextState.reps.first
-            repCounter.text = repCounterText.toString()
+            val repCounterText = nextState.reps.first.toString()
+            val poorRepCounterText = nextState.reps.second.toString() + " poor"
+            val goodRepCounterText = nextState.reps.third.toString() + " good"
 
+            repCounter.text = repCounterText
+            poorRepCounter.text = poorRepCounterText
+            goodRepCounter.text = goodRepCounterText
         }
         currentState = nextState
         

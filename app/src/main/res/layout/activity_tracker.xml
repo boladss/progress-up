@@ -16,52 +16,101 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginTop="16dp"
         android:orientation="vertical">
 
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_margin="8dp"
             >
 
             <TextView
-                android:layout_width="match_parent"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
+                android:padding="8dp"
                 android:layout_alignParentStart="true"
                 android:text="@string/pu_init_prog_type"
                 android:id="@+id/tvProgressionType"
                 android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="@color/white"/>
+                android:textColor="@color/white"
+                android:background="@drawable/button_navy"/>
 
             <LinearLayout
-                android:layout_width="80dp"
+                android:layout_width="150dp"
                 android:layout_height="80dp"
-                android:layout_margin="8dp"
-                android:orientation="vertical"
                 android:background="@drawable/button_navy"
-                android:layout_alignParentEnd="true">
+                android:layout_alignParentEnd="true"
+                android:orientation="horizontal">
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:textAlignment="center"
-                    android:id="@+id/tvRepCounter"
-                    android:text="@string/pu_init_rep_count"
-                    android:textColor="@color/white"
-                    android:textStyle="bold"
-                    android:textSize="36sp"
-                    />
+                <LinearLayout
+                    android:layout_width="50dp"
+                    android:layout_height="match_parent"
+                    android:layout_margin="4dp"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    >
 
-                <TextView
-                    android:layout_width="match_parent"
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAlignment="center"
+                        android:id="@+id/tvRepCounter"
+                        android:text="@string/pu_init_rep_count"
+                        android:textColor="@color/white"
+                        android:textStyle="bold"
+                        android:textSize="36sp"
+                        />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAlignment="center"
+                        android:text="@string/pu_rep_subtitle"
+                        android:textColor="@color/white"
+                        android:textStyle="bold"
+                        android:textSize="16sp"
+                        />
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="1dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginVertical="8dp"
+                    android:background="@color/white" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:textAlignment="center"
-                    android:text="@string/pu_rep_subtitle"
-                    android:textColor="@color/white"
-                    android:textStyle="bold"
-                    android:textSize="16sp"
-                    />
+                    android:layout_weight="1"
+                    android:layout_gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAlignment="center"
+                        android:id="@+id/tvGoodRepCounter"
+                        android:text="@string/pu_init_good_rep_count"
+                        android:textColor="@color/green"
+                        android:textStyle="bold"
+                        android:textSize="20sp"
+                        />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textAlignment="center"
+                        android:id="@+id/tvPoorRepCounter"
+                        android:text="@string/pu_init_poor_rep_count"
+                        android:textColor="@color/red"
+                        android:textStyle="bold"
+                        android:textSize="20sp"
+                        />
+
+                </LinearLayout>
 
             </LinearLayout>
 

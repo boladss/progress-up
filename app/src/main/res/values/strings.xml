@@ -27,6 +27,8 @@
 
     <string name="pu_init_feedback">Get into position! For accurate tracking,\nposition your head towards the top of your phone.</string>
     <string name="pu_init_rep_count">0</string>
+    <string name="pu_init_good_rep_count">0 good</string>
+    <string name="pu_init_poor_rep_count">0 poor</string>
     <string name="pu_init_prog_type">Progression Type</string>
     <string name="pu_rep_subtitle">REPS</string>
 
