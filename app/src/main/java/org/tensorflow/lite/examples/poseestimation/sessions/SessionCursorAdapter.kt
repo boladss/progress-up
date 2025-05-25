@@ -9,6 +9,7 @@ import android.widget.BaseExpandableListAdapter
 import android.widget.Button
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import org.tensorflow.lite.examples.poseestimation.R
 import org.tensorflow.lite.examples.poseestimation.SessionMenuActivity
 import java.time.Instant
@@ -158,7 +159,7 @@ class SessionCursorAdapter(
 //            val idNumber = "(ID: $repId)"
             val idNumber = ""
             val repCountText = "Rep #$repCount"
-            val repQualityText = if (repQuality) "Good" else "Bad"
+            val repQualityText = if (repQuality) "Good" else "Poor"
             var repMistakesText = ""
 
             // List mistakes if bad quality
@@ -180,6 +181,9 @@ class SessionCursorAdapter(
             textRepCount.text = repCountText
             textRepQuality.text = repQualityText
             textRepMistakes.text = repMistakesText
+
+            val repQualityColorId = if (repQuality) R.color.green else R.color.red
+            textRepQuality.setTextColor(ContextCompat.getColor(textRepQuality.context, repQualityColorId))
 
         } else {
             val textRepId = convertView!!.findViewById<TextView>(R.id.textRepId)
