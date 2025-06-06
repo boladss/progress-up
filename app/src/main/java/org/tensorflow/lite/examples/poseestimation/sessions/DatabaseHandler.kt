@@ -91,15 +91,6 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
         values.put(SESSIONS_COL_PROG_TYPE, progressionType.name) // Input progressionType as string
         val id = db.insert(SESSIONS_TABLE_NAME, null, values)
 
-        // Notify user of updates
-//        if (id > 0) {
-//            Toast.makeText(context, "Session saved successfully (ID $id)", Toast.LENGTH_SHORT).show()
-//        } else {
-//            Toast.makeText(context, "Session failed to save", Toast.LENGTH_SHORT).show()
-//        }
-
-        // Upon creating the session entry and obtaining ID, need to store the individual repetitions associated and their mistakes
-
         return id
     }
 
@@ -108,7 +99,8 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
         // Check if should filter to one progression type
         val readDataQuery = if (progressionType != null) {
             "SELECT * FROM $SESSIONS_TABLE_NAME WHERE $SESSIONS_COL_PROG_TYPE = '${progressionType.name}'"
-        } else { // Otherwise, read everything
+        } else {
+            // Otherwise, read everything
             "SELECT * FROM $SESSIONS_TABLE_NAME"
         }
 
@@ -142,6 +134,25 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
         return deletedSession
     }
 
+    // REPETITION TABLE FUNCTIONS
+    fun insertRepetitionData(sessionId: Long, repNumber: Int, goodQuality: Boolean): Long {
+        val db = writableDatabase
+        val values = ContentValues()
+        values.put(REPS_COL_SESSION_ID, sessionId)
+        values.put(REPS_COL_REP_NUM, repNumber)
+        values.put(REPS_COL_GOOD_QUAL, goodQuality)
+        val id = db.insert(REPS_TABLE_NAME, null, values)
+
+        return id
+    }
+
+    // Query all repetitions for a given session
+    fun readRepetitionData(sessionId: Long): Cursor {
+        val db = readableDatabase
+        val readDataQuery = "SELECT * FROM $REPS_TABLE_NAME WHERE $REPS_COL_SESSION_ID = $sessionId"
+        return db.rawQuery(readDataQuery, null)
+    }
+
     // Count total repetitions per session
     fun countTotalReps(sessionId: Long): Int {
         val db = readableDatabase
@@ -153,31 +164,6 @@ class DatabaseHandler(private val context: Context): SQLiteOpenHelper(context, D
         }
 
         return count
-    }
-
-    // REPETITION TABLE FUNCTIONS
-    fun insertRepetitionData(sessionId: Long, repNumber: Int, goodQuality: Boolean): Long {
-        val db = writableDatabase
-        val values = ContentValues()
-        values.put(REPS_COL_SESSION_ID, sessionId)
-        values.put(REPS_COL_REP_NUM, repNumber)
-        values.put(REPS_COL_GOOD_QUAL, goodQuality)
-        val id = db.insert(REPS_TABLE_NAME, null, values)
-
-//        // Notify user of updates in table again
-//        if (id > 0) {
-//            Toast.makeText(context, "Repetition saved successfully (ID $id)", Toast.LENGTH_SHORT).show()
-//        } else {
-//            Toast.makeText(context, "Repetition failed to save", Toast.LENGTH_SHORT).show()
-//        }
-
-        return id
-    }
-
-    fun readRepetitionData(sessionId: Long): Cursor {
-        val db = readableDatabase
-        val readDataQuery = "SELECT * FROM $REPS_TABLE_NAME WHERE $REPS_COL_SESSION_ID = $sessionId"
-        return db.rawQuery(readDataQuery, null)
     }
 
     // Add entry for a list of mistakes done in a repetition
