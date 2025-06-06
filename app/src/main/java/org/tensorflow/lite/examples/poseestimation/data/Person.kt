@@ -22,5 +22,16 @@ data class Person(
     var id: Int = -1, // default id is -1
     val keyPoints: List<KeyPoint>,
     val boundingBox: RectF? = null, // Only MoveNet MultiPose return bounding box.
-    val score: Float
+    val score: Float,
+
+    /**
+     * The angles are defined in Angle.kt
+     */
+    val angles: MutableMap<String, Angle> = mutableMapOf(),
+
+    /**
+     * Need to check which side is the main side.
+     */
+    var mainSide : BodySide = LeftParts,
+    var subSide : BodySide = RightParts
 )

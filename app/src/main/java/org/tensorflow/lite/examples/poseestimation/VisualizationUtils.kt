@@ -20,12 +20,11 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.PointF
 import org.tensorflow.lite.examples.poseestimation.data.BodyPart
+import org.tensorflow.lite.examples.poseestimation.data.LeftParts
 import org.tensorflow.lite.examples.poseestimation.data.Person
+import org.tensorflow.lite.examples.poseestimation.data.RightParts
 import kotlin.math.max
-import kotlin.math.sqrt
-import kotlin.math.acos
 
 object VisualizationUtils {
     /** Radius of circle used to draw keypoints.  */
@@ -40,43 +39,10 @@ object VisualizationUtils {
     /** Distance from person id to the nose keypoint.  */
     private const val PERSON_ID_MARGIN = 6f
 
-    /** Keypoints to draw circles on (for neatness in testing) */
-    val keypointsToDraw = setOf(
-        BodyPart.LEFT_SHOULDER,
-        BodyPart.LEFT_ELBOW,
-        BodyPart.LEFT_WRIST,
-        BodyPart.RIGHT_SHOULDER,
-        BodyPart.RIGHT_ELBOW,
-        BodyPart.RIGHT_WRIST,
-        BodyPart.LEFT_HIP,
-        BodyPart.LEFT_KNEE,
-        BodyPart.LEFT_ANKLE,
-        BodyPart.RIGHT_HIP,
-        BodyPart.RIGHT_KNEE,
-        BodyPart.RIGHT_ANKLE,    
-    )
+    private const val ANGLE_TEXT_MARGIN = 6f
 
-    /** Pair of keypoints to draw lines between.  */
-    private val bodyJoints = listOf(
-//        Pair(BodyPart.NOSE, BodyPart.LEFT_EYE),
-//        Pair(BodyPart.NOSE, BodyPart.RIGHT_EYE),
-//        Pair(BodyPart.LEFT_EYE, BodyPart.LEFT_EAR),
-//        Pair(BodyPart.RIGHT_EYE, BodyPart.RIGHT_EAR),
-//        Pair(BodyPart.NOSE, BodyPart.LEFT_SHOULDER),
-//        Pair(BodyPart.NOSE, BodyPart.RIGHT_SHOULDER),
-        Pair(BodyPart.LEFT_SHOULDER, BodyPart.LEFT_ELBOW),
-        Pair(BodyPart.LEFT_ELBOW, BodyPart.LEFT_WRIST),
-        Pair(BodyPart.RIGHT_SHOULDER, BodyPart.RIGHT_ELBOW),
-        Pair(BodyPart.RIGHT_ELBOW, BodyPart.RIGHT_WRIST),
-//        Pair(BodyPart.LEFT_SHOULDER, BodyPart.RIGHT_SHOULDER),
-//        Pair(BodyPart.LEFT_SHOULDER, BodyPart.LEFT_HIP),
-//        Pair(BodyPart.RIGHT_SHOULDER, BodyPart.RIGHT_HIP),
-//        Pair(BodyPart.LEFT_HIP, BodyPart.RIGHT_HIP),
-       Pair(BodyPart.LEFT_HIP, BodyPart.LEFT_KNEE),
-       Pair(BodyPart.LEFT_KNEE, BodyPart.LEFT_ANKLE),
-       Pair(BodyPart.RIGHT_HIP, BodyPart.RIGHT_KNEE),
-       Pair(BodyPart.RIGHT_KNEE, BodyPart.RIGHT_ANKLE)
-    )
+    // Skeleton overlay enabled by default
+    public var skeletonOverlay = true;
 
     // Draw line and point indicate body pose
     fun drawBodyKeypoints(
@@ -102,128 +68,198 @@ object VisualizationUtils {
         }
 
         val output = input.copy(Bitmap.Config.ARGB_8888, true)
-        val originalSizeCanvas = Canvas(output)
-        persons.forEach { person ->
-            // draw person id if tracker is enable
-            if (isTrackerEnabled) {
-                person.boundingBox?.let {
-                    val personIdX = max(0f, it.left)
-                    val personIdY = max(0f, it.top)
 
-                    originalSizeCanvas.drawText(
-                        person.id.toString(),
-                        personIdX,
-                        personIdY - PERSON_ID_MARGIN,
-                        paintText
-                    )
-                    originalSizeCanvas.drawRect(it, paintLine)
+        if (skeletonOverlay) {
+            val originalSizeCanvas = Canvas(output)
+            persons.forEach { person ->
+                // draw person id if tracker is enable
+                if (isTrackerEnabled) {
+                    person.boundingBox?.let {
+                        val personIdX = max(0f, it.left)
+                        val personIdY = max(0f, it.top)
+
+                        originalSizeCanvas.drawText(
+                            person.id.toString(),
+                            personIdX,
+                            personIdY - PERSON_ID_MARGIN,
+                            paintText
+                        )
+                        originalSizeCanvas.drawRect(it, paintLine)
+                    }
                 }
-            }
-            bodyJoints.forEach {
-                val pointA = person.keyPoints[it.first.position].coordinate
-                val pointB = person.keyPoints[it.second.position].coordinate
-                originalSizeCanvas.drawLine(pointA.x, pointA.y, pointB.x, pointB.y, paintLine)
-            }
 
-            person.keyPoints.forEach { point ->
-                // Only draw relevant keypoints for neatness
-                if (point.bodyPart in keypointsToDraw) {
-                    originalSizeCanvas.drawCircle(
-                        point.coordinate.x,
-                        point.coordinate.y,
-                        CIRCLE_RADIUS,
-                        paintCircle
+                //todo: create a replacement for processbodyangles
+                person.angles.values.forEach {
+                    val (first, second, third) = it.indices
+                    //draw body joints
+                    drawBodyJoint(
+                        originalSizeCanvas,
+                        person,
+                        Pair(BodyPart.fromInt(first), BodyPart.fromInt(second)),
+                        it.valid
+                    )
+                    drawBodyJoint(
+                        originalSizeCanvas,
+                        person,
+                        Pair(BodyPart.fromInt(second), BodyPart.fromInt(third)),
+                        it.valid
+                    )
+                    //draw angle text
+                    drawAngleText(
+                        originalSizeCanvas,
+                        person,
+                        BodyPart.fromInt(first),
+                        it.value,
+                        it.valid
                     )
                 }
+
+                //additional QoL lines
+                drawBodyJoint(
+                    originalSizeCanvas,
+                    person,
+                    Pair(BodyPart.LEFT_SHOULDER, BodyPart.RIGHT_SHOULDER),
+                    true
+                )
+                drawBodyJoint(
+                    originalSizeCanvas,
+                    person,
+                    Pair(BodyPart.LEFT_HIP, BodyPart.RIGHT_HIP),
+                    true
+                )
             }
-
-            // Calculate angles and print as annotations on keypoint
-            // Check BodyPart.kt for indices of keypoints
-
-            // LEFT ELBOW
-            val left_elbow_angle = calculateAngle(
-                person.keyPoints.get(5).coordinate,     // LEFT_SHOULDER
-                person.keyPoints.get(7).coordinate,     // LEFT_ELBOW
-                person.keyPoints.get(9).coordinate      // LEFT_WRIST
-            )
-            displayAngleText(left_elbow_angle, person.keyPoints.get(7).coordinate, originalSizeCanvas, PERSON_ID_MARGIN, paintText)
-
-            // RIGHT ELBOW
-            val right_elbow_angle = calculateAngle(
-                person.keyPoints.get(6).coordinate,     // RIGHT_SHOULDER
-                person.keyPoints.get(8).coordinate,     // RIGHT_ELBOW
-                person.keyPoints.get(10).coordinate     // RIGHT_WRIST
-            )
-            displayAngleText(left_elbow_angle, person.keyPoints.get(8).coordinate, originalSizeCanvas, PERSON_ID_MARGIN, paintText)
-
-            // println("LEFT ELBOW: ${left_elbow_angle}°, RIGHT ELBOW: ${right_elbow_angle}°")
-
-            // LEFT LEG
-            val left_knee_angle = calculateAngle(
-                person.keyPoints.get(11).coordinate,    // LEFT HIP
-                person.keyPoints.get(13).coordinate,    // LEFT KNEE
-                person.keyPoints.get(15).coordinate,    // LEFT ANKLE
-            )
-            displayAngleText(left_knee_angle, person.keyPoints.get(13).coordinate, originalSizeCanvas, PERSON_ID_MARGIN, paintText)
-
-            
-            // LEFT LEG
-            val right_knee_angle = calculateAngle(
-                person.keyPoints.get(12).coordinate,    // RIGHT HIP
-                person.keyPoints.get(14).coordinate,    // RIGHT KNEE
-                person.keyPoints.get(16).coordinate,    // RIGHT ANKLE
-            )
-            displayAngleText(right_knee_angle, person.keyPoints.get(14).coordinate, originalSizeCanvas, PERSON_ID_MARGIN, paintText)
         }
         return output
     }
+/*
+    // Handles going through all relevant keypoints and joints to draw
+    fun processBodyAngles(canvas: Canvas, person: Person) {
+        // Check which side to render first
+        val drawRightSide = checkSideDrawPriority(person)
+        
+        val allJoints = listOf(
+            // Left arm joints and corresponding check function
+            Triple(BodyPart.LEFT_SHOULDER, BodyPart.LEFT_ELBOW, AngleHeuristicsUtils::checkLeftElbowAngle),
+            Triple(BodyPart.LEFT_ELBOW, BodyPart.LEFT_WRIST, AngleHeuristicsUtils::checkLeftElbowAngle),
+            
+            // Right arm joints
+            Triple(BodyPart.RIGHT_SHOULDER, BodyPart.RIGHT_ELBOW, AngleHeuristicsUtils::checkRightElbowAngle),
+            Triple(BodyPart.RIGHT_ELBOW, BodyPart.RIGHT_WRIST, AngleHeuristicsUtils::checkRightElbowAngle),
+            
+            // Left knee joints
+            Triple(BodyPart.LEFT_HIP, BodyPart.LEFT_KNEE, AngleHeuristicsUtils::checkLeftKneeAngle),
+            Triple(BodyPart.LEFT_KNEE, BodyPart.LEFT_ANKLE, AngleHeuristicsUtils::checkLeftKneeAngle),
+            
+            // Right knee joints
+            Triple(BodyPart.RIGHT_HIP, BodyPart.RIGHT_KNEE, AngleHeuristicsUtils::checkRightKneeAngle),
+            Triple(BodyPart.RIGHT_KNEE, BodyPart.RIGHT_ANKLE, AngleHeuristicsUtils::checkRightKneeAngle),
 
-    // Function to calculate angle between three points
-    fun calculateAngle(pointA: PointF, pointB: PointF, pointC: PointF): Double {
-        // Formula using dot product (B as central point):
-        // cos(theta) = (AB dot BC) / (||AB|| x ||BC||)
+            // DISABLED FOR NOW, NOT SURE IF CORRECT WAY OF TRACKING
+            // // Left upper torso
+            Triple(BodyPart.LEFT_EAR, BodyPart.LEFT_SHOULDER, AngleHeuristicsUtils::checkLeftUpperTorsoAngle),
+            // Triple(BodyPart.LEFT_SHOULDER, BodyPart.LEFT_HIP, AngleHeuristicsUtils::checkLeftUpperTorsoAngle),
+            
+            // // Right upper torso
+            Triple(BodyPart.RIGHT_EAR, BodyPart.RIGHT_SHOULDER, AngleHeuristicsUtils::checkRightUpperTorsoAngle),
+            // Triple(BodyPart.RIGHT_SHOULDER, BodyPart.RIGHT_HIP, AngleHeuristicsUtils::checkRightUpperTorsoAngle),
 
-        // Lengths of each vector (AB, BC)
-        val ABx = pointB.x - pointA.x
-        val ABy = pointB.y - pointA.y
+            // Left lower torso
+            Triple(BodyPart.LEFT_SHOULDER, BodyPart.LEFT_HIP, AngleHeuristicsUtils::checkLeftLowerTorsoAngle),
+            Triple(BodyPart.LEFT_HIP, BodyPart.LEFT_KNEE, AngleHeuristicsUtils::checkLeftLowerTorsoAngle),
+            
+            // Right lower torso
+            Triple(BodyPart.RIGHT_SHOULDER, BodyPart.RIGHT_HIP, AngleHeuristicsUtils::checkRightLowerTorsoAngle),
+            Triple(BodyPart.RIGHT_HIP, BodyPart.RIGHT_KNEE, AngleHeuristicsUtils::checkRightLowerTorsoAngle),
+        )
 
-        val BCx = pointC.x - pointB.x
-        val BCy = pointC.y - pointB.y
+        // Filter which side to draw
+        val jointsToCheck = allJoints.filter { (start, _, _) -> 
+            if (!drawRightSide) {
+                start in setOf(
+                    BodyPart.LEFT_EYE, BodyPart.LEFT_EAR,
+                    BodyPart.LEFT_SHOULDER, BodyPart.LEFT_ELBOW, BodyPart.LEFT_WRIST,
+                    BodyPart.LEFT_HIP, BodyPart.LEFT_KNEE, BodyPart.LEFT_ANKLE
+                )
+            } else {
+                start in setOf(
+                    BodyPart.RIGHT_EYE, BodyPart.RIGHT_EAR,
+                    BodyPart.RIGHT_SHOULDER, BodyPart.RIGHT_ELBOW, BodyPart.RIGHT_WRIST,
+                    BodyPart.RIGHT_HIP, BodyPart.RIGHT_KNEE, BodyPart.RIGHT_ANKLE
+                )
+            }
+        }
 
-        // Dot product and vector magnitudes
-        val dotProduct = ABx * BCx + ABy * BCy
-        val magnitudeAB: Float = sqrt(ABx * ABx + ABy * ABy)
-        val magnitudeBC: Float = sqrt(BCx * BCx + BCy * BCy)
+        // Process each joint and draw
+        jointsToCheck.forEach { (start, end, checkAngleFunction) ->
+            val (angle, isValid) = checkAngleFunction(person)
+            
+            drawBodyJoint(canvas, person, Pair(start, end), isValid)
+            drawAngleText(canvas, person, start, angle, isValid)
+        }
+    }
+*/
+    fun drawBodyJoint(
+        canvas: Canvas,
+        person: Person,
+        bodyJoint: Pair<BodyPart, BodyPart>,
+        isValid: Boolean,
+        ) {
+        val pointA = person.keyPoints[bodyJoint.first.position].coordinate
+        val pointB = person.keyPoints[bodyJoint.second.position].coordinate
+        //check for colors
+        val validColor : Int
+        val invalidColor : Int
+        if (bodyJoint.first.position in LeftParts.getSideInts() && bodyJoint.second.position in LeftParts.getSideInts()) {
+            validColor = Color.GREEN
+            invalidColor = Color.RED
+        } else if (bodyJoint.first.position in RightParts.getSideInts() && bodyJoint.second.position in RightParts.getSideInts()) {
+            validColor = Color.CYAN
+            invalidColor = Color.parseColor("#FFA500")
+        } else {
+            validColor = Color.parseColor("#800080")
+            invalidColor = Color.YELLOW
+        }
 
-        // Check for division by 0
-        if (magnitudeAB == 0.0f || magnitudeBC == 0.0f) return 0.0
+        // Paint circles on keypoints
+        val paintCircle = Paint().apply {
+            strokeWidth = CIRCLE_RADIUS
+            style = Paint.Style.FILL
+            color = if (isValid) Color.CYAN else Color.RED
+        }
+        canvas.drawCircle(pointA.x, pointA.y, CIRCLE_RADIUS, paintCircle)
+        canvas.drawCircle(pointB.x, pointB.y, CIRCLE_RADIUS, paintCircle)
 
-        /* Calculate for angle:
-            - Obtain cos(theta) using dot product and magnitudes
-            - Ensure cos(theta) is within bounds [-1.0, 1.0]
-            - Compute for arccos(cos(theta))
-        */
-        var angle = acos((dotProduct / (magnitudeAB * magnitudeBC)).coerceIn(-1.0f, 1.0f))
-
-        // Return value in degrees
-        // Not finalized yet, (Math.PI - angle) is just to force straight lines to show 180 degrees---but possibly needs a bit more computation to distinguish direction of angle
-        return (Math.PI - angle) * (180 / Math.PI)
+        // Paint lines for joints
+        val paintLine = Paint().apply {
+            strokeWidth = LINE_WIDTH
+            style = Paint.Style.STROKE 
+            color = if (isValid) validColor else invalidColor
+        }
+        canvas.drawLine(pointA.x, pointA.y, pointB.x, pointB.y, paintLine)
     }
 
-    fun displayAngleText(
-        angle: Double,
-        keypoint: PointF,
+    fun drawAngleText(
         canvas: Canvas,
-        margin: Float,
-        paintText: Paint
+        person: Person,
+        bodyPart: BodyPart,
+        angle: Double,
+        isValid: Boolean,
         ) {
 
+        val paintText = Paint().apply {
+            textSize = PERSON_ID_TEXT_SIZE
+            color = if (isValid) Color.CYAN else Color.RED
+            textAlign = Paint.Align.LEFT
+        }
+
+        val keypoint = person.keyPoints[bodyPart.position].coordinate
+
         canvas.save()
-        canvas.rotate(90f, keypoint.x + margin, keypoint.y - margin)
+        canvas.rotate(90f, keypoint.x + ANGLE_TEXT_MARGIN, keypoint.y - ANGLE_TEXT_MARGIN)
         canvas.drawText(
             "${angle.toInt()}°",
-            keypoint.x + margin,
-            keypoint.y - margin,
+            keypoint.x + ANGLE_TEXT_MARGIN,
+            keypoint.y - ANGLE_TEXT_MARGIN,
             paintText
         )
         canvas.restore()

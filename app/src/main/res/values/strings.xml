@@ -1,30 +1,194 @@
 <resources>
-    <string name="tfe_pe_app_name">TFL Pose Estimation</string>
+    <string name="pu_app_name">Progress-Up</string>
+    <string name="pu_app_description">A real-time form checker for push-up progressions</string>
+
     <string name="tfe_pe_request_permission">This app needs camera permission.</string>
     <string name="tfe_pe_tv_score">Score: %.2f</string>
     <string name="tfe_pe_tv_model">Model: </string>
     <string name="tfe_pe_tv_fps">Fps: %d</string>
     <string name="tfe_pe_tv_device">Device: </string>
-    <string name="tfe_pe_tv_classification_value">- %s</string>
-    <string name="tfe_pe_tv_pose_classification">Pose Classification</string>
-    <string name="tfe_pe_tv_tracking">Tracker: </string>
-    <string name="tfe_pe_gpu_error">Movenet MultiPose does not support GPU. Fallback to CPU.</string>
+    <string name="pu_skeleton">Display skeleton overlay:</string>
+    <string name="pu_audio">Enable repetition beeps:</string>
     <string-array name="tfe_pe_models_array">
         <item>Movenet Lightning</item>
         <item>Movenet Thunder</item>
-        <item>Movenet MultiPose</item>
-        <item>Posenet</item>
     </string-array>
 
     <string-array name="tfe_pe_device_name">
-        <item>CPU</item>
         <item>GPU</item>
+        <item>CPU</item>
         <item>NNAPI</item>
     </string-array>
 
-    <string-array name="tfe_pe_tracker_array">
-        <item>Off</item>
-        <item>BoundingBox</item>
-        <item>Keypoint</item>
-    </string-array>
+    <string name="pu_prog_form_guide">Form Guide</string>
+    <string name="pu_prog_exercise_logs">Logs</string>
+    <string name="pu_prog_diagram_desc">Diagram of push-up progression</string>
+    <string name="pu_logs_button">View all exercise logs</string>
+
+    <string name="pu_init_feedback">Get into position! For accurate tracking,\nposition your head towards the top of your phone.\n\nSimply go back to end the session.</string>
+    <string name="pu_init_rep_count">0</string>
+    <string name="pu_init_good_rep_count">0 good</string>
+    <string name="pu_init_poor_rep_count">0 poor</string>
+    <string name="pu_init_prog_type">Progression Type</string>
+    <string name="pu_rep_subtitle">REPS</string>
+
+    <string name="pu_settings_tracker">Tracker Settings:</string>
+    <string name="pu_settings_model">HPE Model Settings:</string>
+
+    <string name="pu_form_guide_wall">
+        <![CDATA[
+        <b>Hands</b><br/>
+        Hands should be on the wall, around shoulder-height or lower.<br/><br/>
+
+        <b>Legs</b><br/>
+        Keep your legs straight and around shoulder-width apart.<br/><br/>
+
+        <b>Body</b><br/>
+        Make sure to keep your body in as straight of a line as possible. You can do this by squeezing your glutes and keeping your abs tense.<br/><br/>
+
+        <b>Elbows</b><br/>
+        When performing the push-up,  avoid “flaring” your elbows by keeping your elbows close to your body—keep them around 0° to 45°. <br/><br/>
+
+        <b>Head</b><br/>
+        Keep your head neutral and centered throughout the movement—refrain from looking up, down, or around.<br/><br/>
+
+        <b>Range of motion</b><br/>
+        Go all the way down until your chest either hits the wall or brushes up against it.<br/><br/>
+
+        <b>Scapula</b><br/>
+        Your scapulae should be fully depressed. At the top of the motion, they should be protracted. They should retract at the bottom, and return back to protracted at the top.<br/>
+        ]]>
+    </string>
+
+    <string name="pu_form_guide_incline">
+        <![CDATA[
+        <b>Hands</b><br/>
+        Hands should be on a surface higher than the ground, ideally directly underneath the shoulders or somewhere close by.<br/><br/>
+
+        <b>Legs</b><br/>
+        Keep your legs straight and around shoulder-width apart.<br/><br/>
+
+        <b>Body</b><br/>
+        Make sure to keep your body in as straight of a line as possible. You can do this by squeezing your glutes and keeping your abs tense.<br/><br/>
+
+        <b>Elbows</b><br/>
+        When performing the push-up,  avoid “flaring” your elbows by keeping your elbows close to your body—keep them around 0° to 45°. <br/><br/>
+
+        <b>Head</b><br/>
+        Keep your head neutral and centered throughout the movement—refrain from looking up, down, or around.<br/><br/>
+
+        <b>Range of motion</b><br/>
+        Go all the way down until your chest either hits the elevated surface or brushes up against it.<br/><br/>
+
+        <b>Scapula</b><br/>
+        Your scapulae should be fully depressed. At the top of the motion, they should be protracted. They should retract at the bottom, and return back to protracted at the top.<br/>
+        ]]>
+    </string>
+
+    <string name="pu_form_guide_knee">
+        <![CDATA[
+        <b>Hands</b><br/>
+        Hands should be directly underneath your shoulders.<br/><br/>
+
+        <b>Legs</b><br/>
+        Keep your knees at around a 90° angle, with your knees on the floor. You may cross your feet if that is more comfortable.<br/><br/>
+
+        <b>Body</b><br/>
+        Make sure to keep your body in as straight of a line as possible. You can do this by squeezing your glutes and keeping your abs tense.<br/><br/>
+
+        <b>Elbows</b><br/>
+        When performing the push-up,  avoid “flaring” your elbows by keeping your elbows close to your body—keep them around 0° to 45°. <br/><br/>
+
+        <b>Head</b><br/>
+        Keep your head neutral and centered throughout the movement—refrain from looking up, down, or around.<br/><br/>
+
+        <b>Range of motion</b><br/>
+        Go all the way down until your chest either hits the floor or brushes up against it.<br/><br/>
+
+        <b>Scapula</b><br/>
+        Your scapulae should be fully depressed. At the top of the motion, they should be protracted. They should retract at the bottom, and return back to protracted at the top.<br/>
+        ]]>
+    </string>
+
+    <string name="pu_form_guide_standard">
+        <![CDATA[
+        <b>Hands</b><br/>
+        Hands should be directly underneath your shoulders.<br/><br/>
+
+        <b>Legs</b><br/>
+        Keep your legs straight and around shoulder-width apart.<br/><br/>
+
+        <b>Body</b><br/>
+        Make sure to keep your body in as straight of a line as possible. You can do this by squeezing your glutes and keeping your abs tense.<br/><br/>
+
+        <b>Elbows</b><br/>
+        When performing the push-up,  avoid “flaring” your elbows by keeping your elbows close to your body—keep them around 0° to 45°. <br/><br/>
+
+        <b>Head</b><br/>
+        Keep your head neutral and centered throughout the movement—refrain from looking up, down, or around.<br/><br/>
+
+        <b>Range of motion</b><br/>
+        Go all the way down until your chest either hits the floor or brushes up against it.<br/><br/>
+
+        <b>Scapula</b><br/>
+        Your scapulae should be fully depressed. At the top of the motion, they should be protracted. They should retract at the bottom, and return back to protracted at the top.<br/>
+        ]]>
+    </string>
+
+    <string name="pu_form_guide_decline">
+        <![CDATA[
+        <b>Hands</b><br/>
+        Hands should be directly underneath your shoulders.<br/><br/>
+
+        <b>Legs</b><br/>
+        Place your feet on a surface higher than the floor. Keep your legs straight and around shoulder-width apart. <br/><br/>
+
+        <b>Body</b><br/>
+        Make sure to keep your body in as straight of a line as possible. You can do this by squeezing your glutes and keeping your abs tense.<br/><br/>
+
+        <b>Elbows</b><br/>
+        When performing the push-up,  avoid “flaring” your elbows by keeping your elbows close to your body—keep them around 0° to 45°. <br/><br/>
+
+        <b>Head</b><br/>
+        Keep your head neutral and centered throughout the movement—refrain from looking up, down, or around.<br/><br/>
+
+        <b>Range of motion</b><br/>
+        Go all the way down until your chest either hits the floor or brushes up against it.<br/><br/>
+
+        <b>Scapula</b><br/>
+        Your scapulae should be fully depressed. At the top of the motion, they should be protracted. They should retract at the bottom, and return back to protracted at the top.<br/>
+        ]]>
+    </string>
+
+    <string name="pu_form_guide_pseudoplanche">
+        <![CDATA[
+        <b>Hands</b><br/>
+        Hands should be closer to the hips, somewhere underneath the waist. You can rotate the hands externally if that is more comfortable.<br/><br/>
+
+        <b>Legs</b><br/>
+        Keep your legs straight and around shoulder-width apart.<br/><br/>
+
+        <b>Body</b><br/>
+        Make sure to keep your body in as straight of a line as possible. You can do this by squeezing your glutes and keeping your abs tense. Lean forward slightly as you perform the movement.<br/><br/>
+
+        <b>Elbows</b><br/>
+        When performing the push-up,  avoid “flaring” your elbows by keeping your elbows close to your body—keep them around 0° to 45°. <br/><br/>
+
+        <b>Head</b><br/>
+        Keep your head neutral and centered throughout the movement—refrain from looking up, down, or around.<br/><br/>
+
+        <b>Range of motion</b><br/>
+        Go all the way down until your chest either hits the floor or brushes up against it.<br/><br/>
+
+        <b>Scapula</b><br/>
+        Your scapulae should be fully depressed. At the top of the motion, they should be protracted. They should retract at the bottom, and return back to protracted at the top.<br/>
+        ]]>
+    </string>
+
+    <string name="pu_video_guide_wall">https://www.youtube.com/watch?v=jNWTFBqZzAU</string>
+    <string name="pu_video_guide_incline">https://www.youtube.com/watch?v=cfns5VDVVvk</string>
+    <string name="pu_video_guide_knee">https://www.youtube.com/watch?v=lFR1GWy1Dcs</string>
+    <string name="pu_video_guide_standard">https://www.youtube.com/watch?v=IODxDxX7oi4</string>
+    <string name="pu_video_guide_decline">https://www.youtube.com/watch?v=b_CC4kAF1HQ</string>
+    <string name="pu_video_guide_pseudoplanche">https://www.youtube.com/watch?v=odcPqBOlJhI</string>
 </resources>

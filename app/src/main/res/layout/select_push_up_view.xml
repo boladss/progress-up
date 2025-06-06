@@ -1,0 +1,84 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="180dp"
+    android:layout_marginHorizontal="10sp"
+    android:layout_marginBottom="10sp"
+    android:paddingHorizontal="10sp"
+    android:background="#15163e"
+    android:orientation="horizontal"
+    tools:visibility="visible">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="150dp"
+        android:layout_height="match_parent"
+        android:layout_marginEnd="12dp"
+        android:contentDescription="@string/pu_prog_diagram_desc" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/titleTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#32f4d1"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/descriptionTextView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="14sp"/>
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_gravity="start"
+            >
+
+            <Button
+                android:id="@+id/progFormGuideButton"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginTop="10dp"
+                android:layout_marginEnd="8dp"
+                android:textSize="12sp"
+                android:paddingHorizontal="8dp"
+                android:minHeight="0dp"
+                android:minWidth="0dp"
+                android:background="@drawable/button_white_outline"
+                android:textColor="@color/white"
+                android:text="@string/pu_prog_form_guide"
+                />
+
+            <Button
+                android:id="@+id/progSessionLogsButton"
+                android:layout_height="wrap_content"
+                android:layout_width="wrap_content"
+                android:layout_gravity="end"
+                android:layout_marginTop="10dp"
+                android:textSize="12sp"
+                android:paddingHorizontal="8dp"
+                android:minHeight="0dp"
+                android:minWidth="0dp"
+                android:background="@drawable/button_white_outline"
+                android:textColor="@color/white"
+                android:text="@string/pu_prog_exercise_logs"
+                />
+
+        </LinearLayout>
+    </LinearLayout>
+
+</LinearLayout>

@@ -21,6 +21,7 @@ import android.graphics.*
 import android.os.SystemClock
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.Interpreter
+import org.tensorflow.lite.examples.poseestimation.calculateAngle
 import org.tensorflow.lite.examples.poseestimation.data.*
 import org.tensorflow.lite.gpu.GpuDelegate
 import org.tensorflow.lite.support.common.FileUtil
@@ -30,8 +31,10 @@ import org.tensorflow.lite.support.image.ops.ResizeOp
 import org.tensorflow.lite.support.image.ops.ResizeWithCropOrPadOp
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
 import kotlin.math.abs
+import kotlin.math.acos
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.math.sqrt
 
 enum class ModelType {
     Lightning,
@@ -95,6 +98,16 @@ class MoveNet(private val interpreter: Interpreter, private var gpuDelegate: Gpu
     private val inputWidth = interpreter.getInputTensor(0).shape()[1]
     private val inputHeight = interpreter.getInputTensor(0).shape()[2]
     private var outputShape: IntArray = interpreter.getOutputTensor(0).shape()
+
+    private fun checkJointAngle(keypoints: List<KeyPoint>, angles: Angles): Angle {
+        val (first, second, third) = angles.indices
+        val angle = calculateAngle(
+            keypoints[first].coordinate,
+            keypoints[second].coordinate,
+            keypoints[third].coordinate
+        )
+        return Angle(angle, false, angles.indices)
+    }
 
     override fun estimatePoses(bitmap: Bitmap): List<Person> {
         val inferenceStartTimeNanos = SystemClock.elapsedRealtimeNanos()
@@ -171,7 +184,14 @@ class MoveNet(private val interpreter: Interpreter, private var gpuDelegate: Gpu
         }
         lastInferenceTimeNanos =
             SystemClock.elapsedRealtimeNanos() - inferenceStartTimeNanos
-        return listOf(Person(keyPoints = keyPoints, score = totalScore / numKeyPoints))
+
+        //calculate angle values here
+        val angles : MutableMap<String, Angle> = Angles.entries.associateBy(
+            { it.toString()},
+            {checkJointAngle(keyPoints, it)}
+        ).toMutableMap()
+
+        return listOf(Person(keyPoints = keyPoints, score = totalScore / numKeyPoints, angles = angles))
     }
 
     override fun lastInferenceTimeNanos(): Long = lastInferenceTimeNanos

@@ -18,6 +18,7 @@ package org.tensorflow.lite.examples.poseestimation.camera
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.ImageFormat
 import android.graphics.Matrix
@@ -33,6 +34,7 @@ import android.util.Log
 import android.view.Surface
 import android.view.SurfaceView
 import kotlinx.coroutines.suspendCancellableCoroutine
+import org.tensorflow.lite.examples.poseestimation.AngleHeuristicsUtils
 import org.tensorflow.lite.examples.poseestimation.VisualizationUtils
 import org.tensorflow.lite.examples.poseestimation.YuvToRgbConverter
 import org.tensorflow.lite.examples.poseestimation.data.Person
@@ -40,13 +42,16 @@ import org.tensorflow.lite.examples.poseestimation.ml.MoveNetMultiPose
 import org.tensorflow.lite.examples.poseestimation.ml.PoseClassifier
 import org.tensorflow.lite.examples.poseestimation.ml.PoseDetector
 import org.tensorflow.lite.examples.poseestimation.ml.TrackerType
+import org.tensorflow.lite.examples.poseestimation.progressions.ProgressionTypes
+import org.tensorflow.lite.examples.poseestimation.sessions.RepetitionItem
 import java.util.*
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
 class CameraSource(
     private val surfaceView: SurfaceView,
-    private val listener: CameraSourceListener? = null
+    private val listener: CameraSourceListener? = null,
+    private val context: Context
 ) {
 
     companion object {
@@ -54,7 +59,7 @@ class CameraSource(
         private const val PREVIEW_HEIGHT = 480
 
         /** Threshold for confidence score. */
-        private const val MIN_CONFIDENCE = .2f
+        private const val MIN_CONFIDENCE = .4f
         private const val TAG = "Camera Source"
     }
 
@@ -92,7 +97,7 @@ class CameraSource(
     private var imageReaderHandler: Handler? = null
     private var cameraId: String = ""
 
-    suspend fun initCamera() {
+    suspend fun initCamera(replacePersons: (List<Person>) -> Unit, progressionType: Int) {
         camera = openCamera(cameraManager, cameraId)
         imageReader =
             ImageReader.newInstance(PREVIEW_WIDTH, PREVIEW_HEIGHT, ImageFormat.YUV_420_888, 3)
@@ -119,7 +124,7 @@ class CameraSource(
                     imageBitmap, 0, 0, PREVIEW_WIDTH, PREVIEW_HEIGHT,
                     rotateMatrix, false
                 )
-                processImage(rotatedBitmap)
+                processImage(replacePersons, rotatedBitmap, progressionType) //pass progression type to processImage in preparation
                 image.close()
             }
         }, imageReaderHandler)
@@ -166,18 +171,15 @@ class CameraSource(
         }
 
     fun prepareCamera() {
-        // Prioritize front-facing  camera
         for (cameraId in cameraManager.cameraIdList) {
             val characteristics = cameraManager.getCameraCharacteristics(cameraId)
 
             val cameraDirection = characteristics.get(CameraCharacteristics.LENS_FACING)
             if (cameraDirection != null &&
-                cameraDirection == CameraCharacteristics.LENS_FACING_FRONT
+                // Prioritize front- or rear-facing camera
+                 cameraDirection == CameraCharacteristics.LENS_FACING_FRONT
+//               cameraDirection == CameraCharacteristics.LENS_FACING_BACK
             ) {
-                // Rear-facing Camera
-                // continue
-
-                // Front-facing Camera
                  this.cameraId = cameraId
                  return
             }
@@ -248,20 +250,13 @@ class CameraSource(
     }
 
     // process image
-    private fun processImage(bitmap: Bitmap) {
+    private fun processImage(replacePersons: (List<Person>) -> kotlin.Unit, bitmap: Bitmap, progressionType: Int) {
         val persons = mutableListOf<Person>()
         var classificationResult: List<Pair<String, Float>>? = null
 
         synchronized(lock) {
             detector?.estimatePoses(bitmap)?.let {
                 persons.addAll(it)
-
-                // if the model only returns one item, allow running the Pose classifier.
-                if (persons.isNotEmpty()) {
-                    classifier?.run {
-                        classificationResult = classify(persons[0])
-                    }
-                }
             }
         }
         frameProcessedInOneSecondInterval++
@@ -270,19 +265,49 @@ class CameraSource(
             listener?.onFPSListener(framesPerSecond)
         }
 
-        // if the model returns only one item, show that item's score.
-        if (persons.isNotEmpty()) {
-            listener?.onDetectedInfo(persons[0].score, classificationResult)
-        }
+        //compute angle validity here
+        persons[0] = ProgressionTypes.fromInt(progressionType).getValidity(persons[0])
+        //then copy
+        if (persons[0].score > MIN_CONFIDENCE)
+            replacePersons(persons)
         visualize(persons, bitmap)
     }
 
     private fun visualize(persons: List<Person>, bitmap: Bitmap) {
 
-        val outputBitmap = VisualizationUtils.drawBodyKeypoints(
+        // TODO: Make drawing keypoints optional via settings
+        // outputBitmap is still required, this is how the preview feed itself is drawn
+        val initialOutputBitmap = VisualizationUtils.drawBodyKeypoints(
             bitmap,
             persons.filter { it.score > MIN_CONFIDENCE }, isTrackerEnabled
         )
+
+        // Update rotation of preview camera feed
+        // Ref: https://stackoverflow.com/questions/10380989/how-do-i-get-the-current-orientation-activityinfo-screen-orientation-of-an-a
+        // Ref: https://developer.android.com/reference/android/view/WindowManager#getDefaultDisplay()
+        // Ref: https://developer.android.com/reference/android/content/Context#getDisplay()
+        val rotation = context.getDisplay().rotation
+        // TODO: Update minimum SDK to 30
+
+        // Rotate bitmap for proper screen orientation
+        val outputBitmap = when (rotation) {
+            // Rotate bitmap for landscape preview
+            Surface.ROTATION_90 -> { // Right
+                val rotateMatrix = Matrix()
+                rotateMatrix.postRotate(270f)
+                Bitmap.createBitmap(
+                    initialOutputBitmap, 0, 0, initialOutputBitmap.width, initialOutputBitmap.height, rotateMatrix, false
+                )
+            }
+            Surface.ROTATION_270 -> { // Left
+                val rotateMatrix = Matrix()
+                rotateMatrix.postRotate(90f)
+                Bitmap.createBitmap(
+                    initialOutputBitmap, 0, 0, initialOutputBitmap.width, initialOutputBitmap.height, rotateMatrix, false
+                )
+            }
+            else -> initialOutputBitmap // No rotation applied for portrait
+        }
 
         val holder = surfaceView.holder
         val surfaceCanvas = holder.lockCanvas()
